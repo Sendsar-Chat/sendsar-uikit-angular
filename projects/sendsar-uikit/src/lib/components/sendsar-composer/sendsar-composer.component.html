@@ -1,0 +1,50 @@
+<form class="sc-composer" (ngSubmit)="submit()">
+  @if (showAttach()) {
+    <div class="sc-attach-panel">
+      <label class="sc-attach-label">
+        Image / file URL
+        <input
+          type="url"
+          name="attachUrl"
+          [(ngModel)]="attachUrl"
+          placeholder="https://example.com/photo.jpg"
+          [disabled]="sending() || !!pendingFile()"
+        />
+      </label>
+      <label class="sc-file-btn">
+        Upload image
+        <input type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
+      </label>
+      @if (pendingFile(); as file) {
+        <div class="sc-pending">
+          <img [src]="file.url" alt="" class="sc-pending-thumb" />
+          <span>{{ file.filename }}</span>
+          <button type="button" (click)="clearAttachment()">×</button>
+        </div>
+      }
+    </div>
+  }
+
+  <div class="sc-row">
+    <button type="button" class="sc-icon-btn" title="Attach" (click)="toggleAttach()">📎</button>
+    <input
+      type="text"
+      name="message"
+      [(ngModel)]="text"
+      (ngModelChange)="onTextChange()"
+      [disabled]="sending()"
+      placeholder="Type a message…"
+      autocomplete="off"
+    />
+    <button type="submit" class="sc-send-btn" [disabled]="sending() || (!text.trim() && !attachUrl.trim() && !pendingFile())">
+      @if (sending()) {
+        <span class="sc-send-spin"></span> Sending…
+      } @else {
+        Send
+      }
+    </button>
+  </div>
+</form>
+@if (error()) {
+  <p class="sc-error">{{ error() }}</p>
+}

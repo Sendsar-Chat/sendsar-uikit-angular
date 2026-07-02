@@ -1,0 +1,58 @@
+@if (session.state().status === 'error') {
+  <div class="sc-status sc-status--error">
+    <p>{{ session.state().error ?? 'Connection failed' }}</p>
+    <button type="button" (click)="retryConnection()">Reconnect</button>
+  </div>
+} @else if (session.state().status === 'offline') {
+  <p class="sc-status">Chat is offline.</p>
+} @else {
+  <div class="sc-layout" [class.sc-layout--thread]="mobileShowThread()">
+    @if (session.state().status === 'loading') {
+      <div class="sc-connecting-bar">
+        <span class="sc-connecting-spin"></span>
+        Connecting to Sendsar…
+      </div>
+    }
+
+    <sc-conversation-list
+      class="sc-sidebar"
+      [selectedRoomId]="selectedRoom()?.id ?? null"
+      [users]="users"
+      [selfUserId]="session.session?.chatUserId ?? ''"
+      [typingByRoom]="typingByRoom()"
+      [onlineUserIds]="onlineUserIds()"
+      (roomSelect)="onRoomSelect($event)"
+    />
+    <section class="sc-thread">
+      @if (selectedRoom(); as room) {
+        <header class="sc-thread-header">
+          <button type="button" class="sc-back" (click)="backToList()" aria-label="Back to conversations">←</button>
+          <span class="sc-header-avatar">{{ headerAvatarInitials() }}</span>
+          <div class="sc-header-text">
+            <h1>{{ roomTitle() }}</h1>
+            @if (typingLabel(); as typing) {
+              <span class="sc-typing">{{ typing }}</span>
+            } @else {
+              <span class="sc-header-sub">{{ roomIsGroup() ? 'Group' : 'Direct message' }}</span>
+            }
+          </div>
+        </header>
+        <sc-message-list
+          [roomId]="room.id"
+          [isGroup]="roomIsGroup()"
+          [users]="users"
+          [chatSettings]="chatSettings()"
+          (activity)="onThreadActivity()"
+        />
+        <sc-composer [roomId]="room.id" (sent)="onMessageSent()" />
+      } @else {
+        <div class="sc-thread-empty">
+          <p class="sc-thread-empty-title">Welcome to Sendsar</p>
+          <p class="sc-thread-empty-hint">
+            Start a direct message or create a group to explore text, images, reactions, typing, and read receipts.
+          </p>
+        </div>
+      }
+    </section>
+  </div>
+}

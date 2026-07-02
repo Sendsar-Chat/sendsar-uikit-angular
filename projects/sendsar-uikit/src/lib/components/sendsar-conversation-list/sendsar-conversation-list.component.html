@@ -1,0 +1,77 @@
+<header class="sc-panel-header">
+  <h2>Conversations</h2>
+  <button
+    type="button"
+    class="sc-icon-btn"
+    [class.sc-icon-btn--spin]="refreshing()"
+    [disabled]="refreshing() || initialLoad()"
+    (click)="reload()"
+    title="Refresh"
+  >
+    ↻
+  </button>
+</header>
+
+@if (error() && rooms().length > 0) {
+  <p class="sc-error-banner">{{ error() }}</p>
+}
+
+@if (initialLoad() && rooms().length === 0) {
+  <ul class="sc-skeleton-list" aria-busy="true" aria-label="Loading conversations">
+    @for (row of skeletonRows; track row) {
+      <li class="sc-skeleton-item">
+        <span class="sc-skeleton sc-skeleton--avatar"></span>
+        <span class="sc-skeleton-body">
+          <span class="sc-skeleton sc-skeleton--title"></span>
+          <span class="sc-skeleton sc-skeleton--preview"></span>
+        </span>
+      </li>
+    }
+  </ul>
+} @else if (error() && rooms().length === 0) {
+  <div class="sc-state sc-state--error">
+    <p>{{ error() }}</p>
+    <button type="button" (click)="reload()">Try again</button>
+  </div>
+} @else if (rooms().length === 0) {
+  <div class="sc-state">
+    <p class="sc-state-title">No conversations yet</p>
+    <p class="sc-state-hint">Start a new chat to begin messaging.</p>
+  </div>
+} @else {
+  <ul class="sc-room-list" [class.sc-room-list--dim]="refreshing()">
+    @for (room of rooms(); track room.id) {
+      <li>
+        <button
+          type="button"
+          class="sc-room-item"
+          [class.sc-room-item--active]="room.id === selectedRoomId"
+          (click)="selectRoom(room)"
+        >
+          <span class="sc-avatar" [class.sc-avatar--online]="isPeerOnline(room)">
+            {{ avatarInitials(room) }}
+          </span>
+          <span class="sc-room-body">
+            <span class="sc-room-row">
+              <span class="sc-room-title">{{ roomLabel(room) }}</span>
+              <span class="sc-room-meta">
+                @if (unreadCount(room) > 0) {
+                  <span class="sc-unread">{{ unreadCount(room) }}</span>
+                }
+                <span class="sc-room-time">{{ roomTime(room) }}</span>
+              </span>
+            </span>
+            @if (roomSubtitle(room); as subtitle) {
+              <span
+                class="sc-room-preview"
+                [class.sc-room-preview--typing]="subtitle.includes('typing')"
+              >
+                {{ subtitle }}
+              </span>
+            }
+          </span>
+        </button>
+      </li>
+    }
+  </ul>
+}

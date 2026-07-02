@@ -1,0 +1,21 @@
+<main class="login">
+  <h1>Sendsar Angular UI Kit</h1>
+  <p class="lead">Sample app — pick a user to open chat.</p>
+
+  <ol class="steps">
+    <li><code>npm install</code></li>
+    <li><code>npm run setup</code> then set <code>SENDSAR_API_KEY</code> in <code>sample-bff/.env</code></li>
+    <li><code>npm start</code></li>
+  </ol>
+
+  <ul class="users">
+    @for (user of users; track user.chatUserId) {
+      <li>
+        <button type="button" (click)="selectUser(user.chatUserId)">
+          <strong>{{ user.displayName }}</strong>
+          <span>{{ user.chatUserId }}</span>
+        </button>
+      </li>
+    }
+  </ul>
+</main>

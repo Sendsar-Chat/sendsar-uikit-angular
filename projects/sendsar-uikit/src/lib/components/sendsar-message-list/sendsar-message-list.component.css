@@ -1,0 +1,291 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.sc-messages-wrap {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scroll-behavior: smooth;
+}
+
+.sc-skeleton-thread {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sc-skeleton-bubble {
+  max-width: 65%;
+  padding: 0.75rem 1rem;
+  border-radius: 1rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sc-skeleton-bubble--self {
+  align-self: flex-end;
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+.sc-skeleton-line {
+  display: block;
+  height: 0.65rem;
+  border-radius: 0.25rem;
+  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background-size: 200% 100%;
+  animation: sc-shimmer 1.2s ease-in-out infinite;
+}
+
+.sc-skeleton-line--long {
+  width: 100%;
+}
+
+.sc-skeleton-line--short {
+  width: 55%;
+}
+
+.sc-inline-spin {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  border: 2px solid #cbd5e1;
+  border-top-color: #2563eb;
+  border-radius: 999px;
+  animation: sc-spin 0.7s linear infinite;
+  vertical-align: -0.1rem;
+  margin-right: 0.25rem;
+}
+
+@keyframes sc-shimmer {
+  0% {
+    background-position: 100% 0;
+  }
+  100% {
+    background-position: -100% 0;
+  }
+}
+
+@keyframes sc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.sc-load-older {
+  padding: 0.5rem 1rem 0;
+  text-align: center;
+}
+
+.sc-load-older button {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.35rem 0.85rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  color: #475569;
+}
+
+.sc-messages {
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.sc-message {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  max-width: min(75%, 28rem);
+  position: relative;
+}
+
+.sc-message--self {
+  align-self: flex-end;
+  align-items: flex-end;
+}
+
+.sc-message--deleted .sc-bubble {
+  opacity: 0.7;
+  font-style: italic;
+}
+
+.sc-sender {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748b;
+  margin-bottom: 0.15rem;
+}
+
+.sc-bubble {
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 1rem 1rem 1rem 0.25rem;
+  padding: 0.65rem 0.9rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.sc-message--self .sc-bubble {
+  background: #2563eb;
+  border-color: #2563eb;
+  color: #fff;
+  border-radius: 1rem 1rem 0.25rem 1rem;
+}
+
+.sc-text {
+  margin: 0;
+}
+
+.sc-text + .sc-text {
+  margin-top: 0.35rem;
+}
+
+.sc-image {
+  display: block;
+  max-width: 100%;
+  max-height: 16rem;
+  border-radius: 0.5rem;
+  margin-top: 0.35rem;
+}
+
+.sc-file {
+  display: inline-block;
+  margin-top: 0.35rem;
+  color: inherit;
+}
+
+.sc-deleted {
+  opacity: 0.85;
+}
+
+.sc-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.sc-message:hover .sc-actions,
+.sc-message:focus-within .sc-actions {
+  opacity: 1;
+}
+
+.sc-react-btn,
+.sc-action-btn {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 999px;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.sc-action-btn--danger {
+  color: #b91c1c;
+}
+
+.sc-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+  margin-top: 0.25rem;
+}
+
+.sc-reaction-pill {
+  border: 1px solid #e2e8f0;
+  background: #f8fafc;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.sc-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  margin-top: 0.2rem;
+}
+
+.sc-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.sc-edited {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.sc-read {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.sc-read--seen {
+  color: #2563eb;
+}
+
+.sc-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  width: 100%;
+}
+
+.sc-edit-form input {
+  border: 1px solid #cbd5e1;
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.65rem;
+}
+
+.sc-edit-actions {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.sc-empty {
+  margin: auto;
+  color: #64748b;
+  text-align: center;
+  padding: 1rem;
+}
+
+.sc-empty--hero {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sc-empty-title {
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+.sc-empty-hint {
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.sc-error {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  color: #b91c1c;
+  font-size: 0.85rem;
+}
