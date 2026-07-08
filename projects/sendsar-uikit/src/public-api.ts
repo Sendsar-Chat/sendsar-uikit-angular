@@ -8,3 +8,4 @@ export * from './lib/components/sendsar-chat-shell/sendsar-chat-shell.component'
 export * from './lib/components/sendsar-conversation-list/sendsar-conversation-list.component';
 export * from './lib/components/sendsar-message-list/sendsar-message-list.component';
 export * from './lib/components/sendsar-composer/sendsar-composer.component';
+export * from './lib/components/sendsar-room-info/sendsar-room-info.component';

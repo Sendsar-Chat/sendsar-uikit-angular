@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, inject, signal } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   formatTypingLabel,
@@ -38,6 +38,14 @@ export class SendsarConversationListComponent implements OnInit {
   /** Background refresh — keep list visible, spin refresh icon. */
   readonly refreshing = signal(false);
   readonly error = signal<string | null>(null);
+  readonly searchQuery = signal('');
+
+  readonly filteredRooms = computed(() => {
+    const query = this.searchQuery().trim().toLowerCase();
+    const list = this.rooms();
+    if (!query) return list;
+    return list.filter((room) => this.roomLabel(room).toLowerCase().includes(query));
+  });
 
   readonly skeletonRows = [0, 1, 2, 3, 4];
 
@@ -126,6 +134,11 @@ export class SendsarConversationListComponent implements OnInit {
 
   unreadCount(room: RoomSummary): number {
     return room.unreadCount ?? 0;
+  }
+
+  onSearchInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.searchQuery.set(value);
   }
 
   private async waitForSessionAndLoad(): Promise<void> {

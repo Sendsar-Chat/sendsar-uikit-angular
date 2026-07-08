@@ -34,6 +34,9 @@
         <p class="sc-empty-hint">Say hello — try text, an image URL, or a reaction.</p>
       </div>
     } @else {
+      <div class="sc-date-separator">
+        <span>Today</span>
+      </div>
       <div class="sc-messages">
         @for (message of messages(); track message.id) {
           @if (!message.deletedHidden) {
@@ -42,76 +45,84 @@
               [class.sc-message--self]="isSelf(message)"
               [class.sc-message--deleted]="message.deletedAt"
             >
-              @if (isGroup && !isSelf(message)) {
-                <span class="sc-sender">{{ senderName(message) }}</span>
-              }
+              <span class="sc-avatar" [class.sc-avatar--self]="isSelf(message)">
+                {{ isSelf(message) ? selfInitials() : avatarInitials(message) }}
+              </span>
 
-              @if (editingId() === message.id) {
-                <form class="sc-edit-form" (ngSubmit)="saveEdit(message)">
-                  <input type="text" [(ngModel)]="editDraft" name="editDraft" />
-                  <div class="sc-edit-actions">
-                    <button type="submit">Save</button>
-                    <button type="button" (click)="cancelEdit()">Cancel</button>
-                  </div>
-                </form>
-              } @else {
-                <div class="sc-bubble">
-                  @if (message.deletedAt) {
-                    <span class="sc-deleted">{{ preview(message) }}</span>
-                  } @else {
-                    @for (part of textParts(message.parts); track $index) {
-                      <p class="sc-text">{{ part.text }}</p>
-                    }
-                    @for (part of attachmentParts(message.parts); track $index) {
-                      @if (isImagePart(part)) {
-                        <a [href]="part.url" target="_blank" rel="noopener noreferrer">
-                          <img class="sc-image" [src]="part.url" [alt]="part.filename ?? 'Image'" loading="lazy" />
-                        </a>
+              <div class="sc-message-body">
+                @if (editingId() === message.id) {
+                  <form class="sc-edit-form" (ngSubmit)="saveEdit(message)">
+                    <input type="text" [(ngModel)]="editDraft" name="editDraft" />
+                    <div class="sc-edit-actions">
+                      <button type="submit">Save</button>
+                      <button type="button" (click)="cancelEdit()">Cancel</button>
+                    </div>
+                  </form>
+                } @else {
+                  <div class="sc-bubble">
+                    <div class="sc-bubble-content">
+                      @if (message.deletedAt) {
+                        <span class="sc-deleted">{{ preview(message) }}</span>
                       } @else {
-                        <a class="sc-file" [href]="part.url" target="_blank" rel="noopener noreferrer">
-                          📎 {{ part.filename ?? 'Download file' }}
-                        </a>
+                        @for (part of textParts(message.parts); track $index) {
+                          <p class="sc-text">{{ part.text }}</p>
+                        }
+                        @for (part of attachmentParts(message.parts); track $index) {
+                          @if (isImagePart(part)) {
+                            <a [href]="part.url" target="_blank" rel="noopener noreferrer">
+                              <img class="sc-image" [src]="part.url" [alt]="part.filename ?? 'Image'" loading="lazy" />
+                            </a>
+                          } @else {
+                            <a class="sc-file" [href]="part.url" target="_blank" rel="noopener noreferrer">
+                              📎 {{ part.filename ?? 'Download file' }}
+                            </a>
+                          }
+                        }
                       }
-                    }
+                    </div>
+
+                    <div class="sc-bubble-footer">
+                      <time class="sc-time">{{ message.createdAt | date: 'HH:mm' }}</time>
+                      @if (message.editedAt) {
+                        <span class="sc-edited">edited</span>
+                      }
+                      @if (isSelf(message) && !message.deletedAt) {
+                        <span
+                          class="sc-read"
+                          [class.sc-read--seen]="isRead(message)"
+                          [title]="isRead(message) ? 'Seen' : 'Sent'"
+                        >
+                          {{ isRead(message) ? '✓✓' : '✓' }}
+                        </span>
+                      }
+                    </div>
+                  </div>
+
+                  @if (!message.deletedAt) {
+                    <div class="sc-actions">
+                      @for (emoji of quickReactions; track emoji) {
+                        <button type="button" class="sc-react-btn" (click)="react(message, emoji)" [title]="'React with ' + emoji">
+                          {{ emoji }}
+                        </button>
+                      }
+                      @if (isSelf(message)) {
+                        <button type="button" class="sc-action-btn" (click)="startEdit(message)">Edit</button>
+                        <button type="button" class="sc-action-btn sc-action-btn--danger" (click)="deleteMessage(message)">
+                          Delete
+                        </button>
+                      }
+                    </div>
                   }
-                </div>
 
-                @if (!message.deletedAt) {
-                  <div class="sc-actions">
-                    @for (emoji of quickReactions; track emoji) {
-                      <button type="button" class="sc-react-btn" (click)="react(message, emoji)" [title]="'React with ' + emoji">
-                        {{ emoji }}
-                      </button>
-                    }
-                    @if (isSelf(message)) {
-                      <button type="button" class="sc-action-btn" (click)="startEdit(message)">Edit</button>
-                      <button type="button" class="sc-action-btn sc-action-btn--danger" (click)="deleteMessage(message)">
-                        Delete
-                      </button>
-                    }
-                  </div>
-                }
-
-                @if (reactionSummary(message).length > 0) {
-                  <div class="sc-reactions">
-                    @for (r of reactionSummary(message); track r.emoji) {
-                      <button type="button" class="sc-reaction-pill" (click)="react(message, r.emoji)">
-                        {{ r.emoji }} {{ r.count }}
-                      </button>
-                    }
-                  </div>
-                }
-              }
-
-              <div class="sc-meta">
-                <time class="sc-time">{{ message.createdAt | date: 'shortTime' }}</time>
-                @if (message.editedAt) {
-                  <span class="sc-edited">edited</span>
-                }
-                @if (isSelf(message) && !message.deletedAt) {
-                  <span class="sc-read" [class.sc-read--seen]="isRead(message)" [title]="isRead(message) ? 'Seen' : 'Sent'">
-                    {{ isRead(message) ? '✓✓' : '✓' }}
-                  </span>
+                  @if (reactionSummary(message).length > 0) {
+                    <div class="sc-reactions">
+                      @for (r of reactionSummary(message); track r.emoji) {
+                        <button type="button" class="sc-reaction-pill" (click)="react(message, r.emoji)">
+                          {{ r.emoji }} {{ r.count }}
+                        </button>
+                      }
+                    </div>
+                  }
                 }
               </div>
             </article>

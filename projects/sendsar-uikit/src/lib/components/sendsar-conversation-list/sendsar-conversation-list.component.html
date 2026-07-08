@@ -1,5 +1,16 @@
 <header class="sc-panel-header">
-  <h2>Conversations</h2>
+  <label class="sc-search">
+    <svg class="sc-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Zm0-2a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm8.1 2.4-3.9-3.9 1.4-1.4 3.9 3.9-1.4 1.4Z"/>
+    </svg>
+    <input
+      type="search"
+      placeholder="Search"
+      [value]="searchQuery()"
+      (input)="onSearchInput($event)"
+      autocomplete="off"
+    />
+  </label>
   <button
     type="button"
     class="sc-icon-btn"
@@ -7,6 +18,7 @@
     [disabled]="refreshing() || initialLoad()"
     (click)="reload()"
     title="Refresh"
+    aria-label="Refresh conversations"
   >
     ↻
   </button>
@@ -38,9 +50,14 @@
     <p class="sc-state-title">No conversations yet</p>
     <p class="sc-state-hint">Start a new chat to begin messaging.</p>
   </div>
+} @else if (filteredRooms().length === 0) {
+  <div class="sc-state">
+    <p class="sc-state-title">No matches</p>
+    <p class="sc-state-hint">Try a different search term.</p>
+  </div>
 } @else {
   <ul class="sc-room-list" [class.sc-room-list--dim]="refreshing()">
-    @for (room of rooms(); track room.id) {
+    @for (room of filteredRooms(); track room.id) {
       <li>
         <button
           type="button"

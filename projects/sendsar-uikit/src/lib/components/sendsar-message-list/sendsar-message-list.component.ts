@@ -26,7 +26,7 @@ import {
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { fileParts, isImagePart, messagePreview } from '../../utils/message-parts';
-import { displayNameFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
+import { displayNameFor, initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '🎉'] as const;
 
@@ -92,6 +92,16 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
 
   senderName(message: Message): string {
     return displayNameFor(message.senderId, userDirectoryMap(this.users));
+  }
+
+  avatarInitials(message: Message): string {
+    return initialsFor(this.senderName(message));
+  }
+
+  selfInitials(): string {
+    const userId = this.session.session?.chatUserId;
+    if (!userId) return '?';
+    return initialsFor(displayNameFor(userId, userDirectoryMap(this.users)));
   }
 
   isRead(message: Message): boolean {

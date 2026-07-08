@@ -1,0 +1,85 @@
+@if (room; as activeRoom) {
+  <div class="sc-info">
+    <button type="button" class="sc-info-close" (click)="onClose()" aria-label="Close panel">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.4 6.4 12 12m5.6-5.6L12 12m0 0-5.6 5.6M12 12l5.6 5.6"/>
+      </svg>
+    </button>
+
+    <section class="sc-info-profile">
+      <span class="sc-info-avatar">{{ avatarInitials() }}</span>
+      <h2 class="sc-info-title">{{ title }}</h2>
+      @if (isGroup()) {
+        <p class="sc-info-subtitle">{{ memberCount() }} members</p>
+        <p class="sc-info-desc">Group conversation</p>
+      } @else if (isDm()) {
+        @if (visibleMembers()[0]; as peer) {
+          <p class="sc-info-subtitle">
+            {{ isOnline(peer.id) ? 'Online' : 'Offline' }}
+          </p>
+        }
+        <p class="sc-info-desc">Direct message</p>
+      }
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Members</h3>
+        @if (visibleMembers().length > 5) {
+          <button type="button" class="sc-info-link">See all</button>
+        }
+      </header>
+      @if (previewMembers().length > 0) {
+        <div class="sc-member-row">
+          @for (member of previewMembers(); track member.id) {
+            <span
+              class="sc-member-avatar"
+              [class.sc-member-avatar--online]="isOnline(member.id)"
+              [title]="member.displayName"
+            >
+              {{ memberInitials(member) }}
+            </span>
+          }
+          @if (overflowMemberCount() > 0) {
+            <span class="sc-member-overflow">+{{ overflowMemberCount() }}</span>
+          }
+        </div>
+      } @else {
+        <p class="sc-info-empty">No members to show</p>
+      }
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Photos and videos</h3>
+        <button type="button" class="sc-info-link">See all</button>
+      </header>
+      <div class="sc-media-grid">
+        @for (slot of [0, 1, 2, 3]; track slot) {
+          <div class="sc-media-slot" aria-hidden="true"></div>
+        }
+      </div>
+      <p class="sc-info-empty">Shared media will appear here</p>
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Shared files</h3>
+        <button type="button" class="sc-info-link">See all</button>
+      </header>
+      <p class="sc-info-empty">No shared files yet</p>
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Shared links</h3>
+        <button type="button" class="sc-info-link">See all</button>
+      </header>
+      <p class="sc-info-empty">No shared links yet</p>
+    </section>
+  </div>
+} @else {
+  <div class="sc-info sc-info--empty">
+    <p>Select a conversation to view details</p>
+  </div>
+}

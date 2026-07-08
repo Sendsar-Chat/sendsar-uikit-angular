@@ -21,8 +21,9 @@ import {
 import { SendsarComposerComponent } from '../sendsar-composer/sendsar-composer.component';
 import { SendsarConversationListComponent } from '../sendsar-conversation-list/sendsar-conversation-list.component';
 import { SendsarMessageListComponent } from '../sendsar-message-list/sendsar-message-list.component';
+import { SendsarRoomInfoComponent } from '../sendsar-room-info/sendsar-room-info.component';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
-import { isDirectMessage, isGroupRoom, resolveRoomLabel } from '../../utils/room-label';
+import { isDirectMessage, isGroupRoom, parseDmPeerId, resolveRoomLabel } from '../../utils/room-label';
 import { initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
 
 @Component({
@@ -33,6 +34,7 @@ import { initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../ut
     SendsarConversationListComponent,
     SendsarMessageListComponent,
     SendsarComposerComponent,
+    SendsarRoomInfoComponent,
   ],
   templateUrl: './sendsar-chat-shell.component.html',
   styleUrl: './sendsar-chat-shell.component.css',
@@ -50,6 +52,7 @@ export class SendsarChatShellComponent implements OnInit {
   readonly typingByRoom = signal<TypingByRoom>({});
   readonly onlineUserIds = signal<ReadonlySet<string>>(new Set());
   readonly mobileShowThread = signal(false);
+  readonly showInfoPanel = signal(true);
 
   private realtimeWired = false;
   private presenceTracker: ReturnType<typeof createTenantPresenceTracker> | null = null;
@@ -69,6 +72,11 @@ export class SendsarChatShellComponent implements OnInit {
   onRoomSelect(room: RoomSummary): void {
     this.selectedRoom.set(room);
     this.mobileShowThread.set(true);
+    this.showInfoPanel.set(true);
+  }
+
+  closeInfoPanel(): void {
+    this.showInfoPanel.set(false);
   }
 
   backToList(): void {
@@ -97,6 +105,7 @@ export class SendsarChatShellComponent implements OnInit {
     if (room) {
       this.selectedRoom.set(room);
       this.mobileShowThread.set(true);
+      this.showInfoPanel.set(true);
       return;
     }
 
@@ -111,6 +120,7 @@ export class SendsarChatShellComponent implements OnInit {
       createdAt: new Date().toISOString(),
     });
     this.mobileShowThread.set(true);
+    this.showInfoPanel.set(true);
     void this.conversationList?.reload();
   }
 
@@ -124,6 +134,33 @@ export class SendsarChatShellComponent implements OnInit {
   roomIsGroup(): boolean {
     const room = this.selectedRoom();
     return room ? isGroupRoom(room) : false;
+  }
+
+  headerSubtitle(): string {
+    const room = this.selectedRoom();
+    const selfId = this.session.session?.chatUserId ?? '';
+    if (!room) return '';
+
+    if (this.typingLabel()) {
+      return this.typingLabel();
+    }
+
+    if (isGroupRoom(room)) {
+      const members = this.users.filter((u) => u.id !== selfId);
+      const memberCount = Math.max(members.length, 1);
+      const online = members.filter((u) => this.onlineUserIds().has(u.id)).length;
+      return `${memberCount} members, ${online} online`;
+    }
+
+    if (isDirectMessage(room)) {
+      const peerId = parseDmPeerId(room.externalId, selfId);
+      if (peerId && this.onlineUserIds().has(peerId)) {
+        return 'Online';
+      }
+      return 'Direct message';
+    }
+
+    return 'Conversation';
   }
 
   headerAvatarInitials(): string {
