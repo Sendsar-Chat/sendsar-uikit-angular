@@ -6,6 +6,8 @@ export interface SendsarConfig {
   /** Fetch session JWT from your backend (never use `sk_*` in the browser). */
   fetchSession: () => Promise<Response | SessionResponse>;
   refreshBeforeExpiryMs?: number;
+  /** Noto animated emoji in message bubbles (default: true). */
+  animatedEmoji?: boolean;
 }
 
 export const SENDSAR_CONFIG = new InjectionToken<SendsarConfig>('SENDSAR_CONFIG');

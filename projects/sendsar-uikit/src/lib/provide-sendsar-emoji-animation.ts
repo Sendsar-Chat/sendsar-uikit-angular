@@ -4,7 +4,8 @@ import player from 'lottie-web';
 
 /**
  * Enable Noto animated emoji in message bubbles.
- * Add to your app providers alongside `provideSendsar()`.
+ * Included automatically by {@link provideSendsar} / {@link provideSendsarCore}.
+ * Call directly only if you manage services yourself.
  *
  * @see https://googlefonts.github.io/noto-emoji-animation/
  */

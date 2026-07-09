@@ -1,11 +1,6 @@
 import { ApplicationConfig, inject, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
-import {
-  provideSendsarEmojiAnimation,
-  SENDSAR_CONFIG,
-  SendsarChatService,
-  SendsarSessionService,
-} from 'sendsar-uikit';
+import { provideSendsarCore, SENDSAR_CONFIG } from 'sendsar-uikit';
 import { routes } from './app.routes';
 import { DemoSessionService } from './demo-session.service';
 import { SendsarIdentityService } from './sendsar-identity.service';
@@ -14,7 +9,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
-    provideSendsarEmojiAnimation(),
+    provideSendsarCore(),
     {
       provide: SENDSAR_CONFIG,
       useFactory: () => {
@@ -31,7 +26,5 @@ export const appConfig: ApplicationConfig = {
         };
       },
     },
-    SendsarSessionService,
-    SendsarChatService,
   ],
 };
