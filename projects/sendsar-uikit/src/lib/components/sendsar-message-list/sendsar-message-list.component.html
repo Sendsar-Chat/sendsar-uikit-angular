@@ -65,7 +65,15 @@
                         <span class="sc-deleted">{{ preview(message) }}</span>
                       } @else {
                         @for (part of textParts(message.parts); track $index) {
-                          <p class="sc-text">{{ part.text }}</p>
+                          <p class="sc-text">
+                            @for (segment of textSegments(part.text!); track $index) {
+                              @if (segment.type === 'emoji') {
+                                <sc-animated-emoji [emoji]="segment.value" />
+                              } @else {
+                                {{ segment.value }}
+                              }
+                            }
+                          </p>
                         }
                         @for (part of attachmentParts(message.parts); track $index) {
                           @if (isImagePart(part)) {

@@ -1,5 +1,6 @@
 :host {
   display: block;
+  flex-shrink: 0;
   border-top: 1px solid #e2e8f0;
   background: #fff;
 }
@@ -68,81 +69,258 @@
   color: #64748b;
 }
 
-.sc-row {
+.sc-box {
+  position: relative;
   display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
   gap: 0.65rem;
-  align-items: center;
-}
-
-.sc-input-wrap {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 0.35rem;
-  min-width: 0;
-  padding: 0.35rem 0.5rem 0.35rem 0.35rem;
-  border: 1px solid #e2e8f0;
-  border-radius: 999px;
-  background: #f8fafc;
-}
-
-.sc-input-wrap:focus-within {
-  border-color: #cbd5e1;
+  padding: 0.85rem 1rem 0.75rem;
+  border: 1.5px solid #2563eb;
+  border-radius: 1rem;
   background: #fff;
 }
 
-.sc-inline-btn {
+.sc-emoji-picker-wrap {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 2.85rem;
+  z-index: 20;
+}
+
+.sc-emoji-picker-wrap {
+  --sc-emoji-picker-bg: #fff;
+  --sc-emoji-picker-border: #e2e8f0;
+  --sc-emoji-picker-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  --sc-emoji-picker-title: #64748b;
+  --sc-emoji-picker-hover: #f1f5f9;
+  --sc-emoji-picker-scrollbar: #cbd5e1;
+  --sc-emoji-picker-scrollbar-hover: #94a3b8;
+  --sc-emoji-picker-scrollbar-edge: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  .sc-emoji-picker-wrap {
+    --sc-emoji-picker-bg: #1f2937;
+    --sc-emoji-picker-border: #444;
+    --sc-emoji-picker-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+    --sc-emoji-picker-title: #cbd5e1;
+    --sc-emoji-picker-hover: #334155;
+    --sc-emoji-picker-scrollbar: #64748b;
+    --sc-emoji-picker-scrollbar-hover: #94a3b8;
+    --sc-emoji-picker-scrollbar-edge: #1f2937;
+  }
+}
+
+.sc-emoji-picker {
+  width: min(20rem, calc(100vw - 3rem));
+  max-height: 22rem;
+  color-scheme: light dark;
+  border: 1px solid var(--sc-emoji-picker-border);
+  border-radius: 0.75rem;
+  background: var(--sc-emoji-picker-bg);
+  box-shadow: var(--sc-emoji-picker-shadow);
+  overflow: auto;
+  padding: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sc-emoji-picker-scrollbar) transparent;
+}
+
+.sc-emoji-picker::-webkit-scrollbar {
+  width: 0.65rem;
+}
+
+.sc-emoji-picker::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sc-emoji-picker::-webkit-scrollbar-thumb {
+  background: var(--sc-emoji-picker-scrollbar);
+  border-radius: 999px;
+  border: 2px solid var(--sc-emoji-picker-scrollbar-edge);
+}
+
+.sc-emoji-picker::-webkit-scrollbar-thumb:hover {
+  background: var(--sc-emoji-picker-scrollbar-hover);
+}
+
+.sc-emoji-group + .sc-emoji-group {
+  margin-top: 0.75rem;
+}
+
+.sc-emoji-group-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sc-emoji-picker-title);
+}
+
+.sc-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.sc-emoji-option {
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  padding: 0.45rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.sc-emoji-option:hover {
+  background: var(--sc-emoji-picker-hover);
+}
+
+.sc-message-input {
+  width: 100%;
+  height: auto;
+  min-height: 1.75rem;
+  max-height: 8rem;
+  border: none;
+  background: transparent;
+  padding: 0;
+  font-size: 0.95rem;
+  line-height: 1.45;
+  color: #334155;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  font-family: inherit;
+}
+
+.sc-message-input::-webkit-scrollbar {
+  display: none;
+}
+
+.sc-message-input::placeholder {
+  color: #94a3b8;
+}
+
+.sc-message-input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.sc-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.sc-toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.sc-plus-btn {
+  flex-shrink: 0;
+  width: 2rem;
+  height: 2rem;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.45rem;
+  background: #f1f5f9;
+  color: #64748b;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-plus-btn:hover {
+  background: #e8edf3;
+  color: #475569;
+}
+
+.sc-plus-btn .material-icons {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+.sc-tool-btn .material-icons {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.sc-send-main .material-icons {
+  font-size: 1.05rem;
+  line-height: 1;
+  margin-left: 0.1rem;
+}
+
+.sc-send-menu .material-icons {
+  font-size: 1rem;
+  line-height: 1;
+}
+.sc-tool-btn {
   flex-shrink: 0;
   border: none;
   background: transparent;
   width: 2rem;
   height: 2rem;
-  border-radius: 999px;
+  border-radius: 0.35rem;
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: #94a3b8;
-}
-
-.sc-inline-btn:hover {
   color: #64748b;
-  background: #f1f5f9;
+  padding: 0;
 }
 
-.sc-inline-btn svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  fill: currentcolor;
+.sc-tool-btn:hover {
+  color: #334155;
+  background: #f8fafc;
 }
 
-.sc-input-wrap input[type='text'] {
-  flex: 1;
-  min-width: 0;
+.sc-tool-btn--active {
+  color: #2563eb;
+  background: #eff6ff;
+}
+
+.sc-send-split {
+  display: flex;
+  align-items: stretch;
+  flex-shrink: 0;
+  border-radius: 0.5rem;
+  overflow: hidden;
+  background: #2563eb;
+}
+
+.sc-send-split--disabled {
+  opacity: 0.5;
+}
+
+.sc-send-main,
+.sc-send-menu {
   border: none;
   background: transparent;
-  padding: 0.45rem 0.25rem;
-  font-size: 0.95rem;
-  outline: none;
-}
-
-.sc-send-btn {
-  flex-shrink: 0;
-  border: none;
-  background: #2563eb;
   color: #fff;
-  border-radius: 999px;
-  width: 2.75rem;
-  height: 2.75rem;
+  cursor: pointer;
   display: grid;
   place-items: center;
-  cursor: pointer;
+  padding: 0;
 }
 
-.sc-send-btn svg {
-  width: 1.1rem;
-  height: 1.1rem;
-  fill: currentcolor;
-  margin-left: 0.1rem;
+.sc-send-main {
+  width: 2.5rem;
+  height: 2.25rem;
+}
+
+.sc-send-menu {
+  width: 1.75rem;
+  height: 2.25rem;
+  border-left: 1px solid rgb(255 255 255 / 35%);
+}
+
+.sc-send-main:disabled,
+.sc-send-menu:disabled {
+  cursor: not-allowed;
 }
 
 .sc-send-spin {
@@ -158,11 +336,6 @@
   to {
     transform: rotate(360deg);
   }
-}
-
-.sc-send-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
 }
 
 .sc-error {

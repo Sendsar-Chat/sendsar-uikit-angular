@@ -26,14 +26,16 @@ import {
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { fileParts, isImagePart, messagePreview } from '../../utils/message-parts';
+import { segmentTextWithEmoji, type TextSegment } from '../../utils/emoji-segments';
 import { displayNameFor, initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
+import { SendsarAnimatedEmojiComponent } from '../sendsar-animated-emoji/sendsar-animated-emoji.component';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '🎉'] as const;
 
 @Component({
   selector: 'sc-message-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, SendsarAnimatedEmojiComponent],
   templateUrl: './sendsar-message-list.component.html',
   styleUrl: './sendsar-message-list.component.css',
 })
@@ -79,6 +81,10 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
 
   textParts(parts: MessagePart[]): MessagePart[] {
     return parts.filter((p) => p.type === 'text' && p.text);
+  }
+
+  textSegments(text: string): TextSegment[] {
+    return segmentTextWithEmoji(text);
   }
 
   attachmentParts(parts: MessagePart[]): MessagePart[] {

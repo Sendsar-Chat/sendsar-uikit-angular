@@ -9,9 +9,13 @@
     "@sendsar/chat-sdk-javascript": ">=0.1.0"
   },
   "dependencies": {
+    "lottie-web": "^5.13.0",
+    "ngx-lottie": "^13.0.0",
     "tslib": "^2.3.0"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sendsar-Chat/sendsar-uikit-angular.git"

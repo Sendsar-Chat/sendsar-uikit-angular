@@ -1,6 +1,7 @@
 import { ApplicationConfig, inject, provideZoneChangeDetection } from '@angular/core';
 import { provideRouter } from '@angular/router';
 import {
+  provideSendsarEmojiAnimation,
   SENDSAR_CONFIG,
   SendsarChatService,
   SendsarSessionService,
@@ -13,6 +14,7 @@ export const appConfig: ApplicationConfig = {
   providers: [
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter(routes),
+    provideSendsarEmojiAnimation(),
     {
       provide: SENDSAR_CONFIG,
       useFactory: () => {

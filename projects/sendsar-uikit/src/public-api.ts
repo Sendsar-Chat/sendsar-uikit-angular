@@ -9,3 +9,5 @@ export * from './lib/components/sendsar-conversation-list/sendsar-conversation-l
 export * from './lib/components/sendsar-message-list/sendsar-message-list.component';
 export * from './lib/components/sendsar-composer/sendsar-composer.component';
 export * from './lib/components/sendsar-room-info/sendsar-room-info.component';
+export * from './lib/components/sendsar-animated-emoji/sendsar-animated-emoji.component';
+export * from './lib/provide-sendsar-emoji-animation';

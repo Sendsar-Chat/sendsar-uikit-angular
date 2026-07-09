@@ -64,11 +64,13 @@
               }
             ],
             "styles": [
-              "projects/sample-app/src/styles.css"
+              "projects/sample-app/src/styles.css",
+              "projects/sendsar-uikit/src/styles/sendsar-uikit.css"
             ],
             "scripts": [],
             "allowedCommonJsDependencies": [
-              "@sendsar/protocol"
+              "@sendsar/protocol",
+              "lottie-web"
             ]
           },
           "configurations": {
@@ -125,7 +127,8 @@
               }
             ],
             "styles": [
-              "projects/sample-app/src/styles.css"
+              "projects/sample-app/src/styles.css",
+              "projects/sendsar-uikit/src/styles/sendsar-uikit.css"
             ],
             "scripts": []
           }
