@@ -6,7 +6,7 @@
     "@angular/common": "^19.2.0",
     "@angular/core": "^19.2.0",
     "@angular/forms": "^19.2.0",
-    "@sendsar/chat-sdk-javascript": ">=0.1.0"
+    "@sendsar/chat-sdk-javascript": "^0.2.0"
   },
   "dependencies": {
     "lottie-web": "^5.13.0",

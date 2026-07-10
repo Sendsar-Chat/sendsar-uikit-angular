@@ -1,30 +1,4 @@
 <form class="sc-composer" (ngSubmit)="submit()">
-  @if (showAttach()) {
-    <div class="sc-attach-panel">
-      <label class="sc-attach-label">
-        Image / file URL
-        <input
-          type="url"
-          name="attachUrl"
-          [(ngModel)]="attachUrl"
-          placeholder="https://example.com/photo.jpg"
-          [disabled]="sending() || !!pendingFile()"
-        />
-      </label>
-      <label class="sc-file-btn">
-        Upload image
-        <input type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
-      </label>
-      @if (pendingFile(); as file) {
-        <div class="sc-pending">
-          <img [src]="file.url" alt="" class="sc-pending-thumb" />
-          <span>{{ file.filename }}</span>
-          <button type="button" (click)="clearAttachment()">×</button>
-        </div>
-      }
-    </div>
-  }
-
   <div class="sc-box">
     <textarea
       #messageInput
@@ -68,6 +42,14 @@
       </div>
     }
 
+    <input
+      #fileInput
+      type="file"
+      hidden
+      [disabled]="sending()"
+      (change)="onFileSelected($event)"
+    />
+
     <div class="sc-toolbar">
       <div class="sc-toolbar-left">
         <button
@@ -81,28 +63,33 @@
         >
           <span class="material-icons" aria-hidden="true">mood</span>
         </button>
+
         <button
           type="button"
           class="sc-tool-btn"
           title="Attach"
-          (click)="toggleAttach()"
+          (click)="openFilePicker()"
           aria-label="Attach file"
+          [disabled]="sending()"
         >
           <span class="material-icons" aria-hidden="true">attach_file</span>
         </button>
+
         <button type="button" class="sc-tool-btn" title="Voice message" aria-label="Voice message">
           <span class="material-icons" aria-hidden="true">mic</span>
         </button>
+
         <button type="button" class="sc-tool-btn" title="Video message" aria-label="Video message">
           <span class="material-icons" aria-hidden="true">videocam</span>
         </button>
+
       </div>
 
-      <div class="sc-send-split" [class.sc-send-split--disabled]="sending() || (!text.trim() && !attachUrl.trim() && !pendingFile())">
+      <div class="sc-send-split" [class.sc-send-split--disabled]="sending() || !text.trim()">
         <button
           type="submit"
           class="sc-send-main"
-          [disabled]="sending() || (!text.trim() && !attachUrl.trim() && !pendingFile())"
+          [disabled]="sending() || !text.trim()"
           aria-label="Send message"
         >
           @if (sending()) {

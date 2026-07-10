@@ -7,6 +7,7 @@ import type {
   SendMessageParams,
   ToggleReactionParams,
   UpdateMessageParams,
+  UploadFileParams,
 } from '@sendsar/chat-sdk-javascript';
 import { SendsarSessionService } from './sendsar-session.service';
 
@@ -48,5 +49,16 @@ export class SendsarChatService {
     params: ToggleReactionParams,
   ): Promise<Message> {
     return this.requireClient().toggleReaction(roomId, messageId, params);
+  }
+
+  sendFileMessage(
+    roomId: string,
+    params: UploadFileParams & {
+      clientMessageId?: string;
+      parentMessageId?: string;
+      senderId?: string;
+    },
+  ): Promise<Message> {
+    return this.requireClient().sendFileMessage(roomId, params);
   }
 }
