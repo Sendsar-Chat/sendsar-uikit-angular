@@ -1,5 +1,71 @@
 <form class="sc-composer" (ngSubmit)="submit()">
   <div class="sc-box">
+    @if (pendingVoice(); as voice) {
+      <div class="sc-voice-preview">
+        <button
+          type="button"
+          class="sc-voice-preview-play"
+          [attr.aria-label]="voicePlaying() ? 'Pause voice message' : 'Play voice message'"
+          [disabled]="sending() || recording()"
+          (click)="toggleVoicePreview()"
+        >
+          <span class="material-icons" aria-hidden="true">{{ voicePlaying() ? 'pause' : 'play_arrow' }}</span>
+        </button>
+
+        <div class="sc-voice-preview-body">
+          <div
+            class="sc-voice-preview-wave"
+            role="group"
+            aria-label="Voice message waveform"
+            [style.--sc-wave-bars]="voice.waveform.length"
+          >
+            @for (bar of voice.waveform; track $index) {
+              <button
+                type="button"
+                class="sc-voice-preview-bar-btn"
+                title="Play from here"
+                [attr.aria-label]="'Play from ' + formatVoiceDuration(seekSecondsForBar($index, voice))"
+                [disabled]="sending() || recording()"
+                (click)="seekVoicePreview($index, voice)"
+              >
+                <span
+                  class="sc-voice-preview-bar"
+                  [class.sc-voice-preview-bar--active]="isVoiceBarActive($index, voice)"
+                  [class.sc-voice-preview-bar--inactive]="!isVoiceBarActive($index, voice)"
+                  [style.height.%]="bar * 100"
+                ></span>
+              </button>
+            }
+          </div>
+          <div class="sc-voice-preview-meta">
+            <span class="sc-voice-preview-time">
+              {{ formatVoiceDuration(voicePreviewDuration(voice)) }}
+              <span class="sc-voice-preview-dot" aria-hidden="true"></span>
+            </span>
+            <span class="sc-voice-preview-stamp">{{ formatVoiceTimestamp(voice.recordedAt) }}</span>
+          </div>
+        </div>
+
+        <button
+            type="button"
+            class="sc-voice-preview-remove"
+            title="Remove voice message"
+            aria-label="Remove voice message"
+            [disabled]="sending() || recording()"
+            (click)="removePendingVoice()"
+        >
+            <span class="material-icons" aria-hidden="true">close</span>
+        </button>
+        <audio
+          #voicePreviewAudio
+          class="sc-voice-preview-audio"
+          [src]="voice.previewUrl"
+          (ended)="onVoicePreviewEnded()"
+          (timeupdate)="onVoicePreviewTimeUpdate()"
+        ></audio>
+      </div>
+    }
+
     <textarea
       #messageInput
       class="sc-message-input"
@@ -46,9 +112,16 @@
       #fileInput
       type="file"
       hidden
-      [disabled]="sending()"
+      [disabled]="sending() || recording()"
       (change)="onFileSelected($event)"
     />
+
+    @if (recording()) {
+      <div class="sc-voice-recording" aria-live="polite">
+        <span class="sc-voice-recording-dot" aria-hidden="true"></span>
+        <span>Recording {{ recordingSeconds() }}s — tap mic to stop</span>
+      </div>
+    }
 
     <div class="sc-toolbar">
       <div class="sc-toolbar-left">
@@ -75,7 +148,16 @@
           <span class="material-icons" aria-hidden="true">attach_file</span>
         </button>
 
-        <button type="button" class="sc-tool-btn" title="Voice message" aria-label="Voice message">
+        <button
+          type="button"
+          class="sc-tool-btn"
+          title="Voice message"
+          aria-label="Voice message"
+          [class.sc-tool-btn--active]="recording()"
+          [attr.aria-pressed]="recording()"
+          [disabled]="sending()"
+          (click)="voiceMessage()"
+        >
           <span class="material-icons" aria-hidden="true">mic</span>
         </button>
 
@@ -85,11 +167,11 @@
 
       </div>
 
-      <div class="sc-send-split" [class.sc-send-split--disabled]="sending() || !text.trim()">
+      <div class="sc-send-split" [class.sc-send-split--disabled]="sending() || recording() || (!text.trim() && !pendingVoice())">
         <button
           type="submit"
           class="sc-send-main"
-          [disabled]="sending() || !text.trim()"
+          [disabled]="sending() || recording() || (!text.trim() && !pendingVoice())"
           aria-label="Send message"
         >
           @if (sending()) {
