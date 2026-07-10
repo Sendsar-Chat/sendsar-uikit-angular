@@ -1,0 +1,12 @@
+@if (voice(); as voiceData) {
+  <sc-voice-preview [voice]="voiceData" [removable]="false" />
+} @else if (loading()) {
+  <div class="sc-voice-message-loading" aria-busy="true" aria-label="Loading voice message">
+    <span class="sc-voice-message-loading-dot" aria-hidden="true"></span>
+    <span>Loading voice message…</span>
+  </div>
+} @else if (failed()) {
+  <a class="sc-voice-message-fallback" [href]="url" target="_blank" rel="noopener noreferrer">
+    Play voice message
+  </a>
+}

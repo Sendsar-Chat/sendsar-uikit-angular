@@ -1,69 +1,11 @@
 <form class="sc-composer" (ngSubmit)="submit()">
   <div class="sc-box">
     @if (pendingVoice(); as voice) {
-      <div class="sc-voice-preview">
-        <button
-          type="button"
-          class="sc-voice-preview-play"
-          [attr.aria-label]="voicePlaying() ? 'Pause voice message' : 'Play voice message'"
-          [disabled]="sending() || recording()"
-          (click)="toggleVoicePreview()"
-        >
-          <span class="material-icons" aria-hidden="true">{{ voicePlaying() ? 'pause' : 'play_arrow' }}</span>
-        </button>
-
-        <div class="sc-voice-preview-body">
-          <div
-            class="sc-voice-preview-wave"
-            role="group"
-            aria-label="Voice message waveform"
-            [style.--sc-wave-bars]="voice.waveform.length"
-          >
-            @for (bar of voice.waveform; track $index) {
-              <button
-                type="button"
-                class="sc-voice-preview-bar-btn"
-                title="Play from here"
-                [attr.aria-label]="'Play from ' + formatVoiceDuration(seekSecondsForBar($index, voice))"
-                [disabled]="sending() || recording()"
-                (click)="seekVoicePreview($index, voice)"
-              >
-                <span
-                  class="sc-voice-preview-bar"
-                  [class.sc-voice-preview-bar--active]="isVoiceBarActive($index, voice)"
-                  [class.sc-voice-preview-bar--inactive]="!isVoiceBarActive($index, voice)"
-                  [style.height.%]="bar * 100"
-                ></span>
-              </button>
-            }
-          </div>
-          <div class="sc-voice-preview-meta">
-            <span class="sc-voice-preview-time">
-              {{ formatVoiceDuration(voicePreviewDuration(voice)) }}
-              <span class="sc-voice-preview-dot" aria-hidden="true"></span>
-            </span>
-            <span class="sc-voice-preview-stamp">{{ formatVoiceTimestamp(voice.recordedAt) }}</span>
-          </div>
-        </div>
-
-        <button
-            type="button"
-            class="sc-voice-preview-remove"
-            title="Remove voice message"
-            aria-label="Remove voice message"
-            [disabled]="sending() || recording()"
-            (click)="removePendingVoice()"
-        >
-            <span class="material-icons" aria-hidden="true">close</span>
-        </button>
-        <audio
-          #voicePreviewAudio
-          class="sc-voice-preview-audio"
-          [src]="voice.previewUrl"
-          (ended)="onVoicePreviewEnded()"
-          (timeupdate)="onVoicePreviewTimeUpdate()"
-        ></audio>
-      </div>
+      <sc-voice-preview
+        [voice]="voice"
+        [disabled]="sending() || recording()"
+        (removed)="removePendingVoice()"
+      />
     }
 
     <textarea
@@ -80,32 +22,7 @@
     ></textarea>
 
     @if (showEmojiPicker()) {
-      <div
-        class="sc-emoji-picker-wrap"
-        [class.light-mode]="!isSystemDarkMode()"
-        [class.dark-mode]="isSystemDarkMode()"
-        (click)="$event.stopPropagation()"
-      >
-        <div class="sc-emoji-picker" role="dialog" aria-label="Emoji picker">
-          @for (group of emojiGroups; track group.label) {
-            <section class="sc-emoji-group">
-              <p class="sc-emoji-group-title">{{ group.label }}</p>
-              <div class="sc-emoji-grid">
-                @for (emoji of group.emojis; track emoji) {
-                  <button
-                    type="button"
-                    class="sc-emoji-option"
-                    [title]="emoji"
-                    (click)="pickEmoji(emoji)"
-                  >
-                    <sc-animated-emoji [emoji]="emoji" />
-                  </button>
-                }
-              </div>
-            </section>
-          }
-        </div>
-      </div>
+      <sc-emoji-picker (emojiSelected)="pickEmoji($event)" />
     }
 
     <input

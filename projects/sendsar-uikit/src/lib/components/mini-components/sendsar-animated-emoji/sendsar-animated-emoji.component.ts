@@ -1,6 +1,6 @@
 import { Component, computed, effect, input, signal } from '@angular/core';
 import { AnimationOptions, LottieComponent } from 'ngx-lottie';
-import { hasNotoAnimation, notoLottieUrl } from '../../utils/noto-emoji';
+import { hasNotoAnimation, notoLottieUrl } from '../../../utils/noto-emoji';
 
 @Component({
   selector: 'sc-animated-emoji',

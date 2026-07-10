@@ -1,0 +1,92 @@
+:host {
+  position: absolute;
+  left: 0.75rem;
+  bottom: 2.85rem;
+  z-index: 20;
+  display: block;
+
+  --sc-emoji-picker-bg: #fff;
+  --sc-emoji-picker-border: #e2e8f0;
+  --sc-emoji-picker-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  --sc-emoji-picker-title: #64748b;
+  --sc-emoji-picker-hover: #f1f5f9;
+  --sc-emoji-picker-scrollbar: #cbd5e1;
+  --sc-emoji-picker-scrollbar-hover: #94a3b8;
+  --sc-emoji-picker-scrollbar-edge: #fff;
+}
+
+@media (prefers-color-scheme: dark) {
+  :host {
+    --sc-emoji-picker-bg: #1f2937;
+    --sc-emoji-picker-border: #444;
+    --sc-emoji-picker-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+    --sc-emoji-picker-title: #cbd5e1;
+    --sc-emoji-picker-hover: #334155;
+    --sc-emoji-picker-scrollbar: #64748b;
+    --sc-emoji-picker-scrollbar-hover: #94a3b8;
+    --sc-emoji-picker-scrollbar-edge: #1f2937;
+  }
+}
+
+.sc-emoji-picker {
+  width: min(20rem, calc(100vw - 3rem));
+  max-height: 22rem;
+  color-scheme: light dark;
+  border: 1px solid var(--sc-emoji-picker-border);
+  border-radius: 0.75rem;
+  background: var(--sc-emoji-picker-bg);
+  box-shadow: var(--sc-emoji-picker-shadow);
+  overflow: auto;
+  padding: 0.75rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--sc-emoji-picker-scrollbar) transparent;
+}
+
+.sc-emoji-picker::-webkit-scrollbar {
+  width: 0.65rem;
+}
+
+.sc-emoji-picker::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sc-emoji-picker::-webkit-scrollbar-thumb {
+  background: var(--sc-emoji-picker-scrollbar);
+  border-radius: 999px;
+  border: 2px solid var(--sc-emoji-picker-scrollbar-edge);
+}
+
+.sc-emoji-picker::-webkit-scrollbar-thumb:hover {
+  background: var(--sc-emoji-picker-scrollbar-hover);
+}
+
+.sc-emoji-group + .sc-emoji-group {
+  margin-top: 0.75rem;
+}
+
+.sc-emoji-group-title {
+  margin: 0 0 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sc-emoji-picker-title);
+}
+
+.sc-emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 0.35rem;
+}
+
+.sc-emoji-option {
+  border: none;
+  background: transparent;
+  border-radius: 0.5rem;
+  padding: 0.45rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.sc-emoji-option:hover {
+  background: var(--sc-emoji-picker-hover);
+}

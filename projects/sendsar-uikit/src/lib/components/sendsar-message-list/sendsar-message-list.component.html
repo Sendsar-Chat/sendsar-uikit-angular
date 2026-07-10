@@ -77,11 +77,21 @@
                         }
                         @for (part of attachmentParts(message.parts); track $index) {
                           @if (isImagePart(part)) {
-                            <a [href]="part.url" target="_blank" rel="noopener noreferrer">
-                              <img class="sc-image" [src]="part.url" [alt]="part.filename ?? 'Image'" loading="lazy" />
+                            <a [href]="filePartUrl(part)" target="_blank" rel="noopener noreferrer">
+                              <img
+                                class="sc-image"
+                                [src]="filePartUrl(part)"
+                                [alt]="part.filename ?? 'Image'"
+                                loading="lazy"
+                              />
                             </a>
+                          } @else if (isAudioPart(part)) {
+                            <sc-voice-message
+                              [url]="filePartUrl(part)!"
+                              [recordedAt]="message.createdAt"
+                            />
                           } @else {
-                            <a class="sc-file" [href]="part.url" target="_blank" rel="noopener noreferrer">
+                            <a class="sc-file" [href]="filePartUrl(part)" target="_blank" rel="noopener noreferrer">
                               📎 {{ part.filename ?? 'Download file' }}
                             </a>
                           }

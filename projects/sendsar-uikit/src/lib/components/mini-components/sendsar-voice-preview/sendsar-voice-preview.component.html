@@ -1,0 +1,68 @@
+<div class="sc-voice-preview">
+  <button
+    type="button"
+    class="sc-voice-preview-play"
+    [attr.aria-label]="playing() ? 'Pause voice message' : 'Play voice message'"
+    [disabled]="disabled"
+    (click)="togglePlayback()"
+  >
+    <span class="material-icons" aria-hidden="true">{{ playing() ? 'pause' : 'play_arrow' }}</span>
+  </button>
+
+  <div class="sc-voice-preview-body">
+    <div
+      class="sc-voice-preview-wave"
+      role="group"
+      aria-label="Voice message waveform"
+      [style.--sc-wave-bars]="voice.waveform.length"
+    >
+      @for (bar of voice.waveform; track $index) {
+        <button
+          type="button"
+          class="sc-voice-preview-bar-btn"
+          title="Play from here"
+          [attr.aria-label]="'Play from ' + formatDuration(seekSecondsForBar($index))"
+          [disabled]="disabled"
+          (click)="seekToBar($index)"
+        >
+          <span
+            class="sc-voice-preview-bar"
+            [class.sc-voice-preview-bar--active]="isBarActive($index)"
+            [class.sc-voice-preview-bar--inactive]="!isBarActive($index)"
+            [style.height.%]="bar * 100"
+          ></span>
+        </button>
+      }
+    </div>
+    <div class="sc-voice-preview-meta">
+      <span class="sc-voice-preview-time">
+        {{ formatDuration(displayDuration()) }}
+        @if (!listened()) {
+          <span class="sc-voice-preview-dot" aria-hidden="true"></span>
+        }
+      </span>
+      <span class="sc-voice-preview-stamp">{{ formatTimestamp(voice.recordedAt) }}</span>
+    </div>
+  </div>
+
+  @if (removable) {
+    <button
+      type="button"
+      class="sc-voice-preview-remove"
+      title="Remove voice message"
+      aria-label="Remove voice message"
+      [disabled]="disabled"
+      (click)="removed.emit()"
+    >
+      <span class="material-icons" aria-hidden="true">close</span>
+    </button>
+  }
+
+  <audio
+    #audioEl
+    class="sc-voice-preview-audio"
+    [src]="voice.previewUrl"
+    (ended)="onEnded()"
+    (timeupdate)="syncPlaybackState()"
+  ></audio>
+</div>

@@ -9,5 +9,10 @@ export * from './lib/components/sendsar-conversation-list/sendsar-conversation-l
 export * from './lib/components/sendsar-message-list/sendsar-message-list.component';
 export * from './lib/components/sendsar-composer/sendsar-composer.component';
 export * from './lib/components/sendsar-room-info/sendsar-room-info.component';
-export * from './lib/components/sendsar-animated-emoji/sendsar-animated-emoji.component';
+export * from './lib/components/mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
+export * from './lib/components/mini-components/sendsar-voice-preview/sendsar-voice-preview.component';
+export * from './lib/components/mini-components/sendsar-voice-message/sendsar-voice-message.component';
+export * from './lib/components/mini-components/sendsar-emoji-picker/sendsar-emoji-picker.component';
+export * from './lib/utils/voice-waveform';
+export * from './lib/utils/emoji-groups';
 export * from './lib/provide-sendsar-emoji-animation';

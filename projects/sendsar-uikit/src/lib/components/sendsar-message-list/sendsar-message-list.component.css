@@ -189,6 +189,13 @@
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  min-width: 0;
+}
+
+.sc-bubble-content sc-voice-message {
+  align-self: stretch;
+  width: 100%;
+  min-width: 12rem;
 }
 
 .sc-sender {

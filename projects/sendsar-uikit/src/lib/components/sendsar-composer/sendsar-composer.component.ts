@@ -13,55 +13,35 @@ import {
   inject,
   signal,
 } from '@angular/core';
+
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComposerTypingController } from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
-import { SendsarAnimatedEmojiComponent } from '../sendsar-animated-emoji/sendsar-animated-emoji.component';
-
-const EMOJI_GROUPS = [
-  {
-    label: 'Popular',
-    emojis: ['👍', '❤️', '😂', '🔥', '🙏', '👏', '😭', '😍', '🎉', '😊', '✨', '🤔'],
-  },
-  {
-    label: 'Smileys',
-    emojis: ['😀', '😁', '😂', '🤣', '😊', '😍', '😘', '😎', '🥳', '😭', '😡', '🤔'],
-  },
-  {
-    label: 'People',
-    emojis: ['🙌', '👋', '👌', '💪', '🤝', '👀', '✅', '❌', '👎', '🙏', '👏', '👍'],
-  },
-  {
-    label: 'Hearts & Symbols',
-    emojis: ['❤️', '💛', '💚', '💙', '💜', '🖤', '🤍', '💯', '⭐', '✨', '🔥', '🎯'],
-  },
-  {
-    label: 'Celebration',
-    emojis: ['🎉', '🥳', '🎊', '🙌', '👏', '🍾', '🏆', '🚀', '🌟', '🎂', '🎁', '🍀'],
-  },
-] as const;
-
-type PendingVoice = {
-  file: File;
-  previewUrl: string;
-  durationSeconds: number;
-  recordedAt: Date;
-  waveform: number[];
-};
-
-const VOICE_WAVEFORM_MIN_BARS = 48;
-const VOICE_WAVEFORM_MAX_BARS = 80;
+import {
+  SendsarVoicePreviewData,
+  buildVoiceWaveform,
+  waveformBarCount,
+} from '../../utils/voice-waveform';
+import { SendsarVoicePreviewComponent } from '../mini-components/sendsar-voice-preview/sendsar-voice-preview.component';
+import { SendsarEmojiPickerComponent } from '../mini-components/sendsar-emoji-picker/sendsar-emoji-picker.component';
 
 @Component({
   selector: 'sc-composer',
   standalone: true,
-  imports: [CommonModule, FormsModule, SendsarAnimatedEmojiComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SendsarVoicePreviewComponent,
+    SendsarEmojiPickerComponent,
+  ],
   templateUrl: './sendsar-composer.component.html',
   styleUrl: './sendsar-composer.component.css',
 })
-export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterViewInit {
+export class SendsarComposerComponent
+  implements OnChanges, OnDestroy, AfterViewInit
+{
   private readonly chat = inject(SendsarChatService);
   private readonly session = inject(SendsarSessionService);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
@@ -70,26 +50,18 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
   private recordingChunks: Blob[] = [];
   private recordingStream: MediaStream | null = null;
   private recordingTimer: ReturnType<typeof setInterval> | null = null;
-  private voiceProgressFrame: number | null = null;
 
   @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
-  @ViewChild('voicePreviewAudio') voicePreviewAudio?: ElementRef<HTMLAudioElement>;
-
   @Input({ required: true }) roomId!: string;
   @Output() readonly sent = new EventEmitter<void>();
-
   text = '';
   readonly showEmojiPicker = signal(false);
   readonly sending = signal(false);
   readonly recording = signal(false);
   readonly recordingSeconds = signal(0);
-  readonly pendingVoice = signal<PendingVoice | null>(null);
-  readonly voicePlaying = signal(false);
-  readonly voicePlaybackSeconds = signal(0);
-  readonly voicePlaybackProgress = signal(0);
+  readonly pendingVoice = signal<SendsarVoicePreviewData | null>(null);
   readonly error = signal<string | null>(null);
-  readonly emojiGroups = EMOJI_GROUPS;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['roomId']) {
@@ -105,7 +77,10 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
       return;
     }
     const target = event.target;
-    if (target instanceof Node && !this.elementRef.nativeElement.contains(target)) {
+    if (
+      target instanceof Node &&
+      !this.elementRef.nativeElement.contains(target)
+    ) {
       this.showEmojiPicker.set(false);
     }
   }
@@ -115,7 +90,6 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
   }
 
   ngOnDestroy(): void {
-    this.stopVoiceProgressLoop();
     this.cancelVoiceRecording();
     this.clearPendingVoice();
     this.typingController?.destroy();
@@ -155,16 +129,18 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
     this.sending.set(true);
     this.error.set(null);
     this.typingController?.stop();
-
     try {
       await this.chat.sendFileMessage(this.roomId, {
         file,
+
         clientMessageId: crypto.randomUUID(),
-        onProgress: (percent) => console.log(`Upload ${percent}%`),
       });
+
       this.sent.emit();
     } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Failed to send file');
+      this.error.set(
+        err instanceof Error ? err.message : 'Failed to send file',
+      );
     } finally {
       this.sending.set(false);
     }
@@ -175,15 +151,14 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
     this.showEmojiPicker.set(false);
   }
 
-  isSystemDarkMode(): boolean {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  }
-
   private insertEmoji(emoji: string): void {
     const textarea = this.messageInput?.nativeElement;
+
     if (!textarea) {
       this.text += emoji;
+
       this.onTextChange();
+
       return;
     }
 
@@ -191,10 +166,10 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
     const end = textarea.selectionEnd ?? this.text.length;
     this.text = `${this.text.slice(0, start)}${emoji}${this.text.slice(end)}`;
     this.onTextChange();
-
     const caret = start + emoji.length;
     queueMicrotask(() => {
       textarea.focus();
+
       textarea.setSelectionRange(caret, caret);
     });
   }
@@ -206,6 +181,7 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
 
     if (this.recording()) {
       await this.stopVoiceRecording();
+
       return;
     }
 
@@ -215,18 +191,17 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
   private async startVoiceRecording(): Promise<void> {
     if (!navigator.mediaDevices?.getUserMedia) {
       this.error.set('Voice recording is not supported in this browser.');
+
       return;
     }
 
     this.showEmojiPicker.set(false);
     this.error.set(null);
     this.clearPendingVoice();
-
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.recordingStream = stream;
       this.recordingChunks = [];
-
       const mimeType = this.pickAudioMimeType();
       this.mediaRecorder = mimeType
         ? new MediaRecorder(stream, { mimeType })
@@ -246,7 +221,10 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
       }, 1000);
     } catch (err) {
       this.cancelVoiceRecording();
-      this.error.set(err instanceof Error ? err.message : 'Microphone access denied');
+
+      this.error.set(
+        err instanceof Error ? err.message : 'Microphone access denied',
+      );
     }
   }
 
@@ -255,9 +233,7 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
     if (!recorder || recorder.state === 'inactive') {
       return;
     }
-
     const durationSeconds = this.recordingSeconds();
-
     if (this.recordingTimer) {
       clearInterval(this.recordingTimer);
       this.recordingTimer = null;
@@ -268,6 +244,7 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
         const type = recorder.mimeType || 'audio/webm';
         resolve(new Blob(this.recordingChunks, { type }));
       };
+
       recorder.onerror = () => reject(new Error('Recording failed'));
       recorder.stop();
     });
@@ -277,11 +254,9 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
     this.recordingChunks = [];
     this.recording.set(false);
     this.recordingSeconds.set(0);
-
     if (blob.size === 0) {
       return;
     }
-
     const extension = blob.type.includes('mp4') ? 'm4a' : 'webm';
     const file = new File([blob], `voice-message-${Date.now()}.${extension}`, {
       type: blob.type,
@@ -289,8 +264,8 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
 
     this.clearPendingVoice();
     const recordedAt = new Date();
-    const barCount = this.waveformBarCount(durationSeconds);
-    const waveform = await this.buildWaveform(blob, barCount);
+    const barCount = waveformBarCount(durationSeconds);
+    const waveform = await buildVoiceWaveform(blob, barCount);
     this.pendingVoice.set({
       file,
       previewUrl: URL.createObjectURL(blob),
@@ -298,162 +273,6 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
       recordedAt,
       waveform,
     });
-  }
-
-  toggleVoicePreview(): void {
-    const audio = this.voicePreviewAudio?.nativeElement;
-    if (!audio) {
-      return;
-    }
-
-    if (this.voicePlaying()) {
-      audio.pause();
-      this.syncVoicePlaybackState();
-      this.voicePlaying.set(false);
-      this.stopVoiceProgressLoop();
-      return;
-    }
-
-    void audio.play().then(() => {
-      this.voicePlaying.set(true);
-      this.startVoiceProgressLoop();
-    });
-  }
-
-  onVoicePreviewEnded(): void {
-    this.voicePlaying.set(false);
-    this.voicePlaybackSeconds.set(0);
-    this.voicePlaybackProgress.set(0);
-    this.stopVoiceProgressLoop();
-  }
-
-  onVoicePreviewTimeUpdate(): void {
-    this.syncVoicePlaybackState();
-  }
-
-  isVoiceBarActive(barIndex: number, voice: PendingVoice): boolean {
-    return barIndex < this.voicePlaybackProgress() * voice.waveform.length;
-  }
-
-  seekSecondsForBar(barIndex: number, voice: PendingVoice): number {
-    return Math.floor(((barIndex + 0.5) / voice.waveform.length) * voice.durationSeconds);
-  }
-
-  seekVoicePreview(barIndex: number, voice: PendingVoice): void {
-    if (this.sending() || this.recording()) {
-      return;
-    }
-
-    const audio = this.voicePreviewAudio?.nativeElement;
-    if (!audio) {
-      return;
-    }
-
-    const duration = audio.duration || voice.durationSeconds;
-    if (duration <= 0) {
-      return;
-    }
-
-    audio.currentTime = ((barIndex + 0.5) / voice.waveform.length) * duration;
-    this.syncVoicePlaybackState();
-
-    if (this.voicePlaying()) {
-      return;
-    }
-
-    void audio.play().then(() => {
-      this.voicePlaying.set(true);
-      this.startVoiceProgressLoop();
-    });
-  }
-
-  private startVoiceProgressLoop(): void {
-    this.stopVoiceProgressLoop();
-
-    const tick = () => {
-      if (!this.voicePlaying()) {
-        return;
-      }
-
-      this.syncVoicePlaybackState();
-      this.voiceProgressFrame = requestAnimationFrame(tick);
-    };
-
-    this.voiceProgressFrame = requestAnimationFrame(tick);
-  }
-
-  private stopVoiceProgressLoop(): void {
-    if (this.voiceProgressFrame !== null) {
-      cancelAnimationFrame(this.voiceProgressFrame);
-      this.voiceProgressFrame = null;
-    }
-  }
-
-  private syncVoicePlaybackState(): void {
-    const audio = this.voicePreviewAudio?.nativeElement;
-    if (!audio) {
-      return;
-    }
-
-    const duration = audio.duration || this.pendingVoice()?.durationSeconds || 0;
-    if (duration <= 0) {
-      return;
-    }
-
-    this.voicePlaybackSeconds.set(Math.floor(audio.currentTime));
-    this.voicePlaybackProgress.set(Math.min(1, audio.currentTime / duration));
-  }
-
-  formatVoiceDuration(totalSeconds: number): string {
-    const minutes = Math.floor(totalSeconds / 60);
-    const seconds = totalSeconds % 60;
-    return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
-  }
-
-  formatVoiceTimestamp(date: Date): string {
-    return date.toLocaleTimeString(undefined, { hour: 'numeric', minute: '2-digit' });
-  }
-
-  voicePreviewDuration(voice: PendingVoice): number {
-    if (this.voicePlaying() || this.voicePlaybackProgress() > 0) {
-      return this.voicePlaybackSeconds();
-    }
-
-    return voice.durationSeconds;
-  }
-
-  private waveformBarCount(durationSeconds: number): number {
-    const scaled = Math.round(42 + durationSeconds * 4.5);
-    return Math.min(VOICE_WAVEFORM_MAX_BARS, Math.max(VOICE_WAVEFORM_MIN_BARS, scaled));
-  }
-
-  private async buildWaveform(blob: Blob, barCount: number): Promise<number[]> {
-    try {
-      const audioContext = new AudioContext();
-      const buffer = await blob.arrayBuffer();
-      const audioBuffer = await audioContext.decodeAudioData(buffer.slice(0));
-      const channel = audioBuffer.getChannelData(0);
-      const samplesPerBar = Math.max(1, Math.floor(channel.length / barCount));
-      const bars: number[] = [];
-
-      for (let i = 0; i < barCount; i++) {
-        let sum = 0;
-        const start = i * samplesPerBar;
-        for (let j = 0; j < samplesPerBar; j++) {
-          sum += Math.abs(channel[start + j] ?? 0);
-        }
-        bars.push(sum / samplesPerBar);
-      }
-
-      const max = Math.max(...bars, 0.01);
-      await audioContext.close();
-      return bars.map((value) => 0.2 + (value / max) * 0.8);
-    } catch {
-      return Array.from({ length: barCount }, (_, index) => {
-        const wave = Math.abs(Math.sin(index * 0.55) * Math.cos(index * 0.18));
-        return 0.25 + wave * 0.75;
-      });
-    }
   }
 
   removePendingVoice(): void {
@@ -465,17 +284,6 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
     if (pending) {
       URL.revokeObjectURL(pending.previewUrl);
     }
-
-    const audio = this.voicePreviewAudio?.nativeElement;
-    audio?.pause();
-    if (audio) {
-      audio.currentTime = 0;
-    }
-
-    this.stopVoiceProgressLoop();
-    this.voicePlaying.set(false);
-    this.voicePlaybackSeconds.set(0);
-    this.voicePlaybackProgress.set(0);
     this.pendingVoice.set(null);
   }
 
@@ -502,24 +310,27 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
   }
 
   private pickAudioMimeType(): string | undefined {
-    const candidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/mp4', 'audio/ogg;codecs=opus'];
+    const candidates = [
+      'audio/webm;codecs=opus',
+      'audio/webm',
+      'audio/mp4',
+      'audio/ogg;codecs=opus',
+    ];
+
     return candidates.find((type) => MediaRecorder.isTypeSupported(type));
   }
 
   async submit(): Promise<void> {
     const body = this.text.trim();
     const voice = this.pendingVoice();
-
     if ((!body && !voice) || this.sending() || this.recording()) {
       return;
     }
-
     this.sending.set(true);
     this.error.set(null);
     this.typingController?.stop();
-
     try {
-      if (voice) {
+      if (voice?.file) {
         await this.chat.sendFileMessage(this.roomId, {
           file: voice.file,
           clientMessageId: crypto.randomUUID(),
@@ -535,7 +346,6 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
         this.text = '';
         queueMicrotask(() => this.resizeTextarea());
       }
-
       this.showEmojiPicker.set(false);
       this.sent.emit();
     } catch (err) {
@@ -550,9 +360,9 @@ export class SendsarComposerComponent implements OnChanges, OnDestroy, AfterView
     if (!textarea) {
       return;
     }
-
     textarea.style.height = 'auto';
-    const maxHeight = Number.parseFloat(getComputedStyle(textarea).maxHeight) || 128;
+    const maxHeight =
+      Number.parseFloat(getComputedStyle(textarea).maxHeight) || 128;
     const nextHeight = Math.min(textarea.scrollHeight, maxHeight);
     textarea.style.height = `${nextHeight}px`;
   }
