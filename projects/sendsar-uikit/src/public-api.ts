@@ -11,6 +11,7 @@ export * from './lib/components/sendsar-composer/sendsar-composer.component';
 export * from './lib/components/sendsar-room-info/sendsar-room-info.component';
 export * from './lib/components/mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
 export * from './lib/components/mini-components/sendsar-voice-preview/sendsar-voice-preview.component';
+export * from './lib/components/mini-components/sendsar-file-preview/sendsar-file-preview.component';
 export * from './lib/components/mini-components/sendsar-voice-message/sendsar-voice-message.component';
 export * from './lib/components/mini-components/sendsar-emoji-picker/sendsar-emoji-picker.component';
 export * from './lib/utils/voice-waveform';

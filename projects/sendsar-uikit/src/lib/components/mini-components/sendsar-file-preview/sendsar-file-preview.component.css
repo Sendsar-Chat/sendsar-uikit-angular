@@ -1,0 +1,110 @@
+.sc-file-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.55rem;
+  border-radius: 0.55rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  max-width: 100%;
+}
+
+a.sc-file-preview {
+  text-decoration: none;
+  color: inherit;
+}
+
+:host(.sc-file-preview--in-message) .sc-file-preview {
+  margin-top: 0.35rem;
+  background: rgb(15 23 42 / 6%);
+  border-color: transparent;
+}
+
+.sc-file-preview--inverted {
+  background: rgb(255 255 255 / 14%);
+  border-color: transparent;
+  color: #fff;
+}
+
+.sc-file-preview--inverted .sc-file-preview-name {
+  color: #fff;
+}
+
+.sc-file-preview-thumb {
+  width: 2.5rem;
+  height: 2.5rem;
+  object-fit: cover;
+  border-radius: 0.35rem;
+  flex-shrink: 0;
+}
+
+.sc-file-preview-thumb-link {
+  display: block;
+  flex-shrink: 0;
+  border-radius: 0.35rem;
+  line-height: 0;
+}
+
+.sc-file-preview-thumb-link:hover .sc-file-preview-thumb {
+  opacity: 0.88;
+}
+
+.sc-file-preview-thumb-link .sc-file-preview-thumb {
+  cursor: pointer;
+}
+
+.sc-file-preview-icon {
+  flex-shrink: 0;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 0.35rem;
+  background: #fff;
+  color: #2563eb;
+  display: grid;
+  place-items: center;
+  font-size: 1.15rem;
+}
+
+.sc-file-preview--inverted .sc-file-preview-icon {
+  background: rgb(255 255 255 / 18%);
+  color: #fff;
+}
+
+.sc-file-preview-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-file-preview-remove {
+  flex-shrink: 0;
+  border: none;
+  background: transparent;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.35rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #94a3b8;
+  padding: 0;
+}
+
+.sc-file-preview-remove:hover:not(:disabled) {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.sc-file-preview-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-file-preview-remove .material-icons {
+  font-size: 1rem;
+}

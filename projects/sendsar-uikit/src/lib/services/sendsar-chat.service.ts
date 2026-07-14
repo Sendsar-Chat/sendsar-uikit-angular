@@ -8,6 +8,7 @@ import type {
   ToggleReactionParams,
   UpdateMessageParams,
   UploadFileParams,
+  UploadFileResult,
 } from '@sendsar/chat-sdk-javascript';
 import { SendsarSessionService } from './sendsar-session.service';
 
@@ -57,8 +58,38 @@ export class SendsarChatService {
       clientMessageId?: string;
       parentMessageId?: string;
       senderId?: string;
+      /** Optional caption sent in the same message as the file part. */
+      text?: string;
     },
   ): Promise<Message> {
-    return this.requireClient().sendFileMessage(roomId, params);
+    const { text, ...fileParams } = params;
+    const caption = text?.trim();
+
+    if (!caption) {
+      return this.requireClient().sendFileMessage(roomId, fileParams);
+    }
+
+    return this.requireClient()
+      .uploadFile({ ...fileParams, roomId })
+      .then((uploaded) =>
+        this.sendMessage(roomId, {
+          parts: [
+            {
+              type: 'file',
+              uploadId: uploaded.uploadId,
+              mediaType: uploaded.mediaType,
+              filename: uploaded.filename,
+            },
+            { type: 'text', text: caption },
+          ],
+          clientMessageId: params.clientMessageId,
+          parentMessageId: params.parentMessageId,
+          senderId: params.senderId,
+        }),
+      );
+  }
+
+  uploadFile(roomId: string, params: UploadFileParams): Promise<UploadFileResult> {
+    return this.requireClient().uploadFile({ ...params, roomId });
   }
 }

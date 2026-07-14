@@ -1,5 +1,13 @@
 <form class="sc-composer" (ngSubmit)="submit()">
   <div class="sc-box">
+    @if (pendingFile(); as attachment) {
+      <sc-file-preview
+        [attachment]="attachment"
+        [disabled]="sending() || recording()"
+        (removed)="removePendingFile()"
+      />
+    }
+
     @if (pendingVoice(); as voice) {
       <sc-voice-preview
         [voice]="voice"
@@ -78,17 +86,25 @@
           <span class="material-icons" aria-hidden="true">mic</span>
         </button>
 
-        <button type="button" class="sc-tool-btn" title="Video message" aria-label="Video message">
-          <span class="material-icons" aria-hidden="true">videocam</span>
+        <button 
+          type="button" 
+          class="sc-tool-btn" 
+          title="Video message" 
+          aria-label="Video message" 
+          (click)="videoCallMessage()">
+            <span class="material-icons" aria-hidden="true">videocam</span>
         </button>
-
+        
       </div>
 
-      <div class="sc-send-split" [class.sc-send-split--disabled]="sending() || recording() || (!text.trim() && !pendingVoice())">
+      <div
+        class="sc-send-split"
+        [class.sc-send-split--disabled]="sending() || recording() || (!text.trim() && !pendingVoice() && !pendingFile())"
+      >
         <button
           type="submit"
           class="sc-send-main"
-          [disabled]="sending() || recording() || (!text.trim() && !pendingVoice())"
+          [disabled]="sending() || recording() || (!text.trim() && !pendingVoice() && !pendingFile())"
           aria-label="Send message"
         >
           @if (sending()) {

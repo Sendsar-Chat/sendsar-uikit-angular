@@ -25,10 +25,11 @@ import {
 } from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
-import { filePartUrl, fileParts, isAudioPart, isImagePart, messagePreview } from '../../utils/message-parts';
+import { filePartUrl, fileParts, filePreviewFromPart, isAudioPart, isImagePart, messagePreview } from '../../utils/message-parts';
 import { segmentTextWithEmoji, type TextSegment } from '../../utils/emoji-segments';
 import { displayNameFor, initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
 import { SendsarAnimatedEmojiComponent } from '../mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
+import { SendsarFilePreviewComponent } from '../mini-components/sendsar-file-preview/sendsar-file-preview.component';
 import { SendsarVoiceMessageComponent } from '../mini-components/sendsar-voice-message/sendsar-voice-message.component';
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '🎉'] as const;
@@ -36,7 +37,7 @@ const QUICK_REACTIONS = ['👍', '❤️', '😂', '🎉'] as const;
 @Component({
   selector: 'sc-message-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SendsarAnimatedEmojiComponent, SendsarVoiceMessageComponent],
+  imports: [CommonModule, FormsModule, SendsarAnimatedEmojiComponent, SendsarFilePreviewComponent, SendsarVoiceMessageComponent],
   templateUrl: './sendsar-message-list.component.html',
   styleUrl: './sendsar-message-list.component.css',
 })
@@ -197,6 +198,7 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   }
 
   protected readonly filePartUrl = filePartUrl;
+  protected readonly filePreviewFromPart = filePreviewFromPart;
   protected readonly isImagePart = isImagePart;
   protected readonly isAudioPart = isAudioPart;
 

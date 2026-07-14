@@ -24,6 +24,10 @@ import {
   buildVoiceWaveform,
   waveformBarCount,
 } from '../../utils/voice-waveform';
+import {
+  SendsarFilePreviewComponent,
+  type SendsarFilePreviewData,
+} from '../mini-components/sendsar-file-preview/sendsar-file-preview.component';
 import { SendsarVoicePreviewComponent } from '../mini-components/sendsar-voice-preview/sendsar-voice-preview.component';
 import { SendsarEmojiPickerComponent } from '../mini-components/sendsar-emoji-picker/sendsar-emoji-picker.component';
 
@@ -33,6 +37,7 @@ import { SendsarEmojiPickerComponent } from '../mini-components/sendsar-emoji-pi
   imports: [
     CommonModule,
     FormsModule,
+    SendsarFilePreviewComponent,
     SendsarVoicePreviewComponent,
     SendsarEmojiPickerComponent,
   ],
@@ -61,12 +66,14 @@ export class SendsarComposerComponent
   readonly recording = signal(false);
   readonly recordingSeconds = signal(0);
   readonly pendingVoice = signal<SendsarVoicePreviewData | null>(null);
+  readonly pendingFile = signal<SendsarFilePreviewData | null>(null);
   readonly error = signal<string | null>(null);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['roomId']) {
       this.showEmojiPicker.set(false);
       this.clearPendingVoice();
+      this.clearPendingFile();
       this.bindTyping();
     }
   }
@@ -92,6 +99,7 @@ export class SendsarComposerComponent
   ngOnDestroy(): void {
     this.cancelVoiceRecording();
     this.clearPendingVoice();
+    this.clearPendingFile();
     this.typingController?.destroy();
   }
 
@@ -122,28 +130,26 @@ export class SendsarComposerComponent
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     input.value = '';
-    if (!file || this.sending()) {
+    if (!file || this.sending() || this.recording()) {
       return;
     }
 
-    this.sending.set(true);
+    this.showEmojiPicker.set(false);
     this.error.set(null);
-    this.typingController?.stop();
-    try {
-      await this.chat.sendFileMessage(this.roomId, {
-        file,
+    this.clearPendingVoice();
+    this.clearPendingFile();
 
-        clientMessageId: crypto.randomUUID(),
-      });
+    const previewUrl = file.type.startsWith('image/') ? URL.createObjectURL(file) : undefined;
+    this.pendingFile.set({
+      name: file.name,
+      previewUrl,
+      mediaType: file.type,
+      file,
+    });
+  }
 
-      this.sent.emit();
-    } catch (err) {
-      this.error.set(
-        err instanceof Error ? err.message : 'Failed to send file',
-      );
-    } finally {
-      this.sending.set(false);
-    }
+  removePendingFile(): void {
+    this.clearPendingFile();
   }
 
   pickEmoji(emoji: string): void {
@@ -198,6 +204,7 @@ export class SendsarComposerComponent
     this.showEmojiPicker.set(false);
     this.error.set(null);
     this.clearPendingVoice();
+    this.clearPendingFile();
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       this.recordingStream = stream;
@@ -263,6 +270,7 @@ export class SendsarComposerComponent
     });
 
     this.clearPendingVoice();
+    this.clearPendingFile();
     const recordedAt = new Date();
     const barCount = waveformBarCount(durationSeconds);
     const waveform = await buildVoiceWaveform(blob, barCount);
@@ -277,6 +285,14 @@ export class SendsarComposerComponent
 
   removePendingVoice(): void {
     this.clearPendingVoice();
+  }
+
+  private clearPendingFile(): void {
+    const pending = this.pendingFile();
+    if (pending?.previewUrl) {
+      URL.revokeObjectURL(pending.previewUrl);
+    }
+    this.pendingFile.set(null);
   }
 
   private clearPendingVoice(): void {
@@ -320,32 +336,43 @@ export class SendsarComposerComponent
     return candidates.find((type) => MediaRecorder.isTypeSupported(type));
   }
 
+  videoCallMessage(): void {
+    
+  }
+
   async submit(): Promise<void> {
     const body = this.text.trim();
     const voice = this.pendingVoice();
-    if ((!body && !voice) || this.sending() || this.recording()) {
+    const file = this.pendingFile();
+    if ((!body && !voice && !file) || this.sending() || this.recording()) {
       return;
     }
     this.sending.set(true);
     this.error.set(null);
     this.typingController?.stop();
     try {
-      if (voice?.file) {
-        await this.chat.sendFileMessage(this.roomId, {
-          file: voice.file,
-          clientMessageId: crypto.randomUUID(),
-        });
-        this.clearPendingVoice();
-      }
+      const clientMessageId = crypto.randomUUID();
+      const attachment = file?.file ?? voice?.file;
 
-      if (body) {
+      if (attachment) {
+        await this.chat.sendFileMessage(this.roomId, {
+          file: attachment,
+          clientMessageId,
+          text: body || undefined,
+        });
+      } else if (body) {
         await this.chat.sendMessage(this.roomId, {
           parts: [{ type: 'text', text: body }],
-          clientMessageId: crypto.randomUUID(),
+          clientMessageId,
         });
-        this.text = '';
-        queueMicrotask(() => this.resizeTextarea());
+      } else {
+        return;
       }
+
+      this.text = '';
+      this.clearPendingFile();
+      this.clearPendingVoice();
+      queueMicrotask(() => this.resizeTextarea());
       this.showEmojiPicker.set(false);
       this.sent.emit();
     } catch (err) {
