@@ -33,7 +33,8 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "@sendsar/chat-sdk-javascript": "^0.2.0",
+    "@sendsar/call-sdk-javascript": "^0.1.1",
+    "@sendsar/chat-sdk-javascript": "^0.2.1",
     "@sendsar/protocol": "^0.1.0",
     "lottie-web": "^5.13.0",
     "ngx-lottie": "^13.0.1",
@@ -57,5 +58,8 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^19.2.0",
     "typescript": "~5.7.2"
+  },
+  "overrides": {
+    "@sendsar/protocol": "0.1.0"
   }
 }

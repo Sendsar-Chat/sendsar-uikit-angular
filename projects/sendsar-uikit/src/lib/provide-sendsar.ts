@@ -2,6 +2,7 @@ import { EnvironmentProviders, makeEnvironmentProviders, type Provider } from '@
 import type { SendsarConfig } from './config/sendsar-config';
 import { SENDSAR_CONFIG } from './config/sendsar-config';
 import { provideSendsarEmojiAnimation } from './provide-sendsar-emoji-animation';
+import { SendsarCallService } from './services/sendsar-call.service';
 import { SendsarChatService } from './services/sendsar-chat.service';
 import { SendsarSessionService } from './services/sendsar-session.service';
 
@@ -9,6 +10,7 @@ function sendsarServiceProviders(animatedEmoji = true): Provider[] {
   return [
     SendsarSessionService,
     SendsarChatService,
+    SendsarCallService,
     ...(animatedEmoji ? provideSendsarEmojiAnimation() : []),
   ];
 }

@@ -4,6 +4,7 @@ export * from './lib/config/sendsar-config';
 export * from './lib/provide-sendsar';
 export * from './lib/services/sendsar-session.service';
 export * from './lib/services/sendsar-chat.service';
+export * from './lib/services/sendsar-call.service';
 export * from './lib/components/sendsar-chat-shell/sendsar-chat-shell.component';
 export * from './lib/components/sendsar-conversation-list/sendsar-conversation-list.component';
 export * from './lib/components/sendsar-message-list/sendsar-message-list.component';
