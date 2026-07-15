@@ -15,6 +15,9 @@ export * from './lib/components/mini-components/sendsar-voice-preview/sendsar-vo
 export * from './lib/components/mini-components/sendsar-file-preview/sendsar-file-preview.component';
 export * from './lib/components/mini-components/sendsar-voice-message/sendsar-voice-message.component';
 export * from './lib/components/mini-components/sendsar-emoji-picker/sendsar-emoji-picker.component';
+export * from './lib/components/mini-components/sendsar-call-overlay/sendsar-call-overlay.component';
 export * from './lib/utils/voice-waveform';
 export * from './lib/utils/emoji-groups';
+export * from './lib/utils/call-media-track';
 export * from './lib/provide-sendsar-emoji-animation';
+

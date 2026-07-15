@@ -1,0 +1,279 @@
+:host {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.sc-call-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(15 23 42 / 28%);
+  pointer-events: none;
+}
+
+.sc-call-dialog {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  width: min(28rem, calc(100% - 2rem));
+  height: min(34rem, calc(100% - 2.5rem));
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 40%),
+    0 0 0 1px rgb(148 163 184 / 18%);
+  will-change: transform;
+  transition:
+    width 0.2s ease,
+    height 0.2s ease,
+    border-radius 0.2s ease;
+}
+
+.sc-call-dialog--dragging {
+  transition: none;
+  user-select: none;
+}
+
+.sc-call-dialog--expanded {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none !important;
+}
+
+.sc-call-dialog:fullscreen {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  transform: none !important;
+}
+
+.sc-call-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: rgb(2 6 23 / 88%);
+  border-bottom: 1px solid rgb(148 163 184 / 16%);
+  touch-action: none;
+}
+
+.sc-call-header--draggable {
+  cursor: grab;
+}
+
+.sc-call-header--dragging {
+  cursor: grabbing;
+}
+
+.sc-call-header-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sc-call-header-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-call-header-status {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.sc-call-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.sc-call-icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #cbd5e1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-call-icon-btn:hover {
+  background: rgb(148 163 184 / 18%);
+  color: #fff;
+}
+
+.sc-call-icon-btn .material-icons {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.sc-call-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #1e293b, #020617 70%);
+}
+
+.sc-call-remote {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.sc-call-local {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: min(30%, 8.5rem);
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  border: 2px solid rgb(255 255 255 / 25%);
+  background: #000;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  transform: scaleX(-1);
+}
+
+.sc-call-dialog--expanded .sc-call-local {
+  width: min(22%, 11rem);
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.sc-call-audio {
+  display: none;
+}
+
+.sc-call-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.sc-call-avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+}
+
+.sc-call-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.sc-call-status {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.sc-call-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem 1rem;
+  background: rgb(2 6 23 / 88%);
+  border-top: 1px solid rgb(148 163 184 / 16%);
+}
+
+.sc-call-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.sc-call-btn {
+  width: 3rem;
+  height: 3rem;
+  border: none;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: #334155;
+  color: #fff;
+  padding: 0;
+}
+
+.sc-call-btn:hover {
+  background: #475569;
+}
+
+.sc-call-btn--off {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.sc-call-btn--hangup,
+.sc-call-btn--decline {
+  background: #dc2626;
+}
+
+.sc-call-btn--hangup:hover,
+.sc-call-btn--decline:hover {
+  background: #b91c1c;
+}
+
+.sc-call-btn--accept {
+  background: #16a34a;
+}
+
+.sc-call-btn--accept:hover {
+  background: #15803d;
+}
+
+.sc-call-btn .material-icons {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.sc-call-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #fca5a5;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .sc-call-dialog:not(.sc-call-dialog--expanded) {
+    width: calc(100% - 1rem);
+    height: min(70vh, 32rem);
+  }
+}

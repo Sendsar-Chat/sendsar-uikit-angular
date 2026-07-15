@@ -86,6 +86,7 @@
 }
 
 .sc-thread {
+  position: relative;
   display: flex;
   flex-direction: column;
   min-width: 0;
@@ -159,14 +160,32 @@
   color: #64748b;
 }
 
-.sc-header-action:hover {
+.sc-header-action:hover:not(:disabled) {
   background: #f1f5f9;
   color: #334155;
+}
+
+.sc-header-action:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sc-header-action--active {
+  color: #2563eb;
+  background: #eff6ff;
 }
 
 .sc-header-action .material-icons {
   font-size: 1.1rem;
   line-height: 1;
+}
+
+.sc-call-error {
+  margin: 0;
+  padding: 0.5rem 1rem;
+  font-size: 0.8rem;
+  color: #b91c1c;
+  background: #fef2f2;
 }
 
 .sc-thread-empty {

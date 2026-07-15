@@ -1,8 +1,10 @@
 import {
   Component,
   DestroyRef,
+  EventEmitter,
   Input,
   OnInit,
+  Output,
   ViewChild,
   inject,
   signal,
@@ -18,10 +20,12 @@ import {
   type RoomSummary,
   type TypingByRoom,
 } from '@sendsar/chat-sdk-javascript';
+import { SendsarCallOverlayComponent } from '../mini-components/sendsar-call-overlay/sendsar-call-overlay.component';
 import { SendsarComposerComponent } from '../sendsar-composer/sendsar-composer.component';
 import { SendsarConversationListComponent } from '../sendsar-conversation-list/sendsar-conversation-list.component';
 import { SendsarMessageListComponent } from '../sendsar-message-list/sendsar-message-list.component';
 import { SendsarRoomInfoComponent } from '../sendsar-room-info/sendsar-room-info.component';
+import { SendsarCallService } from '../../services/sendsar-call.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { isDirectMessage, isGroupRoom, parseDmPeerId, resolveRoomLabel } from '../../utils/room-label';
 import { initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
@@ -35,15 +39,18 @@ import { initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../ut
     SendsarMessageListComponent,
     SendsarComposerComponent,
     SendsarRoomInfoComponent,
+    SendsarCallOverlayComponent,
   ],
   templateUrl: './sendsar-chat-shell.component.html',
   styleUrl: './sendsar-chat-shell.component.css',
 })
 export class SendsarChatShellComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly calls = inject(SendsarCallService);
   readonly session = inject(SendsarSessionService);
 
   @Input() users: UserDirectoryEntry[] = [];
+  @Output() readonly callStarted = new EventEmitter<{ roomId: string; type: 'video' }>();
 
   @ViewChild(SendsarConversationListComponent)
   private conversationList?: SendsarConversationListComponent;
@@ -53,6 +60,9 @@ export class SendsarChatShellComponent implements OnInit {
   readonly onlineUserIds = signal<ReadonlySet<string>>(new Set());
   readonly mobileShowThread = signal(false);
   readonly showInfoPanel = signal(true);
+  readonly calling = this.calls.calling;
+  readonly showCallUi = this.calls.showCallUi;
+  readonly callError = signal<string | null>(null);
 
   private realtimeWired = false;
   private presenceTracker: ReturnType<typeof createTenantPresenceTracker> | null = null;
@@ -186,11 +196,38 @@ export class SendsarChatShellComponent implements OnInit {
     void this.session.restart();
   }
 
+  async videoCallMessage(): Promise<void> {
+    const roomId = this.selectedRoom()?.id;
+    if (!roomId || this.calling() || this.showCallUi()) {
+      return;
+    }
+
+    this.callError.set(null);
+
+    try {
+      await this.calls.startVideoCall(roomId);
+      this.callStarted.emit({ roomId, type: 'video' });
+    } catch (err) {
+      this.callError.set(err instanceof Error ? err.message : 'Failed to start video call');
+    }
+  }
+
+  callOverlayTitle(): string {
+    const active = this.calls.activeCall();
+    const invite = this.calls.incomingInvite();
+    const roomId = active?.roomId ?? invite?.roomId;
+    if (roomId && this.selectedRoom()?.id === roomId) {
+      return this.roomTitle();
+    }
+    return active?.type === 'audio' || invite?.type === 'audio' ? 'Voice call' : 'Video call';
+  }
+
   private wireRealtime(): void {
     const client = this.session.client;
     if (!client) return;
 
     this.realtimeWired = true;
+    this.calls.ensureReady();
 
     const offTyping = client.on(SOCKET_EVENT.TYPING, (event) => {
       this.typingByRoom.update((prev) => applyTypingEvent(prev, event));

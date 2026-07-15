@@ -18,6 +18,10 @@
       </div>
     }
 
+    @if (showCallUi()) {
+      <sc-call-overlay [title]="callOverlayTitle()" />
+    }
+
     <sc-conversation-list
       class="sc-sidebar"
       [selectedRoomId]="selectedRoom()?.id ?? null"
@@ -49,7 +53,15 @@
             <button type="button" class="sc-header-action" title="Voice call" aria-label="Voice call">
               <span class="material-icons" aria-hidden="true">call</span>
             </button>
-            <button type="button" class="sc-header-action" title="Video call" aria-label="Video call">
+            <button
+              type="button"
+              class="sc-header-action"
+              title="Video call"
+              aria-label="Start video call"
+              [class.sc-header-action--active]="calling()"
+              [disabled]="calling()"
+              (click)="videoCallMessage()"
+            >
               <span class="material-icons" aria-hidden="true">videocam</span>
             </button>
             <button
@@ -71,6 +83,9 @@
           (activity)="onThreadActivity()"
         />
         <sc-composer [roomId]="room.id" (sent)="onMessageSent()" />
+        @if (callError()) {
+          <p class="sc-call-error">{{ callError() }}</p>
+        }
       } @else {
         <div class="sc-thread-empty">
           <p class="sc-thread-empty-title">Welcome to Sendsar</p>

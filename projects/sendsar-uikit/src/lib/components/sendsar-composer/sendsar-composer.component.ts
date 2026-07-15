@@ -17,7 +17,6 @@ import {
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ComposerTypingController } from '@sendsar/chat-sdk-javascript';
-import { SendsarCallService } from '../../services/sendsar-call.service';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import {
@@ -49,7 +48,6 @@ export class SendsarComposerComponent
   implements OnChanges, OnDestroy, AfterViewInit
 {
   private readonly chat = inject(SendsarChatService);
-  private readonly calls = inject(SendsarCallService);
   private readonly session = inject(SendsarSessionService);
   private readonly elementRef = inject(ElementRef<HTMLElement>);
   private typingController: ComposerTypingController | null = null;
@@ -62,7 +60,6 @@ export class SendsarComposerComponent
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
   @Input({ required: true }) roomId!: string;
   @Output() readonly sent = new EventEmitter<void>();
-  @Output() readonly callStarted = new EventEmitter<{ roomId: string; type: 'video' }>();
   text = '';
   readonly showEmojiPicker = signal(false);
   readonly sending = signal(false);
@@ -71,7 +68,6 @@ export class SendsarComposerComponent
   readonly pendingVoice = signal<SendsarVoicePreviewData | null>(null);
   readonly pendingFile = signal<SendsarFilePreviewData | null>(null);
   readonly error = signal<string | null>(null);
-  readonly calling = this.calls.calling;
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['roomId']) {
@@ -338,22 +334,6 @@ export class SendsarComposerComponent
     ];
 
     return candidates.find((type) => MediaRecorder.isTypeSupported(type));
-  }
-
-  async videoCallMessage(): Promise<void> {
-    if (this.sending() || this.recording() || this.calling() || !this.roomId) {
-      return;
-    }
-
-    this.showEmojiPicker.set(false);
-    this.error.set(null);
-
-    try {
-      await this.calls.startVideoCall(this.roomId);
-      this.callStarted.emit({ roomId: this.roomId, type: 'video' });
-    } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Failed to start video call');
-    }
   }
 
   async submit(): Promise<void> {

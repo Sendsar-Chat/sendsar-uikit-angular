@@ -85,18 +85,6 @@
         >
           <span class="material-icons" aria-hidden="true">mic</span>
         </button>
-
-        <button
-          type="button"
-          class="sc-tool-btn"
-          title="Video call"
-          aria-label="Start video call"
-          [class.sc-tool-btn--active]="calling()"
-          [disabled]="sending() || recording() || calling()"
-          (click)="videoCallMessage()"
-        >
-          <span class="material-icons" aria-hidden="true">videocam</span>
-        </button>
         
       </div>
 
