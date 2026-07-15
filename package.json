@@ -16,12 +16,9 @@
     "build:lib": "ng build sendsar-uikit",
     "build:app": "ng build sample-app",
     "build": "npm run build:lib && npm run build:app",
-    "ensure:sdk": "node scripts/ensure-sdk.mjs",
-    "prestart": "npm run ensure:sdk && npm run build:lib",
     "start:bff": "node sample-bff/server.mjs",
     "start:app": "ng serve sample-app --port 4300 --proxy-config proxy.conf.json",
     "start": "concurrently -k -n bff,ng -c blue,green \"npm run start:bff\" \"npm run start:app\"",
-    "use:local-sdk": "npm install @sendsar/chat-sdk-javascript@file:../sendsar-monorepo/packages/chat-sdk-javascript",
     "test": "ng test"
   },
   "private": true,
@@ -34,7 +31,7 @@
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
     "@sendsar/call-sdk-javascript": "^0.1.1",
-    "@sendsar/chat-sdk-javascript": "^0.2.1",
+    "@sendsar/chat-sdk-javascript": "^0.2.2",
     "@sendsar/protocol": "^0.1.0",
     "lottie-web": "^5.13.0",
     "ngx-lottie": "^13.0.1",
@@ -58,8 +55,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^19.2.0",
     "typescript": "~5.7.2"
-  },
-  "overrides": {
-    "@sendsar/protocol": "0.1.0"
   }
 }

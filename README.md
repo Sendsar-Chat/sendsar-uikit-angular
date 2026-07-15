@@ -33,12 +33,6 @@ npm start
 
 Open **http://localhost:4300**.
 
-The SDK installs from npm (`@sendsar/chat-sdk-javascript`). To develop against a local monorepo checkout instead:
-
-```bash
-npm run use:local-sdk   # requires ../sendsar-monorepo
-```
-
 ## Sample app features
 
 | Feature | How it works |
@@ -52,6 +46,7 @@ npm run use:local-sdk   # requires ../sendsar-monorepo
 | **Presence** | Online dot in sidebar (DM) and new-chat picker |
 | **Edit / delete** | Sender-only actions on your messages |
 | **Pagination** | “Load older messages” in thread |
+| **Fast conversation switch** | In-memory thread cache — revisited rooms open without a loading flash |
 
 ## Integrate in your app
 
@@ -75,7 +70,7 @@ See the [JavaScript SDK docs](https://docs.sendsar.com/sdk/javascript/html) for 
 |-----------|-------------|
 | `SendsarChatShellComponent` | Inbox + thread, typing, presence, mobile layout |
 | `SendsarConversationListComponent` | Rooms, unread badges, avatars |
-| `SendsarMessageListComponent` | Live messages, media, reactions, receipts |
+| `SendsarMessageListComponent` | Live messages, media, reactions, receipts; caches threads when switching rooms |
 | `SendsarComposerComponent` | Text + attachments + typing |
 
 **Scripts:** `npm run build:lib` · `npm run build` (lib + sample app)

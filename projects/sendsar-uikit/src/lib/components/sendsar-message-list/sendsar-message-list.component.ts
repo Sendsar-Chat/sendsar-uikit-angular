@@ -27,6 +27,7 @@ import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { filePartUrl, fileParts, filePreviewFromPart, isAudioPart, isImagePart, messagePreview } from '../../utils/message-parts';
 import { segmentTextWithEmoji, type TextSegment } from '../../utils/emoji-segments';
+import { getCachedRoomThread, setCachedRoomThread } from '../../utils/room-thread-cache';
 import { displayNameFor, initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
 import { SendsarAnimatedEmojiComponent } from '../mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
 import { SendsarFilePreviewComponent } from '../mini-components/sendsar-file-preview/sendsar-file-preview.component';
@@ -142,6 +143,7 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
       const chronological = [...messages].reverse();
       this.messages.update((list) => mergeMessagesById(chronological, list));
       this.nextCursor.set(nextCursor);
+      this.persistThreadCache();
 
       requestAnimationFrame(() => {
         if (el) {
@@ -204,47 +206,76 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
 
   private bindRoom(): void {
     this.subscription?.destroy();
-    this.messages.set([]);
-    this.nextCursor.set(null);
-    this.peerLastReadAt.set(null);
     this.error.set(null);
     this.cancelEdit();
 
+    const roomId = this.roomId;
+    const cached = roomId ? getCachedRoomThread(roomId) : undefined;
+    if (cached) {
+      this.messages.set(cached.messages);
+      this.nextCursor.set(cached.nextCursor);
+      this.peerLastReadAt.set(cached.peerLastReadAt);
+      this.loading.set(false);
+    } else {
+      this.messages.set([]);
+      this.nextCursor.set(null);
+      this.peerLastReadAt.set(null);
+      this.loading.set(true);
+    }
+
     const client = this.session.client;
     const userId = this.session.session?.chatUserId;
-    if (!client || !userId || !this.roomId) {
+    if (!client || !userId || !roomId) {
       return;
     }
 
-    this.loading.set(true);
-    void this.chat
-      .getMessages(this.roomId, { limit: 50 })
-      .then(({ nextCursor }) => {
-        this.nextCursor.set(nextCursor);
-      })
-      .catch(() => undefined);
-
     this.subscription = createRoomSubscription(client, {
-      roomId: this.roomId,
+      roomId,
       userId,
-      onInitialMessages: (msgs, peerLastReadAt) => {
-        this.messages.set(msgs);
+      onInitialMessages: (msgs, peerLastReadAt, meta) => {
+        if (this.roomId !== roomId) return;
+        this.messages.update((list) => mergeMessagesById(list, msgs));
         this.peerLastReadAt.set(peerLastReadAt);
+        if (this.nextCursor() == null) {
+          this.nextCursor.set(meta?.nextCursor ?? null);
+        }
         this.loading.set(false);
-        this.scrollToBottom('smooth');
+        this.persistThreadCache();
+        if (!cached) {
+          this.scrollToBottom('smooth');
+        }
       },
       onMessage: (msg) => {
+        if (this.roomId !== roomId) return;
         this.messages.update((list) => mergeMessagesById(list, [msg]));
+        this.persistThreadCache();
         this.activity.emit();
         this.scrollToBottom('smooth');
       },
       onMessageUpdated: (msg) => {
+        if (this.roomId !== roomId) return;
         this.messages.update((list) => list.map((m) => (m.id === msg.id ? msg : m)));
+        this.persistThreadCache();
         this.activity.emit();
       },
       onPeerLastReadAt: (lastReadAt) => {
+        if (this.roomId !== roomId) return;
         this.peerLastReadAt.set(lastReadAt);
+        this.persistThreadCache();
       },
+    });
+
+    if (cached) {
+      this.scrollToBottom('auto');
+    }
+  }
+
+  private persistThreadCache(): void {
+    if (!this.roomId) return;
+    setCachedRoomThread(this.roomId, {
+      messages: this.messages(),
+      nextCursor: this.nextCursor(),
+      peerLastReadAt: this.peerLastReadAt(),
     });
   }
 
