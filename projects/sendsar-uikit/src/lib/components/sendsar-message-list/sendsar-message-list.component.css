@@ -137,15 +137,41 @@
 
 .sc-message {
   display: flex;
-  align-items: flex-start;
-  gap: 0.5rem;
+  flex-direction: column;
   max-width: min(88%, 34rem);
 }
 
 .sc-message--self {
   align-self: flex-end;
   align-items: flex-end;
-  flex-direction: row-reverse;
+}
+
+.sc-message-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.35rem;
+  width: 100%;
+}
+
+.sc-message--self .sc-message-header {
+  justify-content: flex-end;
+}
+
+.sc-message-content {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  position: relative;
+  margin-left: calc(2.25rem + 0.5rem);
+}
+
+.sc-message--self .sc-message-content {
+  margin-left: 0;
+  margin-right: calc(2.25rem + 0.5rem);
+  align-items: flex-end;
 }
 
 .sc-avatar {
@@ -165,19 +191,6 @@
   background: linear-gradient(135deg, #3b82f6, #2563eb);
 }
 
-.sc-message-body {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  min-width: 0;
-  max-width: 100%;
-  position: relative;
-}
-
-.sc-message--self .sc-message-body {
-  align-items: flex-end;
-}
-
 .sc-message--deleted .sc-bubble {
   opacity: 0.7;
   font-style: italic;
@@ -185,8 +198,8 @@
 
 .sc-bubble {
   background: #e8edf3;
-  border-radius: 1rem 1rem 1rem 0.35rem;
-  padding: 0.55rem 0.75rem 0.45rem;
+  border-radius: 0.75rem;
+  padding: 0.65rem 0.85rem 0.55rem;
   line-height: 1.45;
   word-break: break-word;
   max-width: 100%;
@@ -195,7 +208,7 @@
 .sc-message--self .sc-bubble {
   background: #2563eb;
   color: #fff;
-  border-radius: 1rem 1rem 0.35rem 1rem;
+  border-radius: 0.75rem;
 }
 
 .sc-bubble-content {
@@ -212,11 +225,15 @@
 }
 
 .sc-sender {
-  display: block;
   font-size: 0.8rem;
   font-weight: 600;
   color: #334155;
-  margin-bottom: 0.1rem;
+}
+
+.sc-header-time {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  text-transform: uppercase;
 }
 
 .sc-text {
@@ -251,17 +268,7 @@
   align-items: center;
   justify-content: flex-end;
   gap: 0.3rem;
-  margin-top: 0.35rem;
-}
-
-.sc-time {
-  font-size: 0.7rem;
-  color: #94a3b8;
-  line-height: 1;
-}
-
-.sc-message--self .sc-time {
-  color: rgb(255 255 255 / 75%);
+  margin-top: 0.25rem;
 }
 
 .sc-edited {
@@ -274,10 +281,14 @@
 }
 
 .sc-read {
-  font-size: 0.7rem;
+  display: inline-flex;
+  align-items: center;
   color: #94a3b8;
   line-height: 1;
-  letter-spacing: -0.05em;
+}
+
+.sc-read .material-icons {
+  font-size: 0.95rem;
 }
 
 .sc-message--self .sc-read {
@@ -306,7 +317,6 @@
 }
 
 .sc-message--self .sc-actions {
-  left: auto;
   right: 0;
 }
 

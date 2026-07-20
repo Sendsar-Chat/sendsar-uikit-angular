@@ -9,6 +9,7 @@ import {
   SimpleChanges,
   ViewChild,
   inject,
+  output,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -38,6 +39,11 @@ import { SendsarVoiceMessageComponent } from '../mini-components/sendsar-voice-m
 
 const QUICK_REACTIONS = ['👍', '❤️', '😂', '🎉'] as const;
 
+export type SendsarCallRedialEvent = {
+  roomId: string;
+  type: 'audio' | 'video';
+};
+
 @Component({
   selector: 'sc-message-list',
   standalone: true,
@@ -64,7 +70,7 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   @Input() users: UserDirectoryEntry[] = [];
   @Input() chatSettings: TenantChatSettings | null = null;
   @Output() readonly activity = new EventEmitter<void>();
-  @Output() readonly callRedial = new EventEmitter<{ roomId: string; type: 'audio' | 'video' }>();
+  readonly callRedial = output<SendsarCallRedialEvent>();
 
   readonly messages = signal<Message[]>([]);
   readonly loading = signal(false);

@@ -55,11 +55,19 @@
                 [class.sc-message--self]="isSelf(message)"
                 [class.sc-message--deleted]="message.deletedAt"
               >
-                <span class="sc-avatar" [class.sc-avatar--self]="isSelf(message)">
-                  {{ isSelf(message) ? selfInitials() : avatarInitials(message) }}
-                </span>
+                <header class="sc-message-header">
+                  @if (isSelf(message)) {
+                    <span class="sc-sender">{{ senderName(message) }} (Me)</span>
+                    <time class="sc-header-time">{{ message.createdAt | date: 'h:mm a' }}</time>
+                    <span class="sc-avatar sc-avatar--self">{{ selfInitials() }}</span>
+                  } @else {
+                    <span class="sc-avatar">{{ avatarInitials(message) }}</span>
+                    <span class="sc-sender">{{ senderName(message) }}</span>
+                    <time class="sc-header-time">{{ message.createdAt | date: 'h:mm a' }}</time>
+                  }
+                </header>
 
-                <div class="sc-message-body">
+                <div class="sc-message-content">
                   @if (editingId() === message.id) {
                     <form class="sc-edit-form" (ngSubmit)="saveEdit(message)">
                       <input type="text" [(ngModel)]="editDraft" name="editDraft" />
@@ -113,21 +121,22 @@
                         }
                       </div>
 
-                      <div class="sc-bubble-footer">
-                        <time class="sc-time">{{ message.createdAt | date: 'HH:mm' }}</time>
-                        @if (message.editedAt) {
-                          <span class="sc-edited">edited</span>
-                        }
-                        @if (isSelf(message) && !message.deletedAt) {
-                          <span
-                            class="sc-read"
-                            [class.sc-read--seen]="isRead(message)"
-                            [title]="isRead(message) ? 'Seen' : 'Sent'"
-                          >
-                            {{ isRead(message) ? '✓✓' : '✓' }}
-                          </span>
-                        }
-                      </div>
+                      @if (message.editedAt || (isSelf(message) && !message.deletedAt)) {
+                        <div class="sc-bubble-footer">
+                          @if (message.editedAt) {
+                            <span class="sc-edited">edited</span>
+                          }
+                          @if (isSelf(message) && !message.deletedAt) {
+                            <span
+                              class="sc-read"
+                              [class.sc-read--seen]="isRead(message)"
+                              [title]="isRead(message) ? 'Seen' : 'Sent'"
+                            >
+                              <span class="material-icons" aria-hidden="true">{{ isRead(message) ? 'done_all' : 'done' }}</span>
+                            </span>
+                          }
+                        </div>
+                      }
                     </div>
 
                     @if (!message.deletedAt) {

@@ -23,7 +23,10 @@ import {
 import { SendsarCallOverlayComponent } from '../mini-components/sendsar-call-overlay/sendsar-call-overlay.component';
 import { SendsarComposerComponent } from '../sendsar-composer/sendsar-composer.component';
 import { SendsarConversationListComponent } from '../sendsar-conversation-list/sendsar-conversation-list.component';
-import { SendsarMessageListComponent } from '../sendsar-message-list/sendsar-message-list.component';
+import {
+  SendsarMessageListComponent,
+  type SendsarCallRedialEvent,
+} from '../sendsar-message-list/sendsar-message-list.component';
 import { SendsarRoomInfoComponent } from '../sendsar-room-info/sendsar-room-info.component';
 import { SendsarCallService } from '../../services/sendsar-call.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
@@ -271,7 +274,7 @@ export class SendsarChatShellComponent implements OnInit {
     return initialsFor(this.callOverlayTitle());
   }
 
-  async onCallRedial(event: { roomId: string; type: 'audio' | 'video' }): Promise<void> {
+  async onCallRedial(event: SendsarCallRedialEvent): Promise<void> {
     if (this.calling() || this.showCallUi()) {
       this.callError.set('A call is already in progress');
       return;
