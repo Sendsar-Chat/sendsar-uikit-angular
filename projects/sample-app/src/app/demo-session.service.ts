@@ -27,11 +27,15 @@ export class DemoSessionService {
     return (await res.json()) as SessionResponse;
   }
 
-  async ensureDirectMessage(selfId: string, peerId: string, peerName?: string): Promise<string> {
+  async ensureDirectMessage(selfId: string, peerId: string): Promise<string> {
     const res = await fetch('/api/chat/demo/ensure-dm', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ selfId, peerId, peerName }),
+      body: JSON.stringify({
+        selfId,
+        peerId,
+        members: environment.users,
+      }),
     });
 
     if (!res.ok) {

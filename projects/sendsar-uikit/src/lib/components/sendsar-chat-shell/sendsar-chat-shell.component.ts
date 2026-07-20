@@ -101,8 +101,24 @@ export class SendsarChatShellComponent implements OnInit {
     this.scheduleSidebarReload();
   }
 
-  /** Open a room in the thread pane (e.g. after creating a DM server-side). */
-  async openRoom(roomId: string, title?: string | null): Promise<void> {
+  /**
+   * Open a room in the thread pane (e.g. after creating a DM server-side).
+   * Pass `externalId` for DMs so the header can resolve the peer label before the
+   * room appears in the sidebar list.
+   */
+  async openRoom(
+    roomId: string,
+    options?: {
+      title?: string | null;
+      externalId?: string | null;
+      customType?: string | null;
+    } | string | null,
+  ): Promise<void> {
+    const opts =
+      typeof options === 'string' || options == null
+        ? { title: options }
+        : options;
+
     const deadline = Date.now() + 15_000;
     while (this.session.state().status === 'loading' && Date.now() < deadline) {
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -119,11 +135,12 @@ export class SendsarChatShellComponent implements OnInit {
       return;
     }
 
+    const title = opts.title?.trim() || null;
     this.selectedRoom.set({
       id: roomId,
-      name: title?.trim() || null,
-      externalId: null,
-      customType: 'demo_dm',
+      name: title,
+      externalId: opts.externalId ?? null,
+      customType: opts.customType ?? (title ? 'demo_group' : 'demo_dm'),
       metadata: null,
       isFrozen: false,
       lastMessage: null,

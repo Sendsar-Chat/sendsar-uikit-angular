@@ -72,27 +72,32 @@ export class ChatPageComponent implements OnInit {
 
     try {
       let roomId: string;
-      let title: string | undefined;
+      let openOpts: {
+        title?: string;
+        externalId?: string;
+        customType?: string;
+      };
 
       if (request.kind === 'direct') {
-        const peer = this.peers.find((u) => u.chatUserId === request.peerId);
-        title = peer?.displayName;
         roomId = await this.demoSession.ensureDirectMessage(
           self.chatUserId,
           request.peerId,
-          peer?.displayName,
         );
+        openOpts = {
+          externalId: `dm:${[self.chatUserId, request.peerId].sort().join(':')}`,
+          customType: 'demo_dm',
+        };
       } else {
-        title = request.name;
         roomId = await this.demoSession.ensureGroup(
           self.chatUserId,
           request.name,
           request.memberIds,
         );
+        openOpts = { title: request.name, customType: 'demo_group' };
       }
 
       this.showNewChat.set(false);
-      await this.chatShell?.openRoom(roomId, title);
+      await this.chatShell?.openRoom(roomId, openOpts);
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Failed to create chat');
     } finally {
