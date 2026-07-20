@@ -61,7 +61,7 @@
                     <time class="sc-header-time">{{ message.createdAt | date: 'h:mm a' }}</time>
                     <span class="sc-avatar sc-avatar--self">{{ selfInitials() }}</span>
                   } @else {
-                    <span class="sc-avatar">{{ avatarInitials(message) }}</span>
+                    <span class="sc-avatar sc-avatar--self">{{ avatarInitials(message) }}</span>
                     <span class="sc-sender">{{ senderName(message) }}</span>
                     <time class="sc-header-time">{{ message.createdAt | date: 'h:mm a' }}</time>
                   }
