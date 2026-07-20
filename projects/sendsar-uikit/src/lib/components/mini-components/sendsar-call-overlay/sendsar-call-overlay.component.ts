@@ -1,15 +1,18 @@
 import { CommonModule } from '@angular/common';
 import {
+  AfterViewInit,
   Component,
   ElementRef,
   HostListener,
   Input,
   OnDestroy,
   ViewChild,
+  effect,
   inject,
   signal,
 } from '@angular/core';
 import { SendsarCallService } from '../../../services/sendsar-call.service';
+import { initialsFor } from '../../../utils/user-directory';
 import { SendsarCallTrackDirective } from './sendsar-call-track.directive';
 
 @Component({
@@ -19,13 +22,16 @@ import { SendsarCallTrackDirective } from './sendsar-call-track.directive';
   templateUrl: './sendsar-call-overlay.component.html',
   styleUrl: './sendsar-call-overlay.component.css',
 })
-export class SendsarCallOverlayComponent implements OnDestroy {
+export class SendsarCallOverlayComponent implements AfterViewInit, OnDestroy {
   private readonly host = inject(ElementRef<HTMLElement>);
   readonly calls = inject(SendsarCallService);
 
   @ViewChild('dialogEl') dialogEl?: ElementRef<HTMLElement>;
+  @ViewChild('remoteAudioEl') remoteAudioEl?: ElementRef<HTMLAudioElement>;
 
   @Input() title = 'Call';
+  @Input() avatarUrl: string | null = null;
+  @Input() peerInitials = '?';
 
   /** Expanded to fill the chat shell / viewport (CSS). */
   readonly expanded = signal(false);
@@ -39,7 +45,45 @@ export class SendsarCallOverlayComponent implements OnDestroy {
   private dragOrigin = { x: 0, y: 0 };
   private offsetOrigin = { x: 0, y: 0 };
 
+  constructor() {
+    effect(() => {
+      // Re-bind whenever the remote audio track appears / changes.
+      this.calls.remoteAudioTrack();
+      queueMicrotask(() => this.bindRemoteAudio());
+    });
+  }
+
+  ngAfterViewInit(): void {
+    this.bindRemoteAudio();
+  }
+
+  avatarLetter(): string {
+    if (this.peerInitials && this.peerInitials !== '?') {
+      return this.peerInitials;
+    }
+    return initialsFor(this.title);
+  }
+
   statusLabel(): string {
+    if (this.calls.mediaStatus() === 'reconnecting') {
+      return 'Reconnecting…';
+    }
+
+    const duration = this.calls.durationLabel();
+    if (duration && this.calls.callState() === 'active') {
+      return duration;
+    }
+
+    if (this.calls.calling()) {
+      const state = this.calls.callState();
+      if (state === 'incoming' || state === 'connecting') {
+        return 'Connecting…';
+      }
+      if (state === 'outgoing' || state === 'idle') {
+        return 'Calling…';
+      }
+    }
+
     switch (this.calls.callState()) {
       case 'outgoing':
         return 'Calling…';
@@ -55,7 +99,12 @@ export class SendsarCallOverlayComponent implements OnDestroy {
   }
 
   canDrag(): boolean {
-    return !this.expanded() && !this.nativeFullscreen();
+    return !this.expanded() && !this.nativeFullscreen() && !this.calls.minimized();
+  }
+
+  canMinimize(): boolean {
+    const state = this.calls.callState();
+    return state === 'outgoing' || state === 'connecting' || state === 'active';
   }
 
   dialogTransform(): string | null {
@@ -110,30 +159,73 @@ export class SendsarCallOverlayComponent implements OnDestroy {
     }
   }
 
+  minimize(): void {
+    if (!this.canMinimize()) {
+      return;
+    }
+    if (this.nativeFullscreen()) {
+      void this.exitNativeFullscreen();
+    }
+    this.expanded.set(false);
+    this.calls.setMinimized(true);
+  }
+
+  restore(): void {
+    this.calls.setMinimized(false);
+  }
+
   async hangUp(): Promise<void> {
     if (this.nativeFullscreen()) {
       await this.exitNativeFullscreen();
     }
     const state = this.calls.callState();
-    await this.calls.hangUp({
-      reason: state === 'outgoing' ? 'cancelled' : undefined,
-    });
+    try {
+      await this.calls.hangUp({
+        reason: state === 'outgoing' ? 'cancelled' : undefined,
+      });
+    } catch {
+      // error surfaced via calls.error
+    }
   }
 
   async accept(): Promise<void> {
-    await this.calls.accept();
+    try {
+      await this.calls.accept();
+    } catch {
+      // error surfaced via calls.error
+    }
   }
 
   async decline(): Promise<void> {
-    await this.calls.decline();
+    try {
+      await this.calls.decline();
+    } catch {
+      // error surfaced via calls.error
+    }
   }
 
   async toggleMic(): Promise<void> {
-    await this.calls.toggleMicrophone();
+    try {
+      await this.calls.toggleMicrophone();
+    } catch {
+      // error surfaced via calls.error
+    }
   }
 
   async toggleCamera(): Promise<void> {
-    await this.calls.toggleCamera();
+    try {
+      await this.calls.toggleCamera();
+    } catch {
+      // error surfaced via calls.error
+    }
+  }
+
+  async toggleSpeaker(): Promise<void> {
+    try {
+      await this.calls.toggleSpeaker();
+    } catch {
+      // error surfaced via calls.error
+    }
   }
 
   toggleExpanded(): void {
@@ -181,9 +273,14 @@ export class SendsarCallOverlayComponent implements OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.calls.bindRemoteAudioElement(null);
     if (document.fullscreenElement === this.dialogEl?.nativeElement) {
       void document.exitFullscreen();
     }
+  }
+
+  private bindRemoteAudio(): void {
+    this.calls.bindRemoteAudioElement(this.remoteAudioEl?.nativeElement ?? null);
   }
 
   private clampOffset(x: number, y: number): { x: number; y: number } {

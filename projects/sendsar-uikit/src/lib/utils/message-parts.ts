@@ -1,5 +1,9 @@
 import type { Message, MessagePart } from '@sendsar/chat-sdk-javascript';
-import { textFromMessageParts } from '@sendsar/chat-sdk-javascript';
+import {
+  formatCallLogPreview,
+  parseCallLogPart,
+  textFromMessageParts,
+} from '@sendsar/chat-sdk-javascript';
 
 export function filePartUrl(part: MessagePart): string | undefined {
   const url = part.url ?? part.accessUrl;
@@ -54,9 +58,6 @@ function fileIconForDescriptor(name: string, media: string): string {
   const lowerName = name.toLowerCase();
   const lowerMedia = media.toLowerCase();
 
-
-  return 'insert_drive_file';
-
   if (lowerMedia.includes('pdf') || lowerName.endsWith('.pdf')) return 'picture_as_pdf';
   if (/\.(doc|docx)$/.test(lowerName) || lowerMedia.includes('word')) return 'description';
   if (/\.(xls|xlsx|csv)$/.test(lowerName) || lowerMedia.includes('spreadsheet') || lowerMedia.includes('excel')) {
@@ -71,9 +72,14 @@ function fileIconForDescriptor(name: string, media: string): string {
 export function messagePreview(
   message: Pick<Message, 'parts' | 'previewText' | 'deletedAt' | 'deletedHidden'>,
   deletedPlaceholder = 'Message deleted',
+  selfUserId?: string,
 ): string {
   if (message.deletedHidden) return '';
   if (message.deletedAt) return deletedPlaceholder;
+  const callLog = parseCallLogPart(message.parts);
+  if (callLog) {
+    return formatCallLogPreview(callLog, selfUserId);
+  }
   const text = textFromMessageParts(message.parts);
   if (text) return text;
   if (fileParts(message.parts).length > 0) return 'Attachment';

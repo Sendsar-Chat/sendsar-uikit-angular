@@ -187,6 +187,95 @@
   font-weight: 700;
   background: linear-gradient(135deg, #3b82f6, #2563eb);
   color: #fff;
+  overflow: hidden;
+}
+
+.sc-call-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sc-call-chip {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 12rem;
+  max-width: min(18rem, calc(100% - 2rem));
+  padding: 0.55rem 0.55rem 0.55rem 0.65rem;
+  border: none;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow:
+    0 14px 40px rgb(0 0 0 / 40%),
+    0 0 0 1px rgb(148 163 184 / 20%);
+  cursor: pointer;
+  text-align: left;
+}
+
+.sc-call-chip:hover {
+  background: #1e293b;
+}
+
+.sc-call-chip-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sc-call-chip-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sc-call-chip-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  flex: 1;
+}
+
+.sc-call-chip-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-call-chip-status {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.sc-call-chip-hangup {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #dc2626;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sc-call-chip-hangup .material-icons {
+  font-size: 1.05rem;
 }
 
 .sc-call-title {

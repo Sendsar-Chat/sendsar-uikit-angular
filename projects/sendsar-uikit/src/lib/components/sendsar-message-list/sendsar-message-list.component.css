@@ -122,6 +122,19 @@
   gap: 1rem;
 }
 
+.sc-call-log-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.35rem 0.5rem;
+}
+
+.sc-call-log-time {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
 .sc-message {
   display: flex;
   align-items: flex-start;

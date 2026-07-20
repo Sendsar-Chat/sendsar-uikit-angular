@@ -50,7 +50,7 @@ export class SendsarChatShellComponent implements OnInit {
   readonly session = inject(SendsarSessionService);
 
   @Input() users: UserDirectoryEntry[] = [];
-  @Output() readonly callStarted = new EventEmitter<{ roomId: string; type: 'video' }>();
+  @Output() readonly callStarted = new EventEmitter<{ roomId: string; type: 'audio' | 'video' }>();
 
   @ViewChild(SendsarConversationListComponent)
   private conversationList?: SendsarConversationListComponent;
@@ -229,7 +229,27 @@ export class SendsarChatShellComponent implements OnInit {
     }
   }
 
+  async voiceCallMessage(): Promise<void> {
+    const roomId = this.selectedRoom()?.id;
+    if (!roomId || this.calling() || this.showCallUi()) {
+      return;
+    }
+
+    this.callError.set(null);
+
+    try {
+      await this.calls.startAudioCall(roomId);
+      this.callStarted.emit({ roomId, type: 'audio' });
+    } catch (err) {
+      this.callError.set(err instanceof Error ? err.message : 'Failed to start voice call');
+    }
+  }
+
   callOverlayTitle(): string {
+    const peer = this.callPeerUser();
+    if (peer?.displayName) {
+      return peer.displayName;
+    }
     const active = this.calls.activeCall();
     const invite = this.calls.incomingInvite();
     const roomId = active?.roomId ?? invite?.roomId;
@@ -237,6 +257,52 @@ export class SendsarChatShellComponent implements OnInit {
       return this.roomTitle();
     }
     return active?.type === 'audio' || invite?.type === 'audio' ? 'Voice call' : 'Video call';
+  }
+
+  callOverlayAvatarUrl(): string | null {
+    return this.callPeerUser()?.avatarUrl ?? null;
+  }
+
+  callOverlayInitials(): string {
+    const peer = this.callPeerUser();
+    if (peer) {
+      return initialsFor(peer.displayName);
+    }
+    return initialsFor(this.callOverlayTitle());
+  }
+
+  async onCallRedial(event: { roomId: string; type: 'audio' | 'video' }): Promise<void> {
+    if (this.calling() || this.showCallUi()) {
+      this.callError.set('A call is already in progress');
+      return;
+    }
+    this.callError.set(null);
+    try {
+      await this.calls.startCallOfType(event.roomId, event.type);
+      this.callStarted.emit(event);
+    } catch (err) {
+      this.callError.set(err instanceof Error ? err.message : 'Failed to start call');
+    }
+  }
+
+  private callPeerUser(): UserDirectoryEntry | null {
+    const selfId = this.session.session?.chatUserId ?? '';
+    const map = userDirectoryMap(this.users);
+    const invite = this.calls.incomingInvite();
+    if (invite?.createdByUserId && invite.createdByUserId !== selfId) {
+      const fromInvite = map.get(invite.createdByUserId);
+      if (fromInvite) return fromInvite;
+    }
+
+    const room = this.selectedRoom();
+    const roomId = this.calls.activeCall()?.roomId ?? invite?.roomId;
+    if (room && roomId === room.id && isDirectMessage(room)) {
+      const peerId = parseDmPeerId(room.externalId, selfId);
+      if (peerId) {
+        return map.get(peerId) ?? { id: peerId, displayName: peerId };
+      }
+    }
+    return null;
   }
 
   private wireRealtime(): void {

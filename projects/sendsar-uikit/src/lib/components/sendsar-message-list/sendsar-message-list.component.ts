@@ -17,7 +17,9 @@ import {
   createRoomSubscription,
   isMessageReadByPeer,
   mergeMessagesById,
+  parseCallLogPart,
   textFromMessageParts,
+  type CallLogData,
   type Message,
   type MessagePart,
   type RoomSubscription,
@@ -30,6 +32,7 @@ import { segmentTextWithEmoji, type TextSegment } from '../../utils/emoji-segmen
 import { getCachedRoomThread, setCachedRoomThread } from '../../utils/room-thread-cache';
 import { displayNameFor, initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
 import { SendsarAnimatedEmojiComponent } from '../mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
+import { SendsarCallLogBubbleComponent } from '../mini-components/sendsar-call-log-bubble/sendsar-call-log-bubble.component';
 import { SendsarFilePreviewComponent } from '../mini-components/sendsar-file-preview/sendsar-file-preview.component';
 import { SendsarVoiceMessageComponent } from '../mini-components/sendsar-voice-message/sendsar-voice-message.component';
 
@@ -38,7 +41,14 @@ const QUICK_REACTIONS = ['👍', '❤️', '😂', '🎉'] as const;
 @Component({
   selector: 'sc-message-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SendsarAnimatedEmojiComponent, SendsarFilePreviewComponent, SendsarVoiceMessageComponent],
+  imports: [
+    CommonModule,
+    FormsModule,
+    SendsarAnimatedEmojiComponent,
+    SendsarCallLogBubbleComponent,
+    SendsarFilePreviewComponent,
+    SendsarVoiceMessageComponent,
+  ],
   templateUrl: './sendsar-message-list.component.html',
   styleUrl: './sendsar-message-list.component.css',
 })
@@ -54,6 +64,7 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   @Input() users: UserDirectoryEntry[] = [];
   @Input() chatSettings: TenantChatSettings | null = null;
   @Output() readonly activity = new EventEmitter<void>();
+  @Output() readonly callRedial = new EventEmitter<{ roomId: string; type: 'audio' | 'video' }>();
 
   readonly messages = signal<Message[]>([]);
   readonly loading = signal(false);
@@ -79,7 +90,20 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
 
   preview(message: Message): string {
     const placeholder = this.chatSettings?.deletedMessagePlaceholder ?? 'Message deleted';
-    return messagePreview(message, placeholder);
+    return messagePreview(message, placeholder, this.session.session?.chatUserId);
+  }
+
+  callLog(message: Message): CallLogData | null {
+    return parseCallLogPart(message.parts);
+  }
+
+  selfUserId(): string | null {
+    return this.session.session?.chatUserId ?? null;
+  }
+
+  onCallRedial(type: 'audio' | 'video'): void {
+    if (!this.roomId) return;
+    this.callRedial.emit({ roomId: this.roomId, type });
   }
 
   textParts(parts: MessagePart[]): MessagePart[] {

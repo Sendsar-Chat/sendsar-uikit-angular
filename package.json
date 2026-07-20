@@ -13,6 +13,7 @@
   "scripts": {
     "ng": "ng",
     "setup": "node scripts/setup.mjs",
+    "link:local-sdks": "pnpm --dir ../sendsar-monorepo/packages/protocol build && pnpm --dir ../sendsar-monorepo/packages/chat-sdk-javascript build && pnpm --dir ../sendsar-monorepo/packages/call-sdk-javascript build",
     "build:lib": "ng build sendsar-uikit",
     "build:app": "ng build sample-app",
     "build": "npm run build:lib && npm run build:app",
@@ -30,9 +31,9 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "@sendsar/call-sdk-javascript": "^0.1.1",
-    "@sendsar/chat-sdk-javascript": "^0.2.2",
-    "@sendsar/protocol": "^0.1.0",
+    "@sendsar/call-sdk-javascript": "link:../sendsar-monorepo/packages/call-sdk-javascript",
+    "@sendsar/chat-sdk-javascript": "link:../sendsar-monorepo/packages/chat-sdk-javascript",
+    "@sendsar/protocol": "link:../sendsar-monorepo/packages/protocol",
     "lottie-web": "^5.13.0",
     "ngx-lottie": "^13.0.1",
     "rxjs": "~7.8.0",
@@ -55,5 +56,12 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^19.2.0",
     "typescript": "~5.7.2"
+  },
+  "pnpm": {
+    "overrides": {
+      "@sendsar/call-sdk-javascript": "link:../sendsar-monorepo/packages/call-sdk-javascript",
+      "@sendsar/chat-sdk-javascript": "link:../sendsar-monorepo/packages/chat-sdk-javascript",
+      "@sendsar/protocol": "link:../sendsar-monorepo/packages/protocol"
+    }
   }
 }

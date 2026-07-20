@@ -1,0 +1,45 @@
+:host {
+  display: block;
+}
+
+.sc-call-log {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.65rem;
+  border: none;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.35;
+  cursor: pointer;
+  font-family: inherit;
+}
+
+.sc-call-log:hover {
+  background: #cbd5e1;
+}
+
+.sc-call-log-icon {
+  font-size: 1.15rem;
+  color: #64748b;
+}
+
+.sc-call-log--missed,
+.sc-call-log--missed .sc-call-log-icon {
+  color: #dc2626;
+}
+
+.sc-call-log--missed {
+  background: #fee2e2;
+}
+
+.sc-call-log--missed:hover {
+  background: #fecaca;
+}
+
+.sc-call-log--video:not(.sc-call-log--missed) .sc-call-log-icon {
+  color: #2563eb;
+}

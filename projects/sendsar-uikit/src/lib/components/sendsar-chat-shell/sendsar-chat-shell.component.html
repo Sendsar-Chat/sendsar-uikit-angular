@@ -19,7 +19,11 @@
     }
 
     @if (showCallUi()) {
-      <sc-call-overlay [title]="callOverlayTitle()" />
+      <sc-call-overlay
+        [title]="callOverlayTitle()"
+        [avatarUrl]="callOverlayAvatarUrl()"
+        [peerInitials]="callOverlayInitials()"
+      />
     }
 
     <sc-conversation-list
@@ -50,7 +54,15 @@
             <button type="button" class="sc-header-action" title="Search in conversation" aria-label="Search">
               <span class="material-icons" aria-hidden="true">search</span>
             </button>
-            <button type="button" class="sc-header-action" title="Voice call" aria-label="Voice call">
+            <button
+              type="button"
+              class="sc-header-action"
+              title="Voice call"
+              aria-label="Start voice call"
+              [class.sc-header-action--active]="calling()"
+              [disabled]="calling() || showCallUi()"
+              (click)="voiceCallMessage()"
+            >
               <span class="material-icons" aria-hidden="true">call</span>
             </button>
             <button
@@ -59,7 +71,7 @@
               title="Video call"
               aria-label="Start video call"
               [class.sc-header-action--active]="calling()"
-              [disabled]="calling()"
+              [disabled]="calling() || showCallUi()"
               (click)="videoCallMessage()"
             >
               <span class="material-icons" aria-hidden="true">videocam</span>
@@ -81,6 +93,7 @@
           [users]="users"
           [chatSettings]="chatSettings()"
           (activity)="onThreadActivity()"
+          (callRedial)="onCallRedial($event)"
         />
         <sc-composer [roomId]="room.id" (sent)="onMessageSent()" />
         @if (callError()) {
