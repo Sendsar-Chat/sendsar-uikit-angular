@@ -31,9 +31,9 @@
     "@angular/platform-browser": "^19.2.0",
     "@angular/platform-browser-dynamic": "^19.2.0",
     "@angular/router": "^19.2.0",
-    "@sendsar/call-sdk-javascript": "link:../sendsar-monorepo/packages/call-sdk-javascript",
-    "@sendsar/chat-sdk-javascript": "link:../sendsar-monorepo/packages/chat-sdk-javascript",
-    "@sendsar/protocol": "link:../sendsar-monorepo/packages/protocol",
+    "@sendsar/call-sdk-javascript": "^0.2.0",
+    "@sendsar/chat-sdk-javascript": "^0.2.3",
+    "@sendsar/protocol": "^0.2.0",
     "lottie-web": "^5.13.0",
     "ngx-lottie": "^13.0.1",
     "rxjs": "~7.8.0",
@@ -56,12 +56,5 @@
     "karma-jasmine-html-reporter": "~2.1.0",
     "ng-packagr": "^19.2.0",
     "typescript": "~5.7.2"
-  },
-  "pnpm": {
-    "overrides": {
-      "@sendsar/call-sdk-javascript": "link:../sendsar-monorepo/packages/call-sdk-javascript",
-      "@sendsar/chat-sdk-javascript": "link:../sendsar-monorepo/packages/chat-sdk-javascript",
-      "@sendsar/protocol": "link:../sendsar-monorepo/packages/protocol"
-    }
   }
 }
