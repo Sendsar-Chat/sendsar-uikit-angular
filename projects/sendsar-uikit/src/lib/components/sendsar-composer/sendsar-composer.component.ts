@@ -16,7 +16,11 @@ import {
 
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { ComposerTypingController } from '@sendsar/chat-sdk-javascript';
+import {
+  ComposerTypingController,
+  textFromMessageParts,
+  type Message,
+} from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import {
@@ -59,7 +63,9 @@ export class SendsarComposerComponent
   @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
   @Input({ required: true }) roomId!: string;
+  @Input() editing: Message | null = null;
   @Output() readonly sent = new EventEmitter<void>();
+  @Output() readonly editClosed = new EventEmitter<void>();
   text = '';
   readonly showEmojiPicker = signal(false);
   readonly sending = signal(false);
@@ -76,6 +82,34 @@ export class SendsarComposerComponent
       this.clearPendingFile();
       this.bindTyping();
     }
+    if (changes['editing'] && this.editing) {
+      // Load the message being edited into the input.
+      this.text = textFromMessageParts(this.editing.parts);
+      this.showEmojiPicker.set(false);
+      this.clearPendingVoice();
+      this.clearPendingFile();
+      queueMicrotask(() => {
+        this.resizeTextarea();
+        const textarea = this.messageInput?.nativeElement;
+        textarea?.focus();
+        textarea?.setSelectionRange(this.text.length, this.text.length);
+      });
+    }
+  }
+
+  editingPreview(): string {
+    return this.editing ? textFromMessageParts(this.editing.parts) : '';
+  }
+
+  cancelEditing(): void {
+    if (!this.editing) return;
+    this.text = '';
+    queueMicrotask(() => this.resizeTextarea());
+    this.editClosed.emit();
+  }
+
+  onEscapeKey(): void {
+    this.cancelEditing();
   }
 
   @HostListener('document:click', ['$event'])
@@ -346,6 +380,24 @@ export class SendsarComposerComponent
     this.sending.set(true);
     this.error.set(null);
     this.typingController?.stop();
+
+    if (this.editing) {
+      try {
+        await this.chat.updateMessage(this.roomId, this.editing.id, {
+          parts: [{ type: 'text', text: body }],
+        });
+        this.text = '';
+        queueMicrotask(() => this.resizeTextarea());
+        this.showEmojiPicker.set(false);
+        this.editClosed.emit();
+      } catch (err) {
+        this.error.set(err instanceof Error ? err.message : 'Failed to update message');
+      } finally {
+        this.sending.set(false);
+      }
+      return;
+    }
+
     try {
       const clientMessageId = crypto.randomUUID();
       const attachment = file?.file ?? voice?.file;

@@ -26,49 +26,4 @@ export class DemoSessionService {
 
     return (await res.json()) as SessionResponse;
   }
-
-  async ensureDirectMessage(selfId: string, peerId: string): Promise<string> {
-    const res = await fetch('/api/chat/demo/ensure-dm', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        selfId,
-        peerId,
-        members: environment.users,
-      }),
-    });
-
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as { error?: string } | null;
-      throw new Error(body?.error ?? `Ensure DM failed: ${res.status}`);
-    }
-
-    const { roomId } = (await res.json()) as { roomId: string };
-    return roomId;
-  }
-
-  async ensureGroup(
-    selfId: string,
-    name: string,
-    memberIds: string[],
-  ): Promise<string> {
-    const res = await fetch('/api/chat/demo/ensure-group', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        selfId,
-        name,
-        memberIds,
-        members: environment.users,
-      }),
-    });
-
-    if (!res.ok) {
-      const body = (await res.json().catch(() => null)) as { error?: string } | null;
-      throw new Error(body?.error ?? `Ensure group failed: ${res.status}`);
-    }
-
-    const { roomId } = (await res.json()) as { roomId: string };
-    return roomId;
-  }
 }

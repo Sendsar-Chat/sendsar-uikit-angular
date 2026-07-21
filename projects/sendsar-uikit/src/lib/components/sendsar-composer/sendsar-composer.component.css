@@ -9,6 +9,62 @@
   padding: 0.85rem 1rem;
 }
 
+.sc-editing-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0.5rem;
+  background: #eff6ff;
+  border-radius: 0.5rem;
+}
+
+.sc-editing-icon {
+  font-size: 1.1rem;
+  color: #2563eb;
+}
+
+.sc-editing-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sc-editing-title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2563eb;
+}
+
+.sc-editing-preview {
+  font-size: 0.8rem;
+  color: #64748b;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-editing-cancel {
+  border: none;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  padding: 0.2rem;
+  border-radius: 999px;
+  color: #64748b;
+  cursor: pointer;
+}
+
+.sc-editing-cancel:hover {
+  background: #dbeafe;
+}
+
+.sc-editing-cancel .material-icons {
+  font-size: 1.1rem;
+}
+
 .sc-attach-panel {
   display: flex;
   flex-wrap: wrap;

@@ -1,36 +1,39 @@
 import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import type { DemoUser } from '../environments/environment';
+import { initialsFor, type UserDirectoryEntry } from '../../utils/user-directory';
 
-export type NewChatDirect = { kind: 'direct'; peerId: string };
-export type NewChatGroup = { kind: 'group'; name: string; memberIds: string[] };
-export type NewChatRequest = NewChatDirect | NewChatGroup;
+export type SendsarNewChatDirect = { kind: 'direct'; peerId: string };
+export type SendsarNewChatGroup = { kind: 'group'; name: string; memberIds: string[] };
+export type SendsarNewChatRequest = SendsarNewChatDirect | SendsarNewChatGroup;
 
 @Component({
-  selector: 'app-new-chat-dialog',
+  selector: 'sc-new-chat-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './new-chat-dialog.component.html',
-  styleUrl: './new-chat-dialog.component.css',
+  imports: [CommonModule],
+  templateUrl: './sendsar-new-chat-dialog.component.html',
+  styleUrl: './sendsar-new-chat-dialog.component.css',
 })
-export class NewChatDialogComponent {
+export class SendsarNewChatDialogComponent {
   @Input({ required: true }) selfId!: string;
-  @Input({ required: true }) users: DemoUser[] = [];
+  @Input({ required: true }) users: UserDirectoryEntry[] = [];
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
   @Input() open = false;
   @Input() busy = false;
+  @Input() error: string | null = null;
 
   @Output() readonly closed = new EventEmitter<void>();
-  @Output() readonly create = new EventEmitter<NewChatRequest>();
+  @Output() readonly create = new EventEmitter<SendsarNewChatRequest>();
 
   readonly tab = signal<'direct' | 'group'>('direct');
   readonly selectedPeerId = signal('');
-  readonly groupName = signal('');
   readonly selectedMembers = signal<Set<string>>(new Set());
 
-  peers(): DemoUser[] {
-    return this.users.filter((u) => u.chatUserId !== this.selfId);
+  peers(): UserDirectoryEntry[] {
+    return this.users.filter((u) => u.id !== this.selfId);
+  }
+
+  initials(name: string): string {
+    return initialsFor(name);
   }
 
   isOnline(userId: string): boolean {

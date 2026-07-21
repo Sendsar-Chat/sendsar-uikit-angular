@@ -76,15 +76,28 @@
             >
               <span class="material-icons" aria-hidden="true">videocam</span>
             </button>
-            <button
-              type="button"
-              class="sc-header-action"
-              title="Room details"
-              aria-label="Room details"
-              (click)="showInfoPanel.set(true)"
-            >
-              <span class="material-icons" aria-hidden="true">more_vert</span>
-            </button>
+            <div class="sc-header-menu-wrap">
+              <button
+                type="button"
+                class="sc-header-action"
+                title="More options"
+                aria-label="More options"
+                [attr.aria-expanded]="showHeaderMenu()"
+                (click)="toggleHeaderMenu($event)"
+              >
+                <span class="material-icons" aria-hidden="true">more_vert</span>
+              </button>
+              @if (showHeaderMenu()) {
+                <div class="sc-header-menu" role="menu">
+                  <button type="button" class="sc-header-menu-item" (click)="onHeaderNewChat()">
+                    <span class="material-icons" aria-hidden="true">add_comment</span> New Chat
+                  </button>
+                  <button type="button" class="sc-header-menu-item" (click)="onHeaderRoomDetails()">
+                    <span class="material-icons" aria-hidden="true">info</span> Room Details
+                  </button>
+                </div>
+              }
+            </div>
           </div>
         </header>
         <sc-message-list
@@ -94,8 +107,14 @@
           [chatSettings]="chatSettings()"
           (activity)="onThreadActivity()"
           (callRedial)="onCallRedial($event)"
+          (editRequested)="onEditRequested($event)"
         />
-        <sc-composer [roomId]="room.id" (sent)="onMessageSent()" />
+        <sc-composer
+          [roomId]="room.id"
+          [editing]="editingMessage()"
+          (sent)="onMessageSent()"
+          (editClosed)="editingMessage.set(null)"
+        />
         @if (callError()) {
           <p class="sc-call-error">{{ callError() }}</p>
         }
@@ -120,5 +139,16 @@
         (closed)="closeInfoPanel()"
       />
     }
+
+    <sc-new-chat-dialog
+      [open]="showNewChat()"
+      [selfId]="session.session?.chatUserId ?? ''"
+      [users]="users"
+      [onlineUserIds]="onlineUserIds()"
+      [busy]="creatingChat()"
+      [error]="newChatError()"
+      (closed)="closeNewChat()"
+      (create)="onNewChat($event)"
+    />
   </div>
 }

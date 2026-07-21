@@ -2,6 +2,7 @@ import {
   Component,
   DestroyRef,
   EventEmitter,
+  HostListener,
   Input,
   OnInit,
   Output,
@@ -28,6 +29,24 @@ import {
   type SendsarCallRedialEvent,
 } from '../sendsar-message-list/sendsar-message-list.component';
 import { SendsarRoomInfoComponent } from '../sendsar-room-info/sendsar-room-info.component';
+import {
+  SendsarNewChatDialogComponent,
+  type SendsarNewChatRequest,
+} from '../sendsar-new-chat-dialog/sendsar-new-chat-dialog.component';
+
+/**
+ * Creates the room on the host backend and returns its id plus optional
+ * metadata used to open the thread before it appears in the sidebar.
+ */
+export type SendsarCreateRoomHandler = (
+  request: SendsarNewChatRequest,
+  selfId: string,
+) => Promise<{
+  roomId: string;
+  title?: string;
+  externalId?: string;
+  customType?: string;
+}>;
 import { SendsarCallService } from '../../services/sendsar-call.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { isDirectMessage, isGroupRoom, parseDmPeerId, resolveRoomLabel } from '../../utils/room-label';
@@ -43,6 +62,7 @@ import { initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../ut
     SendsarComposerComponent,
     SendsarRoomInfoComponent,
     SendsarCallOverlayComponent,
+    SendsarNewChatDialogComponent,
   ],
   templateUrl: './sendsar-chat-shell.component.html',
   styleUrl: './sendsar-chat-shell.component.css',
@@ -53,6 +73,8 @@ export class SendsarChatShellComponent implements OnInit {
   readonly session = inject(SendsarSessionService);
 
   @Input() users: UserDirectoryEntry[] = [];
+  /** Overrides the built-in room creation (POST to the BFF `ensure-dm`/`ensure-group` routes). */
+  @Input() createRoom?: SendsarCreateRoomHandler;
   @Output() readonly callStarted = new EventEmitter<{ roomId: string; type: 'audio' | 'video' }>();
 
   @ViewChild(SendsarConversationListComponent)
@@ -66,6 +88,11 @@ export class SendsarChatShellComponent implements OnInit {
   readonly calling = this.calls.calling;
   readonly showCallUi = this.calls.showCallUi;
   readonly callError = signal<string | null>(null);
+  readonly editingMessage = signal<Message | null>(null);
+  readonly showHeaderMenu = signal(false);
+  readonly showNewChat = signal(false);
+  readonly creatingChat = signal(false);
+  readonly newChatError = signal<string | null>(null);
 
   private realtimeWired = false;
   private presenceTracker: ReturnType<typeof createTenantPresenceTracker> | null = null;
@@ -86,6 +113,99 @@ export class SendsarChatShellComponent implements OnInit {
     this.selectedRoom.set(room);
     this.mobileShowThread.set(true);
     this.showInfoPanel.set(true);
+    this.editingMessage.set(null);
+  }
+
+  onEditRequested(message: Message): void {
+    this.editingMessage.set(message);
+  }
+
+  toggleHeaderMenu(event: Event): void {
+    event.stopPropagation();
+    this.showHeaderMenu.update((open) => !open);
+  }
+
+  onHeaderNewChat(): void {
+    this.showHeaderMenu.set(false);
+    this.newChatError.set(null);
+    this.showNewChat.set(true);
+  }
+
+  closeNewChat(): void {
+    this.showNewChat.set(false);
+    this.newChatError.set(null);
+  }
+
+  async onNewChat(request: SendsarNewChatRequest): Promise<void> {
+    const selfId = this.session.session?.chatUserId;
+    if (!selfId) return;
+    const handler = this.createRoom ?? this.defaultCreateRoom;
+
+    this.creatingChat.set(true);
+    this.newChatError.set(null);
+    try {
+      const { roomId, ...openOpts } = await handler(request, selfId);
+      this.closeNewChat();
+      await this.openRoom(roomId, openOpts);
+    } catch (err) {
+      this.newChatError.set(err instanceof Error ? err.message : 'Failed to create chat');
+    } finally {
+      this.creatingChat.set(false);
+    }
+  }
+
+  /** Default room creation against the host BFF (`/api/chat/demo/ensure-*` routes). */
+  private readonly defaultCreateRoom: SendsarCreateRoomHandler = async (request, selfId) => {
+    if (request.kind === 'direct') {
+      const roomId = await this.postForRoomId('/api/chat/demo/ensure-dm', {
+        selfId,
+        peerId: request.peerId,
+        members: this.directoryMembers(),
+      });
+      return {
+        roomId,
+        externalId: `dm:${[selfId, request.peerId].sort().join(':')}`,
+        customType: 'demo_dm',
+      };
+    }
+    const roomId = await this.postForRoomId('/api/chat/demo/ensure-group', {
+      selfId,
+      name: request.name,
+      memberIds: request.memberIds,
+      members: this.directoryMembers(),
+    });
+    return { roomId, title: request.name, customType: 'demo_group' };
+  };
+
+  /** The BFF ensure routes expect `{ chatUserId, displayName }` member records. */
+  private directoryMembers(): Array<{ chatUserId: string; displayName: string }> {
+    return this.users.map((u) => ({ chatUserId: u.id, displayName: u.displayName }));
+  }
+
+  private async postForRoomId(url: string, body: unknown): Promise<string> {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    });
+    if (!res.ok) {
+      const payload = (await res.json().catch(() => null)) as { error?: string } | null;
+      throw new Error(payload?.error ?? `Create room failed: ${res.status}`);
+    }
+    const { roomId } = (await res.json()) as { roomId: string };
+    return roomId;
+  }
+
+  onHeaderRoomDetails(): void {
+    this.showHeaderMenu.set(false);
+    this.showInfoPanel.set(true);
+  }
+
+  @HostListener('document:click')
+  closeHeaderMenu(): void {
+    if (this.showHeaderMenu()) {
+      this.showHeaderMenu.set(false);
+    }
   }
 
   closeInfoPanel(): void {

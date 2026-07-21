@@ -1,5 +1,24 @@
 <form class="sc-composer" (ngSubmit)="submit()">
   <div class="sc-box">
+    @if (editing) {
+      <div class="sc-editing-bar">
+        <span class="material-icons sc-editing-icon" aria-hidden="true">edit</span>
+        <div class="sc-editing-info">
+          <span class="sc-editing-title">Edit message</span>
+          <span class="sc-editing-preview">{{ editingPreview() }}</span>
+        </div>
+        <button
+          type="button"
+          class="sc-editing-cancel"
+          title="Cancel editing"
+          aria-label="Cancel editing"
+          (click)="cancelEditing()"
+        >
+          <span class="material-icons" aria-hidden="true">close</span>
+        </button>
+      </div>
+    }
+
     @if (pendingFile(); as attachment) {
       <sc-file-preview
         [attachment]="attachment"
@@ -27,6 +46,7 @@
       rows="1"
       autocomplete="off"
       (keydown.enter)="onEnterKey($event)"
+      (keydown.escape)="onEscapeKey()"
     ></textarea>
 
     @if (showEmojiPicker()) {
@@ -68,7 +88,7 @@
           title="Attach"
           (click)="openFilePicker()"
           aria-label="Attach file"
-          [disabled]="sending()"
+          [disabled]="sending() || !!editing"
         >
           <span class="material-icons" aria-hidden="true">attach_file</span>
         </button>
@@ -80,12 +100,12 @@
           aria-label="Voice message"
           [class.sc-tool-btn--active]="recording()"
           [attr.aria-pressed]="recording()"
-          [disabled]="sending()"
+          [disabled]="sending() || !!editing"
           (click)="voiceMessage()"
         >
           <span class="material-icons" aria-hidden="true">mic</span>
         </button>
-        
+
       </div>
 
       <div
@@ -101,7 +121,7 @@
           @if (sending()) {
             <span class="sc-send-spin"></span>
           } @else {
-            <span class="material-icons" aria-hidden="true">send</span>
+            <span class="material-icons" aria-hidden="true">{{ editing ? 'check' : 'send' }}</span>
           }
         </button>
       </div>

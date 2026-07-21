@@ -13,7 +13,6 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import {
   createRoomSubscription,
   isMessageReadByPeer,
@@ -34,6 +33,7 @@ import { getCachedRoomThread, setCachedRoomThread } from '../../utils/room-threa
 import { displayNameFor, initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
 import { SendsarAnimatedEmojiComponent } from '../mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
 import { SendsarCallLogBubbleComponent } from '../mini-components/sendsar-call-log-bubble/sendsar-call-log-bubble.component';
+import { SendsarEmojiPickerComponent } from '../mini-components/sendsar-emoji-picker/sendsar-emoji-picker.component';
 import { SendsarFilePreviewComponent } from '../mini-components/sendsar-file-preview/sendsar-file-preview.component';
 import { SendsarVoiceMessageComponent } from '../mini-components/sendsar-voice-message/sendsar-voice-message.component';
 
@@ -49,9 +49,9 @@ export type SendsarCallRedialEvent = {
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     SendsarAnimatedEmojiComponent,
     SendsarCallLogBubbleComponent,
+    SendsarEmojiPickerComponent,
     SendsarFilePreviewComponent,
     SendsarVoiceMessageComponent,
   ],
@@ -71,6 +71,7 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   @Input() chatSettings: TenantChatSettings | null = null;
   @Output() readonly activity = new EventEmitter<void>();
   readonly callRedial = output<SendsarCallRedialEvent>();
+  readonly editRequested = output<Message>();
 
   readonly messages = signal<Message[]>([]);
   readonly loading = signal(false);
@@ -78,11 +79,11 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   readonly nextCursor = signal<string | null>(null);
   readonly peerLastReadAt = signal<string | null>(null);
   readonly error = signal<string | null>(null);
-  readonly editingId = signal<string | null>(null);
-  editDraft = '';
 
   readonly quickReactions = QUICK_REACTIONS;
   readonly skeletonBubbles = [0, 1, 2, 3];
+  readonly contextMenu = signal<{ message: Message; x: number; y: number } | null>(null);
+  readonly contextEmojiExpanded = signal(false);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['roomId']) {
@@ -187,33 +188,8 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
     }
   }
 
-  startEdit(message: Message): void {
-    if (!this.isSelf(message) || message.deletedAt) return;
-    this.editingId.set(message.id);
-    this.editDraft = textFromMessageParts(message.parts);
-  }
-
-  cancelEdit(): void {
-    this.editingId.set(null);
-    this.editDraft = '';
-  }
-
-  async saveEdit(message: Message): Promise<void> {
-    const text = this.editDraft.trim();
-    if (!text) return;
-    try {
-      await this.chat.updateMessage(this.roomId, message.id, {
-        parts: [{ type: 'text', text }],
-      });
-      this.cancelEdit();
-    } catch (err) {
-      this.error.set(err instanceof Error ? err.message : 'Failed to edit message');
-    }
-  }
-
   async deleteMessage(message: Message): Promise<void> {
     if (!this.isSelf(message) || message.deletedAt) return;
-    if (!confirm('Delete this message?')) return;
     try {
       await this.chat.deleteMessage(this.roomId, message.id);
     } catch (err) {
@@ -229,6 +205,52 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
     }
   }
 
+  onMessageContextMenu(event: MouseEvent, message: Message): void {
+    if (message.deletedAt) return;
+    event.preventDefault();
+    event.stopPropagation();
+    // Clamp so the menu stays inside the viewport.
+    const menuWidth = 220;
+    const menuHeight = 320;
+    const x = Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8));
+    const y = Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8));
+    this.contextEmojiExpanded.set(false);
+    this.contextMenu.set({ message, x, y });
+  }
+
+  closeContextMenu(): void {
+    this.contextMenu.set(null);
+    this.contextEmojiExpanded.set(false);
+  }
+
+  toggleContextEmojiList(): void {
+    this.contextEmojiExpanded.update((expanded) => !expanded);
+  }
+
+  reactFromMenu(message: Message, emoji: string): void {
+    void this.react(message, emoji);
+    this.closeContextMenu();
+  }
+
+  copyMessageText(message: Message): void {
+    const text = textFromMessageParts(message.parts);
+    if (text) {
+      void navigator.clipboard?.writeText(text);
+    }
+    this.closeContextMenu();
+  }
+
+  editFromMenu(message: Message): void {
+    this.closeContextMenu();
+    if (!this.isSelf(message) || message.deletedAt) return;
+    this.editRequested.emit(message);
+  }
+
+  deleteFromMenu(message: Message): void {
+    this.closeContextMenu();
+    void this.deleteMessage(message);
+  }
+
   protected readonly filePartUrl = filePartUrl;
   protected readonly filePreviewFromPart = filePreviewFromPart;
   protected readonly isImagePart = isImagePart;
@@ -237,7 +259,6 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   private bindRoom(): void {
     this.subscription?.destroy();
     this.error.set(null);
-    this.cancelEdit();
 
     const roomId = this.roomId;
     const cached = roomId ? getCachedRoomThread(roomId) : undefined;

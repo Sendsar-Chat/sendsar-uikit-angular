@@ -1,4 +1,4 @@
-.backdrop {
+.sc-dialog-backdrop {
   position: fixed;
   inset: 0;
   background: rgb(15 23 42 / 45%);
@@ -8,7 +8,7 @@
   padding: 1rem;
 }
 
-.dialog {
+.sc-dialog {
   width: min(100%, 26rem);
   max-height: min(90vh, 32rem);
   background: #fff;
@@ -19,19 +19,19 @@
   overflow: hidden;
 }
 
-.dialog-header {
+.sc-dialog-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   padding: 1rem 1rem 0.5rem;
 }
 
-.dialog-header h2 {
+.sc-dialog-header h2 {
   margin: 0;
   font-size: 1.1rem;
 }
 
-.close {
+.sc-dialog-close {
   border: none;
   background: transparent;
   font-size: 1.5rem;
@@ -40,14 +40,14 @@
   color: #64748b;
 }
 
-.tabs {
+.sc-dialog-tabs {
   display: flex;
   gap: 0.35rem;
   padding: 0 1rem 0.75rem;
   border-bottom: 1px solid #e2e8f0;
 }
 
-.tabs button {
+.sc-dialog-tabs button {
   flex: 1;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
@@ -57,13 +57,22 @@
   cursor: pointer;
 }
 
-.tabs button.active {
+.sc-dialog-tabs button.sc-dialog-tab--active {
   background: #2563eb;
   border-color: #2563eb;
   color: #fff;
 }
 
-.panel {
+.sc-dialog-error {
+  margin: 0.5rem 1rem 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+
+.sc-dialog-panel {
   padding: 1rem;
   overflow: auto;
   display: flex;
@@ -71,13 +80,13 @@
   gap: 0.75rem;
 }
 
-.hint {
+.sc-dialog-hint {
   margin: 0;
   font-size: 0.85rem;
   color: #64748b;
 }
 
-.field {
+.sc-dialog-field {
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
@@ -85,13 +94,13 @@
   color: #475569;
 }
 
-.field input {
+.sc-dialog-field input {
   border: 1px solid #cbd5e1;
   border-radius: 0.5rem;
   padding: 0.5rem 0.65rem;
 }
 
-.user-list {
+.sc-dialog-user-list {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -100,7 +109,7 @@
   gap: 0.35rem;
 }
 
-.user-row {
+.sc-dialog-user-row {
   display: flex;
   align-items: center;
   gap: 0.65rem;
@@ -109,11 +118,11 @@
   cursor: pointer;
 }
 
-.user-row:hover {
+.sc-dialog-user-row:hover {
   background: #f1f5f9;
 }
 
-.avatar {
+.sc-dialog-avatar {
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
@@ -125,19 +134,19 @@
   font-weight: 700;
 }
 
-.name {
+.sc-dialog-name {
   flex: 1;
   font-weight: 500;
 }
 
-.online {
+.sc-dialog-online {
   margin-left: 0.35rem;
   font-size: 0.75rem;
   color: #16a34a;
   font-weight: 600;
 }
 
-.dialog-footer {
+.sc-dialog-footer {
   display: flex;
   justify-content: flex-end;
   gap: 0.5rem;
@@ -145,27 +154,27 @@
   padding-top: 0.5rem;
 }
 
-.secondary,
-.primary {
+.sc-dialog-secondary,
+.sc-dialog-primary {
   border-radius: 0.5rem;
   padding: 0.5rem 0.85rem;
   font-weight: 600;
   cursor: pointer;
 }
 
-.secondary {
+.sc-dialog-secondary {
   border: 1px solid #cbd5e1;
   background: #fff;
   color: #334155;
 }
 
-.primary {
+.sc-dialog-primary {
   border: none;
   background: #2563eb;
   color: #fff;
 }
 
-.primary:disabled {
+.sc-dialog-primary:disabled {
   opacity: 0.5;
   cursor: not-allowed;
 }

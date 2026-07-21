@@ -54,6 +54,7 @@
                 class="sc-message"
                 [class.sc-message--self]="isSelf(message)"
                 [class.sc-message--deleted]="message.deletedAt"
+                (contextmenu)="onMessageContextMenu($event, message)"
               >
                 <header class="sc-message-header">
                   @if (isSelf(message)) {
@@ -68,16 +69,7 @@
                 </header>
 
                 <div class="sc-message-content">
-                  @if (editingId() === message.id) {
-                    <form class="sc-edit-form" (ngSubmit)="saveEdit(message)">
-                      <input type="text" [(ngModel)]="editDraft" name="editDraft" />
-                      <div class="sc-edit-actions">
-                        <button type="submit">Save</button>
-                        <button type="button" (click)="cancelEdit()">Cancel</button>
-                      </div>
-                    </form>
-                  } @else {
-                    <div class="sc-bubble">
+                  <div class="sc-bubble">
                       <div class="sc-bubble-content">
                         @if (message.deletedAt) {
                           <span class="sc-deleted">{{ preview(message) }}</span>
@@ -139,32 +131,15 @@
                       }
                     </div>
 
-                    @if (!message.deletedAt) {
-                      <div class="sc-actions">
-                        @for (emoji of quickReactions; track emoji) {
-                          <button type="button" class="sc-react-btn" (click)="react(message, emoji)" [title]="'React with ' + emoji">
-                            {{ emoji }}
-                          </button>
-                        }
-                        @if (isSelf(message)) {
-                          <button type="button" class="sc-action-btn" (click)="startEdit(message)">Edit</button>
-                          <button type="button" class="sc-action-btn sc-action-btn--danger" (click)="deleteMessage(message)">
-                            Delete
-                          </button>
-                        }
-                      </div>
-                    }
-
                     @if (reactionSummary(message).length > 0) {
                       <div class="sc-reactions">
                         @for (r of reactionSummary(message); track r.emoji) {
                           <button type="button" class="sc-reaction-pill" (click)="react(message, r.emoji)">
-                            {{ r.emoji }} {{ r.count }}
+                            <sc-animated-emoji [emoji]="r.emoji" /> {{ r.count }}
                           </button>
                         }
                       </div>
                     }
-                  }
                 </div>
               </article>
             }
@@ -176,5 +151,71 @@
     @if (error()) {
       <p class="sc-error">{{ error() }}</p>
     }
+  }
+
+  @if (contextMenu(); as menu) {
+    <div
+      class="sc-context-backdrop"
+      (click)="closeContextMenu()"
+      (contextmenu)="$event.preventDefault(); closeContextMenu()"
+    ></div>
+    <div class="sc-context-menu" [style.left.px]="menu.x" [style.top.px]="menu.y" role="menu">
+      <div class="sc-context-reactions">
+        @for (emoji of quickReactions; track emoji) {
+          <button
+            type="button"
+            (click)="reactFromMenu(menu.message, emoji)"
+            [title]="'React with ' + emoji"
+          >
+            <sc-animated-emoji [emoji]="emoji" />
+          </button>
+        }
+        <button
+          type="button"
+          class="sc-context-reactions-more"
+          [class.sc-context-reactions-more--open]="contextEmojiExpanded()"
+          (click)="toggleContextEmojiList()"
+          title="More reactions"
+          aria-label="More reactions"
+        >
+          <span class="material-icons" aria-hidden="true">expand_more</span>
+        </button>
+      </div>
+      @if (contextEmojiExpanded()) {
+        <div class="sc-context-emoji-list">
+          <sc-emoji-picker (emojiSelected)="reactFromMenu(menu.message, $event)" />
+        </div>
+      } @else {
+        <div class="sc-context-list">
+          <button type="button" class="sc-context-item" (click)="closeContextMenu()">
+            <span class="material-icons" aria-hidden="true">reply</span> Reply
+          </button>
+          <button type="button" class="sc-context-item" (click)="closeContextMenu()">
+            <span class="material-icons" aria-hidden="true">push_pin</span> Pin
+          </button>
+          <button type="button" class="sc-context-item" (click)="copyMessageText(menu.message)">
+            <span class="material-icons" aria-hidden="true">content_copy</span> Copy Text
+          </button>
+          <button type="button" class="sc-context-item" (click)="closeContextMenu()">
+            <span class="material-icons" aria-hidden="true">shortcut</span> Forward
+          </button>
+          @if (isSelf(menu.message)) {
+            <button type="button" class="sc-context-item" (click)="editFromMenu(menu.message)">
+              <span class="material-icons" aria-hidden="true">edit</span> Edit
+            </button>
+            <button
+              type="button"
+              class="sc-context-item sc-context-item--danger"
+              (click)="deleteFromMenu(menu.message)"
+            >
+              <span class="material-icons" aria-hidden="true">delete</span> Delete
+            </button>
+          }
+          <button type="button" class="sc-context-item" (click)="closeContextMenu()">
+            <span class="material-icons" aria-hidden="true">check_circle</span> Select
+          </button>
+        </div>
+      }
+    </div>
   }
 </div>
