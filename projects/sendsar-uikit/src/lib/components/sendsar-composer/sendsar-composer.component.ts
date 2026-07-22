@@ -20,9 +20,11 @@ import {
   ComposerTypingController,
   textFromMessageParts,
   type Message,
+  type MessagePart,
 } from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
+import { fileParts, filePreviewFromPart, isAudioPart } from '../../utils/message-parts';
 import {
   SendsarVoicePreviewData,
   buildVoiceWaveform,
@@ -59,6 +61,11 @@ export class SendsarComposerComponent
   private recordingChunks: Blob[] = [];
   private recordingStream: MediaStream | null = null;
   private recordingTimer: ReturnType<typeof setInterval> | null = null;
+  /** Original non-voice file part while editing (kept unless removed/replaced). */
+  private editingFilePart: MessagePart | null = null;
+  /** Original voice part while editing (always kept — caption text only). */
+  private editingVoicePart: MessagePart | null = null;
+  readonly editingVoiceLabel = signal<string | null>(null);
 
   @ViewChild('messageInput') messageInput?: ElementRef<HTMLTextAreaElement>;
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
@@ -82,28 +89,60 @@ export class SendsarComposerComponent
       this.clearPendingFile();
       this.bindTyping();
     }
-    if (changes['editing'] && this.editing) {
-      // Load the message being edited into the input.
-      this.text = textFromMessageParts(this.editing.parts);
-      this.showEmojiPicker.set(false);
-      this.clearPendingVoice();
-      this.clearPendingFile();
-      queueMicrotask(() => {
-        this.resizeTextarea();
-        const textarea = this.messageInput?.nativeElement;
-        textarea?.focus();
-        textarea?.setSelectionRange(this.text.length, this.text.length);
-      });
+    if (changes['editing']) {
+      if (this.editing) {
+        this.text = textFromMessageParts(this.editing.parts);
+        this.showEmojiPicker.set(false);
+        this.clearPendingVoice();
+        this.clearPendingFile();
+        this.editingVoicePart = this.voiceFilePart(this.editing);
+        this.editingVoiceLabel.set(
+          this.editingVoicePart ? this.editingVoicePart.filename ?? 'Voice message' : null,
+        );
+        // Load image/file attachment for edit — skip voice (caption-only).
+        const editableFile = this.editableFilePart(this.editing);
+        this.editingFilePart = editableFile;
+        if (editableFile) {
+          this.pendingFile.set(filePreviewFromPart(editableFile));
+        }
+        queueMicrotask(() => {
+          this.resizeTextarea();
+          const textarea = this.messageInput?.nativeElement;
+          textarea?.focus();
+          textarea?.setSelectionRange(this.text.length, this.text.length);
+        });
+      } else if (changes['editing'].previousValue) {
+        this.editingFilePart = null;
+        this.editingVoicePart = null;
+        this.editingVoiceLabel.set(null);
+        this.text = '';
+        this.clearPendingFile();
+        queueMicrotask(() => this.resizeTextarea());
+      }
     }
   }
 
+  /** True while editing a message that already has (or can accept) an image/file attachment. */
+  canReplaceAttachment(): boolean {
+    return Boolean(this.editing && !this.editingVoicePart);
+  }
+
   editingPreview(): string {
-    return this.editing ? textFromMessageParts(this.editing.parts) : '';
+    if (!this.editing) return '';
+    const text = textFromMessageParts(this.editing.parts);
+    if (text) return text;
+    if (this.editingVoicePart) return 'Voice message';
+    const file = this.editableFilePart(this.editing);
+    return file?.filename ?? 'Attachment';
   }
 
   cancelEditing(): void {
     if (!this.editing) return;
     this.text = '';
+    this.editingFilePart = null;
+    this.editingVoicePart = null;
+    this.editingVoiceLabel.set(null);
+    this.clearPendingFile();
     queueMicrotask(() => this.resizeTextarea());
     this.editClosed.emit();
   }
@@ -184,6 +223,7 @@ export class SendsarComposerComponent
 
   removePendingFile(): void {
     this.clearPendingFile();
+    this.editingFilePart = null;
   }
 
   pickEmoji(emoji: string): void {
@@ -374,19 +414,44 @@ export class SendsarComposerComponent
     const body = this.text.trim();
     const voice = this.pendingVoice();
     const file = this.pendingFile();
-    if ((!body && !voice && !file) || this.sending() || this.recording()) {
-      return;
-    }
-    this.sending.set(true);
-    this.error.set(null);
-    this.typingController?.stop();
 
     if (this.editing) {
+      if (this.sending() || this.recording()) return;
+      this.sending.set(true);
+      this.error.set(null);
+      this.typingController?.stop();
       try {
-        await this.chat.updateMessage(this.roomId, this.editing.id, {
-          parts: [{ type: 'text', text: body }],
-        });
+        const parts: MessagePart[] = [];
+        // Always keep the original voice recording — only caption text changes.
+        if (this.editingVoicePart) {
+          const { accessUrl, accessUrlExpiresAt, ...keep } = this.editingVoicePart;
+          parts.push(keep);
+        }
+        if (file?.file) {
+          const uploaded = await this.chat.uploadFile(this.roomId, { file: file.file });
+          parts.push({
+            type: 'file',
+            uploadId: uploaded.uploadId,
+            mediaType: uploaded.mediaType,
+            filename: uploaded.filename,
+          });
+        } else if (file && this.editingFilePart) {
+          const { accessUrl, accessUrlExpiresAt, ...keep } = this.editingFilePart;
+          parts.push(keep);
+        }
+        if (body) {
+          parts.push({ type: 'text', text: body });
+        }
+        if (parts.length === 0) {
+          this.error.set('Add text or a file to update this message');
+          return;
+        }
+        await this.chat.updateMessage(this.roomId, this.editing.id, { parts });
         this.text = '';
+        this.editingFilePart = null;
+        this.editingVoicePart = null;
+        this.editingVoiceLabel.set(null);
+        this.clearPendingFile();
         queueMicrotask(() => this.resizeTextarea());
         this.showEmojiPicker.set(false);
         this.editClosed.emit();
@@ -397,6 +462,13 @@ export class SendsarComposerComponent
       }
       return;
     }
+
+    if ((!body && !voice && !file) || this.sending() || this.recording()) {
+      return;
+    }
+    this.sending.set(true);
+    this.error.set(null);
+    this.typingController?.stop();
 
     try {
       const clientMessageId = crypto.randomUUID();
@@ -450,5 +522,15 @@ export class SendsarComposerComponent
       return;
     }
     this.typingController = new ComposerTypingController(client, this.roomId);
+  }
+
+  private editableFilePart(message: Message): MessagePart | null {
+    const [part] = fileParts(message.parts).filter((p) => !isAudioPart(p));
+    return part ?? null;
+  }
+
+  private voiceFilePart(message: Message): MessagePart | null {
+    const [part] = fileParts(message.parts).filter((p) => isAudioPart(p));
+    return part ?? null;
   }
 }

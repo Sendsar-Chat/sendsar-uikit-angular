@@ -4,7 +4,6 @@ import {
   formatTypingLabel,
   inboxSubtitleForPeer,
   otherTypingUserIds,
-  sortRoomsByLatestActivity,
   type RoomSummary,
   type TypingByRoom,
 } from '@sendsar/chat-sdk-javascript';
@@ -13,6 +12,22 @@ import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { formatRelativeTime } from '../../utils/format-time';
 import { isDirectMessage, resolveRoomLabel } from '../../utils/room-label';
 import { initialsFor, type UserDirectoryEntry, userDirectoryMap } from '../../utils/user-directory';
+
+/** Most recent activity timestamp for inbox ordering. */
+function roomActivityAt(room: RoomSummary): number {
+  const iso = room.lastMessage?.createdAt ?? room.createdAt;
+  const t = new Date(iso).getTime();
+  return Number.isFinite(t) ? t : 0;
+}
+
+/** Newest activity first (`lastMessage.createdAt`, else `room.createdAt`). */
+function sortRoomsByActivity(rooms: readonly RoomSummary[]): RoomSummary[] {
+  return [...rooms].sort((a, b) => {
+    const diff = roomActivityAt(b) - roomActivityAt(a);
+    if (diff !== 0) return diff;
+    return a.id.localeCompare(b.id);
+  });
+}
 
 @Component({
   selector: 'sc-conversation-list',
@@ -43,8 +58,10 @@ export class SendsarConversationListComponent implements OnInit {
   readonly filteredRooms = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
     const list = this.rooms();
-    if (!query) return list;
-    return list.filter((room) => this.roomLabel(room).toLowerCase().includes(query));
+    const filtered = !query
+      ? list
+      : list.filter((room) => this.roomLabel(room).toLowerCase().includes(query));
+    return sortRoomsByActivity(filtered);
   });
 
   readonly skeletonRows = [0, 1, 2, 3, 4];
@@ -68,7 +85,7 @@ export class SendsarConversationListComponent implements OnInit {
 
     try {
       const { rooms } = await this.chat.listRooms({ limit: 50 });
-      this.rooms.set(sortRoomsByLatestActivity(rooms));
+      this.rooms.set(sortRoomsByActivity(rooms));
     } catch (err) {
       this.error.set(err instanceof Error ? err.message : 'Failed to load rooms');
     } finally {

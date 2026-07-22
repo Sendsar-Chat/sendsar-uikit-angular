@@ -19,6 +19,14 @@
       </div>
     }
 
+    @if (editingVoiceLabel(); as voiceLabel) {
+      <div class="sc-editing-voice" aria-label="Voice message kept">
+        <span class="material-icons" aria-hidden="true">mic</span>
+        <span class="sc-editing-voice-label">{{ voiceLabel }}</span>
+        <span class="sc-editing-voice-hint">Add or edit caption</span>
+      </div>
+    }
+
     @if (pendingFile(); as attachment) {
       <sc-file-preview
         [attachment]="attachment"
@@ -42,7 +50,7 @@
       [(ngModel)]="text"
       (ngModelChange)="onTextChange()"
       [disabled]="sending()"
-      placeholder="Enter to send Shift + Enter to add new line"
+      [placeholder]="editingVoiceLabel() ? 'Add a caption…' : 'Enter to send Shift + Enter to add new line'"
       rows="1"
       autocomplete="off"
       (keydown.enter)="onEnterKey($event)"
@@ -88,7 +96,7 @@
           title="Attach"
           (click)="openFilePicker()"
           aria-label="Attach file"
-          [disabled]="sending() || !!editing"
+          [disabled]="sending() || recording() || (editing && !canReplaceAttachment())"
         >
           <span class="material-icons" aria-hidden="true">attach_file</span>
         </button>
@@ -110,12 +118,12 @@
 
       <div
         class="sc-send-split"
-        [class.sc-send-split--disabled]="sending() || recording() || (!text.trim() && !pendingVoice() && !pendingFile())"
+        [class.sc-send-split--disabled]="sending() || recording() || (!editing && !text.trim() && !pendingVoice() && !pendingFile()) || (!!editing && !text.trim() && !pendingFile() && !editingVoiceLabel())"
       >
         <button
           type="submit"
           class="sc-send-main"
-          [disabled]="sending() || recording() || (!text.trim() && !pendingVoice() && !pendingFile())"
+          [disabled]="sending() || recording() || (!editing && !text.trim() && !pendingVoice() && !pendingFile()) || (!!editing && !text.trim() && !pendingFile() && !editingVoiceLabel())"
           aria-label="Send message"
         >
           @if (sending()) {

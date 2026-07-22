@@ -1,4 +1,4 @@
-<div class="sc-messages-wrap" #scrollContainer>
+<div class="sc-messages-wrap" #scrollContainer (scroll)="onThreadScroll()">
   @if (!roomId) {
     <div class="sc-empty sc-empty--hero">
       <p class="sc-empty-title">Select a conversation</p>
@@ -34,12 +34,14 @@
         <p class="sc-empty-hint">Say hello — try text, an image URL, or a reaction.</p>
       </div>
     } @else {
-      <div class="sc-date-separator">
-        <span>Today</span>
-      </div>
       <div class="sc-messages">
-        @for (message of messages(); track message.id) {
+        @for (message of messages(); track message.id; let i = $index) {
           @if (!message.deletedHidden) {
+            @if (showDateSeparator(i)) {
+              <div class="sc-date-separator">
+                <span>{{ dateLabel(message.createdAt) }}</span>
+              </div>
+            }
             @if (callLog(message); as log) {
               <div class="sc-call-log-row" role="listitem">
                 <sc-call-log-bubble
@@ -54,6 +56,8 @@
                 class="sc-message"
                 [class.sc-message--self]="isSelf(message)"
                 [class.sc-message--deleted]="message.deletedAt"
+                (mouseenter)="onMessageHover(message.id)"
+                (mouseleave)="onMessageLeave(message.id)"
                 (contextmenu)="onMessageContextMenu($event, message)"
               >
                 <header class="sc-message-header">
@@ -69,13 +73,45 @@
                 </header>
 
                 <div class="sc-message-content">
-                  <div class="sc-bubble">
+                  <div class="sc-bubble-wrap">
+                    @if (!message.deletedAt && hoveredMessageId() === message.id) {
+                      <div class="sc-hover-reactions-panel">
+                        <div class="sc-hover-reactions" role="group" aria-label="Quick reactions">
+                          @for (emoji of quickReactions; track emoji) {
+                            <button
+                              type="button"
+                              (click)="reactFromHover(message, emoji)"
+                              [title]="'React with ' + emoji"
+                            >
+                              <sc-animated-emoji [emoji]="emoji" />
+                            </button>
+                          }
+                          <button
+                            type="button"
+                            class="sc-hover-reactions-more"
+                            [class.sc-hover-reactions-more--open]="hoverEmojiExpanded()"
+                            (click)="toggleHoverEmojiList($event)"
+                            title="More reactions"
+                            aria-label="More reactions"
+                          >
+                            <span class="material-icons" aria-hidden="true">expand_more</span>
+                          </button>
+                        </div>
+                        @if (hoverEmojiExpanded()) {
+                          <div class="sc-hover-emoji-list">
+                            <sc-emoji-picker (emojiSelected)="reactFromHover(message, $event)" />
+                          </div>
+                        }
+                      </div>
+                    }
+
+                    <div class="sc-bubble">
                       <div class="sc-bubble-content">
                         @if (message.deletedAt) {
                           <span class="sc-deleted">{{ preview(message) }}</span>
                         } @else {
                           @for (part of attachmentParts(message.parts); track $index) {
-                            @if (isImagePart(part)) {
+                            @if (isImagePart(part) && filePartUrl(part)) {
                               <a [href]="filePartUrl(part)" target="_blank" rel="noopener noreferrer">
                                 <img
                                   class="sc-image"
@@ -84,7 +120,7 @@
                                   loading="lazy"
                                 />
                               </a>
-                            } @else if (isAudioPart(part)) {
+                            } @else if (isAudioPart(part) && filePartUrl(part)) {
                               <sc-voice-message
                                 [url]="filePartUrl(part)!"
                                 [recordedAt]="message.createdAt"
@@ -130,16 +166,17 @@
                         </div>
                       }
                     </div>
+                  </div>
 
-                    @if (reactionSummary(message).length > 0) {
-                      <div class="sc-reactions">
-                        @for (r of reactionSummary(message); track r.emoji) {
-                          <button type="button" class="sc-reaction-pill" (click)="react(message, r.emoji)">
-                            <sc-animated-emoji [emoji]="r.emoji" /> {{ r.count }}
-                          </button>
-                        }
-                      </div>
-                    }
+                  @if (reactionSummary(message).length > 0) {
+                    <div class="sc-reactions">
+                      @for (r of reactionSummary(message); track r.emoji) {
+                        <button type="button" class="sc-reaction-pill" (click)="react(message, r.emoji)">
+                          <sc-animated-emoji [emoji]="r.emoji" /> {{ r.count }}
+                        </button>
+                      }
+                    </div>
+                  }
                 </div>
               </article>
             }
@@ -219,3 +256,15 @@
     </div>
   }
 </div>
+
+@if (showScrollDown()) {
+  <button
+    type="button"
+    class="sc-scroll-down"
+    (click)="scrollToLatest()"
+    title="Scroll to latest"
+    aria-label="Scroll to latest messages"
+  >
+    <span class="material-icons" aria-hidden="true">keyboard_arrow_down</span>
+  </button>
+}

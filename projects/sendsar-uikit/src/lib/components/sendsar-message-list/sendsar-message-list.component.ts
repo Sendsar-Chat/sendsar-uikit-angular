@@ -27,7 +27,7 @@ import {
 } from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
-import { filePartUrl, fileParts, filePreviewFromPart, isAudioPart, isImagePart, messagePreview } from '../../utils/message-parts';
+import { filePartUrl, fileParts, filePreviewFromPart, isAudioPart, isImagePart, messagePreview, preserveFileAccessUrls } from '../../utils/message-parts';
 import { segmentTextWithEmoji, type TextSegment } from '../../utils/emoji-segments';
 import { getCachedRoomThread, setCachedRoomThread } from '../../utils/room-thread-cache';
 import { displayNameFor, initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
@@ -84,6 +84,9 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   readonly skeletonBubbles = [0, 1, 2, 3];
   readonly contextMenu = signal<{ message: Message; x: number; y: number } | null>(null);
   readonly contextEmojiExpanded = signal(false);
+  readonly hoveredMessageId = signal<string | null>(null);
+  readonly hoverEmojiExpanded = signal(false);
+  readonly showScrollDown = signal(false);
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['roomId']) {
@@ -98,6 +101,58 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   preview(message: Message): string {
     const placeholder = this.chatSettings?.deletedMessagePlaceholder ?? 'Message deleted';
     return messagePreview(message, placeholder, this.session.session?.chatUserId);
+  }
+
+  /** Show a day chip when this message starts a new calendar day. */
+  showDateSeparator(index: number): boolean {
+    const list = this.messages();
+    const message = list[index];
+    if (!message || message.deletedHidden) return false;
+
+    const prevVisible = this.previousVisibleMessage(list, index);
+    if (!prevVisible) return true;
+    return this.dayKey(message.createdAt) !== this.dayKey(prevVisible.createdAt);
+  }
+
+  dateLabel(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return '';
+
+    const today = new Date();
+    const yesterday = new Date();
+    yesterday.setDate(today.getDate() - 1);
+
+    const key = this.dayKey(iso);
+    if (key === this.localDayKey(today)) return 'Today';
+    if (key === this.localDayKey(yesterday)) return 'Yesterday';
+
+    const sameYear = date.getFullYear() === today.getFullYear();
+    return date.toLocaleDateString(undefined, {
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      ...(sameYear ? {} : { year: 'numeric' }),
+    });
+  }
+
+  private previousVisibleMessage(list: Message[], index: number): Message | null {
+    for (let i = index - 1; i >= 0; i -= 1) {
+      if (!list[i]?.deletedHidden) return list[i];
+    }
+    return null;
+  }
+
+  private dayKey(iso: string): string {
+    const date = new Date(iso);
+    if (Number.isNaN(date.getTime())) return iso;
+    return this.localDayKey(date);
+  }
+
+  private localDayKey(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   callLog(message: Message): CallLogData | null {
@@ -205,6 +260,31 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
     }
   }
 
+  onMessageHover(messageId: string): void {
+    if (this.hoveredMessageId() !== messageId) {
+      this.hoverEmojiExpanded.set(false);
+    }
+    this.hoveredMessageId.set(messageId);
+  }
+
+  onMessageLeave(messageId: string): void {
+    if (this.hoveredMessageId() === messageId) {
+      this.hoveredMessageId.set(null);
+      this.hoverEmojiExpanded.set(false);
+    }
+  }
+
+  toggleHoverEmojiList(event: Event): void {
+    event.stopPropagation();
+    this.hoverEmojiExpanded.update((expanded) => !expanded);
+  }
+
+  reactFromHover(message: Message, emoji: string): void {
+    void this.react(message, emoji);
+    this.hoverEmojiExpanded.set(false);
+    this.hoveredMessageId.set(null);
+  }
+
   onMessageContextMenu(event: MouseEvent, message: Message): void {
     if (message.deletedAt) return;
     event.preventDefault();
@@ -215,6 +295,8 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
     const x = Math.max(8, Math.min(event.clientX, window.innerWidth - menuWidth - 8));
     const y = Math.max(8, Math.min(event.clientY, window.innerHeight - menuHeight - 8));
     this.contextEmojiExpanded.set(false);
+    this.hoverEmojiExpanded.set(false);
+    this.hoveredMessageId.set(null);
     this.contextMenu.set({ message, x, y });
   }
 
@@ -259,6 +341,7 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
   private bindRoom(): void {
     this.subscription?.destroy();
     this.error.set(null);
+    this.showScrollDown.set(false);
 
     const roomId = this.roomId;
     const cached = roomId ? getCachedRoomThread(roomId) : undefined;
@@ -305,9 +388,12 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
       },
       onMessageUpdated: (msg) => {
         if (this.roomId !== roomId) return;
-        this.messages.update((list) => list.map((m) => (m.id === msg.id ? msg : m)));
+        this.messages.update((list) =>
+          list.map((m) => (m.id === msg.id ? preserveFileAccessUrls(msg, m) : m)),
+        );
         this.persistThreadCache();
         this.activity.emit();
+        void this.hydrateMissingFileUrls(msg.id);
       },
       onPeerLastReadAt: (lastReadAt) => {
         if (this.roomId !== roomId) return;
@@ -330,11 +416,45 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
     });
   }
 
+  /** Refetch temporary access URLs when an update left file parts without them. */
+  private async hydrateMissingFileUrls(messageId: string): Promise<void> {
+    const client = this.session.client;
+    if (!client) return;
+
+    const current = this.messages().find((m) => m.id === messageId);
+    if (!current) return;
+    const needsHydration = current.parts.some(
+      (part) => part.type === 'file' && !!part.uploadId && !filePartUrl(part),
+    );
+    if (!needsHydration) return;
+
+    try {
+      const [hydrated] = await client.hydrateFileAccessUrls([current]);
+      if (!hydrated || this.roomId !== current.roomId) return;
+      this.messages.update((list) => list.map((m) => (m.id === hydrated.id ? hydrated : m)));
+      this.persistThreadCache();
+    } catch {
+      // Keep the preserved/local URLs; preview may still work from cache.
+    }
+  }
+
   private scrollToBottom(behavior: ScrollBehavior = 'auto'): void {
     requestAnimationFrame(() => {
       const el = this.scrollContainer?.nativeElement;
       if (!el) return;
       el.scrollTo({ top: el.scrollHeight, behavior });
+      this.showScrollDown.set(false);
     });
+  }
+
+  onThreadScroll(): void {
+    const el = this.scrollContainer?.nativeElement;
+    if (!el) return;
+    const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+    this.showScrollDown.set(distanceFromBottom > 120);
+  }
+
+  scrollToLatest(): void {
+    this.scrollToBottom('smooth');
   }
 }

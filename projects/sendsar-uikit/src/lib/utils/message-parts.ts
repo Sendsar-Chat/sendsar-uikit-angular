@@ -10,8 +10,46 @@ export function filePartUrl(part: MessagePart): string | undefined {
   return typeof url === 'string' && url.length > 0 ? url : undefined;
 }
 
+export function isFilePart(part: MessagePart): boolean {
+  return part.type === 'file' && Boolean(filePartUrl(part) || part.uploadId);
+}
+
 export function fileParts(parts: MessagePart[]): MessagePart[] {
-  return parts.filter((part) => part.type === 'file' && filePartUrl(part));
+  return parts.filter(isFilePart);
+}
+
+/**
+ * Socket `message-updated` payloads (e.g. reactions) often omit temporary
+ * `accessUrl`s. Copy them from the previous local message so attachments stay visible.
+ */
+export function preserveFileAccessUrls(updated: Message, previous: Message | undefined): Message {
+  if (!previous) return updated;
+
+  const previousByUploadId = new Map<string, MessagePart>();
+  for (const part of previous.parts) {
+    if (part.type === 'file' && typeof part.uploadId === 'string' && filePartUrl(part)) {
+      previousByUploadId.set(part.uploadId, part);
+    }
+  }
+  if (previousByUploadId.size === 0) return updated;
+
+  let changed = false;
+  const parts = updated.parts.map((part) => {
+    if (part.type !== 'file' || filePartUrl(part) || typeof part.uploadId !== 'string') {
+      return part;
+    }
+    const prior = previousByUploadId.get(part.uploadId);
+    if (!prior) return part;
+    changed = true;
+    return {
+      ...part,
+      url: part.url ?? prior.url,
+      accessUrl: part.accessUrl ?? prior.accessUrl,
+      accessUrlExpiresAt: part.accessUrlExpiresAt ?? prior.accessUrlExpiresAt,
+    };
+  });
+
+  return changed ? { ...updated, parts } : updated;
 }
 
 export function isImagePart(part: MessagePart): boolean {
