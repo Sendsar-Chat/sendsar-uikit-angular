@@ -89,6 +89,7 @@ export class SendsarChatShellComponent implements OnInit {
   readonly showCallUi = this.calls.showCallUi;
   readonly callError = signal<string | null>(null);
   readonly editingMessage = signal<Message | null>(null);
+  readonly replyingToMessage = signal<Message | null>(null);
   readonly showHeaderMenu = signal(false);
   readonly showNewChat = signal(false);
   readonly creatingChat = signal(false);
@@ -114,10 +115,17 @@ export class SendsarChatShellComponent implements OnInit {
     this.mobileShowThread.set(true);
     this.showInfoPanel.set(true);
     this.editingMessage.set(null);
+    this.replyingToMessage.set(null);
   }
 
   onEditRequested(message: Message): void {
+    this.replyingToMessage.set(null);
     this.editingMessage.set(message);
+  }
+
+  onReplyRequested(message: Message): void {
+    this.editingMessage.set(null);
+    this.replyingToMessage.set(message);
   }
 
   toggleHeaderMenu(event: Event): void {

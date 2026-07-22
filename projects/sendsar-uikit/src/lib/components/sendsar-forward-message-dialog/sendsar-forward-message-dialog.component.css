@@ -1,0 +1,199 @@
+.sc-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(15 23 42 / 45%);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.sc-dialog {
+  width: min(100%, 26rem);
+  max-height: min(90vh, 34rem);
+  background: #fff;
+  border-radius: 0.85rem;
+  box-shadow: 0 20px 40px rgb(15 23 42 / 18%);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sc-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.sc-dialog-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.sc-dialog-close {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: #64748b;
+}
+
+.sc-forward-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 1rem 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.55rem;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+}
+
+.sc-forward-preview .material-icons {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: #64748b;
+  transform: scaleX(-1);
+}
+
+.sc-forward-preview p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: #475569;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sc-dialog-error {
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  background: #fef2f2;
+  color: #b91c1c;
+  font-size: 0.8rem;
+}
+
+.sc-dialog-panel {
+  padding: 0 1rem 1rem;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.sc-dialog-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.sc-forward-search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #cbd5e1;
+  border-radius: 0.55rem;
+  background: #fff;
+}
+
+.sc-forward-search .material-icons {
+  font-size: 1.1rem;
+  color: #94a3b8;
+}
+
+.sc-forward-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: #1e293b;
+  background: transparent;
+}
+
+.sc-dialog-user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: min(42vh, 18rem);
+  overflow: auto;
+}
+
+.sc-dialog-user-row {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.5rem;
+  cursor: pointer;
+}
+
+.sc-dialog-user-row:hover {
+  background: #f1f5f9;
+}
+
+.sc-dialog-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.sc-dialog-name {
+  flex: 1;
+  font-weight: 500;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.sc-dialog-secondary,
+.sc-dialog-primary {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sc-dialog-secondary {
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+}
+
+.sc-dialog-primary {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+}
+
+.sc-dialog-primary:disabled,
+.sc-dialog-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

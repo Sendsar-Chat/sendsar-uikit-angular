@@ -108,12 +108,15 @@
           (activity)="onThreadActivity()"
           (callRedial)="onCallRedial($event)"
           (editRequested)="onEditRequested($event)"
+          (replyRequested)="onReplyRequested($event)"
         />
         <sc-composer
           [roomId]="room.id"
           [editing]="editingMessage()"
+          [replyingTo]="replyingToMessage()"
           (sent)="onMessageSent()"
           (editClosed)="editingMessage.set(null)"
+          (replyClosed)="replyingToMessage.set(null)"
         />
         @if (callError()) {
           <p class="sc-call-error">{{ callError() }}</p>

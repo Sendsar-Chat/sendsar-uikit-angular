@@ -19,6 +19,25 @@
       </div>
     }
 
+    @if (replyingTo && !editing) {
+      <div class="sc-replying-bar">
+        <span class="material-icons sc-replying-icon" aria-hidden="true">reply</span>
+        <div class="sc-editing-info">
+          <span class="sc-editing-title">Replying to message</span>
+          <span class="sc-editing-preview">{{ replyingPreview() }}</span>
+        </div>
+        <button
+          type="button"
+          class="sc-editing-cancel"
+          title="Cancel reply"
+          aria-label="Cancel reply"
+          (click)="cancelReplying()"
+        >
+          <span class="material-icons" aria-hidden="true">close</span>
+        </button>
+      </div>
+    }
+
     @if (editingVoiceLabel(); as voiceLabel) {
       <div class="sc-editing-voice" aria-label="Voice message kept">
         <span class="material-icons" aria-hidden="true">mic</span>
@@ -50,7 +69,7 @@
       [(ngModel)]="text"
       (ngModelChange)="onTextChange()"
       [disabled]="sending()"
-      [placeholder]="editingVoiceLabel() ? 'Add a caption…' : 'Enter to send Shift + Enter to add new line'"
+      [placeholder]="editingVoiceLabel() ? 'Add a caption…' : (replyingTo && !editing ? 'Write a reply…' : 'Enter to send Shift + Enter to add new line')"
       rows="1"
       autocomplete="off"
       (keydown.enter)="onEnterKey($event)"

@@ -1,5 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import type {
+  ForwardMessageParams,
   ListMessagesParams,
   ListRoomsParams,
   Message,
@@ -50,6 +51,26 @@ export class SendsarChatService {
     params: ToggleReactionParams,
   ): Promise<Message> {
     return this.requireClient().toggleReaction(roomId, messageId, params);
+  }
+
+  pinMessage(roomId: string, messageId: string): Promise<Message> {
+    return this.requireClient().pinMessage(roomId, messageId);
+  }
+
+  unpinMessage(roomId: string, messageId: string): Promise<Message> {
+    return this.requireClient().unpinMessage(roomId, messageId);
+  }
+
+  getPinnedMessages(roomId: string): Promise<Message[]> {
+    return this.requireClient().getPinnedMessages(roomId);
+  }
+
+  forwardMessage(
+    roomId: string,
+    messageId: string,
+    params: ForwardMessageParams,
+  ): Promise<Message[]> {
+    return this.requireClient().forwardMessage(roomId, messageId, params);
   }
 
   sendFileMessage(

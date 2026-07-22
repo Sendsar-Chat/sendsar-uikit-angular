@@ -7,7 +7,7 @@
     "@angular/core": "^19.2.0",
     "@angular/forms": "^19.2.0",
     "@sendsar/call-sdk-javascript": "^0.1.1",
-    "@sendsar/chat-sdk-javascript": "^0.2.2",
+    "@sendsar/chat-sdk-javascript": "^0.3.0",
     "@sendsar/protocol": "^0.1.0"
   },
   "dependencies": {

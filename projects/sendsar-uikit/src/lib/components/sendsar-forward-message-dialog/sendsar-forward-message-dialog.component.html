@@ -1,0 +1,80 @@
+@if (open) {
+  <div class="sc-dialog-backdrop" (click)="close()">
+    <div class="sc-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="sc-dialog-header">
+        <h2>Forward to</h2>
+        <button type="button" class="sc-dialog-close" (click)="close()" aria-label="Close">×</button>
+      </header>
+
+      @if (previewText) {
+        <div class="sc-forward-preview">
+          <span class="material-icons" aria-hidden="true">shortcut</span>
+          <p>{{ previewText }}</p>
+        </div>
+      }
+
+      <div class="sc-dialog-panel">
+        <label class="sc-forward-search">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input
+            type="search"
+            placeholder="Search conversations"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            [disabled]="busy || loadingRooms()"
+          />
+        </label>
+
+        @if (error) {
+          <p class="sc-dialog-error">{{ error }}</p>
+        }
+        @if (loadError()) {
+          <p class="sc-dialog-error">{{ loadError() }}</p>
+        }
+
+        @if (loadingRooms()) {
+          <p class="sc-dialog-hint">Loading conversations…</p>
+        } @else if (filteredRooms().length === 0) {
+          <p class="sc-dialog-hint">No conversations found.</p>
+        } @else {
+          <ul class="sc-dialog-user-list">
+            @for (room of filteredRooms(); track room.id) {
+              <li>
+                <label class="sc-dialog-user-row">
+                  <input
+                    type="checkbox"
+                    [checked]="isSelected(room.id)"
+                    [disabled]="busy"
+                    (change)="toggleRoom(room.id)"
+                  />
+                  <span class="sc-dialog-avatar">{{ roomInitials(room) }}</span>
+                  <span class="sc-dialog-name">{{ roomLabel(room) }}</span>
+                </label>
+              </li>
+            }
+          </ul>
+        }
+
+        <footer class="sc-dialog-footer">
+          <button type="button" class="sc-dialog-secondary" [disabled]="busy" (click)="close()">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="sc-dialog-primary"
+            [disabled]="busy || selectedRoomIds().size === 0 || loadingRooms()"
+            (click)="submit()"
+          >
+            @if (busy) {
+              Forwarding…
+            } @else if (selectedRoomIds().size > 1) {
+              Forward to {{ selectedRoomIds().size }} chats
+            } @else {
+              Forward
+            }
+          </button>
+        </footer>
+      </div>
+    </div>
+  </div>
+}

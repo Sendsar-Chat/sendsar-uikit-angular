@@ -7,6 +7,139 @@
   position: relative;
 }
 
+.sc-pinned-bar {
+  position: relative;
+  z-index: 4;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.3rem 0.6rem 0.3rem 0.3rem;
+  background: #fff;
+  border-bottom: 1px solid #e2e8f0;
+  box-shadow: 0 1px 0 rgb(15 23 42 / 3%);
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.15s ease;
+}
+
+.sc-pinned-bar:hover {
+  background: #f8fafc;
+}
+
+.sc-pinned-bar:focus-visible {
+  outline: 2px solid linear-gradient(135deg, #3b82f6, #2563eb);
+  outline-offset: -2px;
+}
+
+.sc-pinned-bar-accent {
+  flex-shrink: 0;
+  align-self: stretch;
+  width: 2px;
+  margin: 0.28rem 0.35rem 0.28rem 0;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  border-radius: 999px;
+}
+
+.sc-pinned-bar-accent--multi {
+  display: flex;
+  flex-direction: column;
+  justify-content: stretch;
+  gap: 1.5px;
+  width: 2px;
+  background: transparent;
+  border-radius: 0;
+}
+
+.sc-pinned-bar-segment {
+  flex: 1 1 0;
+  min-height: 0.28rem;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+
+.sc-pinned-bar-segment--active {
+  flex: 2.1 1 0;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+}
+
+.sc-pinned-bar-thumb {
+  flex-shrink: 0;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.3rem;
+  object-fit: cover;
+  background: #f1f5f9;
+  border: 1px solid #e2e8f0;
+}
+
+.sc-pinned-bar-thumb--icon {
+  display: grid;
+  place-items: center;
+  color: #3b82f6;
+  background: #eff6ff;
+  border-color: #dbeafe;
+}
+
+.sc-pinned-bar-thumb--icon .material-icons {
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.sc-pinned-bar-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+
+.sc-pinned-bar-label {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.8rem;
+  letter-spacing: 0.01em;
+  color: #2563eb;
+  line-height: 1.15;
+}
+
+.sc-pinned-bar-preview {
+  font-size: 0.75rem;
+  color: #64748b;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-pinned-bar-action {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  margin-right: 0.1rem;
+  border: none;
+  border-radius: 999px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sc-pinned-bar-action:hover {
+  background: #f1f5f9;
+  color: #475569;
+}
+
+.sc-pinned-bar-action .material-icons {
+  font-size: 0.95rem;
+  line-height: 1;
+  transform: rotate(45deg);
+}
+
 .sc-messages-wrap {
   flex: 1;
   min-height: 0;
@@ -201,6 +334,20 @@
   justify-content: flex-end;
 }
 
+.sc-message--highlight .sc-bubble {
+  animation: sc-message-highlight 1.4s ease-out;
+}
+
+@keyframes sc-message-highlight {
+  0%,
+  35% {
+    box-shadow: 0 0 0 2px rgb(59 130 246 / 55%);
+  }
+  100% {
+    box-shadow: none;
+  }
+}
+
 .sc-message-content {
   display: flex;
   flex-direction: column;
@@ -348,6 +495,85 @@
   flex-direction: column;
   gap: 0.2rem;
   min-width: 0;
+}
+
+.sc-reply-quote {
+  display: flex;
+  align-items: stretch;
+  gap: 0.45rem;
+  width: 100%;
+  margin-bottom: 0.35rem;
+  padding: 0.35rem 0.45rem 0.35rem 0;
+  border: none;
+  border-radius: 0.45rem;
+  background: rgb(37 99 235 / 8%);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+}
+
+.sc-reply-quote:hover {
+  background: rgb(37 99 235 / 12%);
+}
+
+.sc-reply-quote--self {
+  background: rgb(255 255 255 / 14%);
+}
+
+.sc-reply-quote--self:hover {
+  background: rgb(255 255 255 / 20%);
+}
+
+.sc-reply-quote-accent {
+  flex-shrink: 0;
+  width: 3px;
+  border-radius: 999px;
+  background: #3b82f6;
+}
+
+.sc-reply-quote--self .sc-reply-quote-accent {
+  background: #bfdbfe;
+}
+
+.sc-reply-quote-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sc-reply-quote-sender {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2563eb;
+  line-height: 1.2;
+}
+
+.sc-reply-quote--self .sc-reply-quote-sender {
+  color: #dbeafe;
+}
+
+.sc-reply-quote-text {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-reply-quote--self .sc-reply-quote-text {
+  color: rgb(255 255 255 / 78%);
+}
+
+.sc-reply-quote-thumb {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 0.3rem;
+  object-fit: cover;
+  align-self: center;
 }
 
 .sc-bubble-content sc-voice-message {
@@ -547,8 +773,21 @@
 }
 
 .sc-context-item .material-icons {
+  flex-shrink: 0;
+  width: 1.1rem;
   font-size: 1.1rem;
+  line-height: 1;
   color: #64748b;
+}
+
+.sc-context-item-icon--unpin {
+  transform: rotate(45deg);
+}
+
+.sc-context-item-label {
+  flex: 1;
+  min-width: 0;
+  text-align: left;
 }
 
 .sc-context-item--danger {

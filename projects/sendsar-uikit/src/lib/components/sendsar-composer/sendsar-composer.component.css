@@ -19,9 +19,25 @@
   border-radius: 0.5rem;
 }
 
+.sc-replying-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.45rem 0.6rem;
+  margin-bottom: 0.5rem;
+  background: #f8fafc;
+  border-radius: 0.5rem;
+}
+
 .sc-editing-icon {
   font-size: 1.1rem;
   color: #2563eb;
+}
+
+.sc-replying-icon {
+  font-size: 1.05rem;
+  color: #2563eb;
+  transform: scaleX(-1);
 }
 
 .sc-editing-info {

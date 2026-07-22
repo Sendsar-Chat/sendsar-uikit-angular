@@ -24,7 +24,7 @@ import {
 } from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
-import { fileParts, filePreviewFromPart, isAudioPart } from '../../utils/message-parts';
+import { fileParts, filePreviewFromPart, isAudioPart, messagePreview } from '../../utils/message-parts';
 import {
   SendsarVoicePreviewData,
   buildVoiceWaveform,
@@ -71,8 +71,10 @@ export class SendsarComposerComponent
   @ViewChild('fileInput') fileInput?: ElementRef<HTMLInputElement>;
   @Input({ required: true }) roomId!: string;
   @Input() editing: Message | null = null;
+  @Input() replyingTo: Message | null = null;
   @Output() readonly sent = new EventEmitter<void>();
   @Output() readonly editClosed = new EventEmitter<void>();
+  @Output() readonly replyClosed = new EventEmitter<void>();
   text = '';
   readonly showEmojiPicker = signal(false);
   readonly sending = signal(false);
@@ -87,6 +89,7 @@ export class SendsarComposerComponent
       this.showEmojiPicker.set(false);
       this.clearPendingVoice();
       this.clearPendingFile();
+      this.clearReplying();
       this.bindTyping();
     }
     if (changes['editing']) {
@@ -120,6 +123,12 @@ export class SendsarComposerComponent
         queueMicrotask(() => this.resizeTextarea());
       }
     }
+    if (changes['replyingTo'] && this.replyingTo && !this.editing) {
+      queueMicrotask(() => {
+        this.resizeTextarea();
+        this.messageInput?.nativeElement.focus();
+      });
+    }
   }
 
   /** True while editing a message that already has (or can accept) an image/file attachment. */
@@ -136,6 +145,11 @@ export class SendsarComposerComponent
     return file?.filename ?? 'Attachment';
   }
 
+  replyingPreview(): string {
+    if (!this.replyingTo) return '';
+    return messagePreview(this.replyingTo, 'Message deleted', this.session.session?.chatUserId);
+  }
+
   cancelEditing(): void {
     if (!this.editing) return;
     this.text = '';
@@ -145,6 +159,11 @@ export class SendsarComposerComponent
     this.clearPendingFile();
     queueMicrotask(() => this.resizeTextarea());
     this.editClosed.emit();
+  }
+
+  cancelReplying(): void {
+    if (!this.replyingTo) return;
+    this.clearReplying();
   }
 
   onEscapeKey(): void {
@@ -479,11 +498,13 @@ export class SendsarComposerComponent
           file: attachment,
           clientMessageId,
           text: body || undefined,
+          parentMessageId: this.replyingTo?.id,
         });
       } else if (body) {
         await this.chat.sendMessage(this.roomId, {
           parts: [{ type: 'text', text: body }],
           clientMessageId,
+          parentMessageId: this.replyingTo?.id,
         });
       } else {
         return;
@@ -492,6 +513,7 @@ export class SendsarComposerComponent
       this.text = '';
       this.clearPendingFile();
       this.clearPendingVoice();
+      this.clearReplying();
       queueMicrotask(() => this.resizeTextarea());
       this.showEmojiPicker.set(false);
       this.sent.emit();
@@ -522,6 +544,11 @@ export class SendsarComposerComponent
       return;
     }
     this.typingController = new ComposerTypingController(client, this.roomId);
+  }
+
+  private clearReplying(): void {
+    if (!this.replyingTo) return;
+    this.replyClosed.emit();
   }
 
   private editableFilePart(message: Message): MessagePart | null {
