@@ -13,9 +13,9 @@
         <p class="sc-info-subtitle">{{ memberCount() }} members</p>
         <p class="sc-info-desc">Group conversation</p>
       } @else if (isDm()) {
-        @if (visibleMembers()[0]; as peer) {
+        @if (memberRows()[0]; as peer) {
           <p class="sc-info-subtitle">
-            {{ isOnline(peer.id) ? 'Online' : 'Offline' }}
+            {{ isOnline(peer.userId) ? 'Online' : 'Offline' }}
           </p>
         }
         <p class="sc-info-desc">Direct message</p>
@@ -25,25 +25,81 @@
     <section class="sc-info-section">
       <header class="sc-info-section-header">
         <h3>Members</h3>
-        @if (visibleMembers().length > 5) {
-          <button type="button" class="sc-info-link">See all</button>
+        @if (isGroup() && selfIsOperator()) {
+          <button
+            type="button"
+            class="sc-info-link"
+            [disabled]="mutating()"
+            (click)="toggleAddPicker()"
+          >
+            {{ showAddPicker() ? 'Cancel' : 'Add' }}
+          </button>
         }
       </header>
-      @if (previewMembers().length > 0) {
-        <div class="sc-member-row">
-          @for (member of previewMembers(); track member.id) {
-            <span
-              class="sc-member-avatar"
-              [class.sc-member-avatar--online]="isOnline(member.id)"
-              [title]="member.displayName"
-            >
-              {{ memberInitials(member) }}
-            </span>
-          }
-          @if (overflowMemberCount() > 0) {
-            <span class="sc-member-overflow">+{{ overflowMemberCount() }}</span>
+
+      @if (membersError(); as err) {
+        <p class="sc-info-error">{{ err }}</p>
+      }
+
+      @if (isGroup() && showAddPicker()) {
+        <div class="sc-add-picker">
+          @if (addableUsers().length === 0) {
+            <p class="sc-info-empty">No directory users left to add</p>
+          } @else {
+            @for (user of addableUsers(); track user.id) {
+              <button
+                type="button"
+                class="sc-add-option"
+                [disabled]="mutating()"
+                (click)="addMember(user)"
+              >
+                <span class="sc-member-avatar sc-member-avatar--sm">{{ memberInitials(user.displayName) }}</span>
+                <span class="sc-add-option-name">{{ user.displayName }}</span>
+              </button>
+            }
           }
         </div>
+      }
+
+      @if (loadingMembers() && isGroup()) {
+        <p class="sc-info-empty">Loading members…</p>
+      } @else if (memberRows().length > 0) {
+        <ul class="sc-member-list">
+          @for (member of memberRows(); track member.userId) {
+            <li class="sc-member-item">
+              <span
+                class="sc-member-avatar"
+                [class.sc-member-avatar--online]="isOnline(member.userId)"
+                [title]="member.displayName"
+              >
+                {{ memberInitials(member.displayName) }}
+              </span>
+              <div class="sc-member-meta">
+                <span class="sc-member-name">
+                  {{ member.displayName }}
+                  @if (member.isSelf) {
+                    <span class="sc-member-you">(you)</span>
+                  }
+                </span>
+                @if (member.isOperator) {
+                  <span class="sc-member-badge">Owner</span>
+                }
+              </div>
+              @if (isGroup() && selfIsOperator() && !member.isSelf) {
+                <button
+                  type="button"
+                  class="sc-member-remove"
+                  title="Remove member"
+                  [attr.aria-label]="'Remove ' + member.displayName"
+                  [disabled]="mutating()"
+                  (click)="removeMember(member.userId)"
+                >
+                  Remove
+                </button>
+              }
+            </li>
+          }
+        </ul>
       } @else {
         <p class="sc-info-empty">No members to show</p>
       }

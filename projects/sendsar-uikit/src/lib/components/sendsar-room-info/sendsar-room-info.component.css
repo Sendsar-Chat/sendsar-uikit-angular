@@ -131,10 +131,127 @@
   padding: 0;
 }
 
-.sc-member-row {
+.sc-info-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-info-error {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  color: #dc2626;
+}
+
+.sc-member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sc-member-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.sc-member-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sc-member-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-member-you {
+  font-weight: 500;
+  color: #94a3b8;
+}
+
+.sc-member-badge {
+  align-self: flex-start;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: #1d4ed8;
+  background: #dbeafe;
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.sc-member-remove {
+  border: none;
+  background: transparent;
+  color: #dc2626;
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.35rem;
+  flex-shrink: 0;
+}
+
+.sc-member-remove:hover:not(:disabled) {
+  background: #fef2f2;
+}
+
+.sc-member-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-add-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  max-height: 10rem;
+  overflow: auto;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  padding: 0.35rem;
+  background: #fff;
+}
+
+.sc-add-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.4rem 0.45rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sc-add-option:hover:not(:disabled) {
+  background: #f1f5f9;
+}
+
+.sc-add-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-add-option-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: #0f172a;
 }
 
 .sc-member-avatar {
@@ -148,6 +265,13 @@
   font-size: 0.65rem;
   font-weight: 700;
   position: relative;
+  flex-shrink: 0;
+}
+
+.sc-member-avatar--sm {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.55rem;
 }
 
 .sc-member-avatar--online::after {

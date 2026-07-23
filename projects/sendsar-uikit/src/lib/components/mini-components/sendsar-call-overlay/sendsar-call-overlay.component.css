@@ -158,6 +158,73 @@
   transform: scaleX(-1);
 }
 
+.sc-call-stage--grid {
+  place-items: stretch;
+  padding: 0.5rem;
+}
+
+.sc-call-grid {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  gap: 0.4rem;
+  min-height: 0;
+}
+
+.sc-call-grid--1 {
+  grid-template-columns: 1fr;
+}
+
+.sc-call-grid--2 {
+  grid-template-columns: 1fr 1fr;
+}
+
+.sc-call-grid--3 {
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.sc-call-tile {
+  position: relative;
+  min-height: 0;
+  border-radius: 0.65rem;
+  overflow: hidden;
+  background: #1e293b;
+}
+
+.sc-call-tile-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.sc-call-tile-video--local {
+  transform: scaleX(-1);
+}
+
+.sc-call-tile-avatar {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  color: #e2e8f0;
+  font-weight: 600;
+}
+
+.sc-call-tile-label {
+  position: absolute;
+  left: 0.5rem;
+  bottom: 0.45rem;
+  right: 0.5rem;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-shadow: 0 1px 4px rgb(0 0 0 / 70%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .sc-call-dialog--expanded .sc-call-local {
   width: min(22%, 11rem);
   right: 1rem;

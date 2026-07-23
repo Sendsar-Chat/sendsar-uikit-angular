@@ -32,6 +32,10 @@ export class SendsarCallOverlayComponent implements AfterViewInit, OnDestroy {
   @Input() title = 'Call';
   @Input() avatarUrl: string | null = null;
   @Input() peerInitials = '?';
+  /** When true, use Meet-style participant grid instead of 1:1 PiP. */
+  @Input() isGroup = false;
+  /** Resolve LiveKit identity → display label for grid tiles. */
+  @Input() labelForIdentity: ((identity: string) => string) | null = null;
 
   /** Expanded to fill the chat shell / viewport (CSS). */
   readonly expanded = signal(false);
@@ -62,6 +66,25 @@ export class SendsarCallOverlayComponent implements AfterViewInit, OnDestroy {
       return this.peerInitials;
     }
     return initialsFor(this.title);
+  }
+
+  useGroupGrid(): boolean {
+    if (!this.isGroup) {
+      return false;
+    }
+    const state = this.calls.callState();
+    return state === 'active' || state === 'connecting';
+  }
+
+  tileLabel(identity: string): string {
+    return this.labelForIdentity?.(identity) ?? identity;
+  }
+
+  gridClass(): string {
+    const count = 1 + this.calls.remoteVideoTracks().length;
+    if (count <= 1) return 'sc-call-grid--1';
+    if (count <= 4) return 'sc-call-grid--2';
+    return 'sc-call-grid--3';
   }
 
   statusLabel(): string {

@@ -1,9 +1,12 @@
 import { Injectable, inject } from '@angular/core';
 import type {
+  AddParticipantParams,
   ForwardMessageParams,
   ListMessagesParams,
   ListRoomsParams,
   Message,
+  RemoveParticipantParams,
+  RoomDetail,
   RoomSummary,
   SendMessageParams,
   ToggleReactionParams,
@@ -27,6 +30,22 @@ export class SendsarChatService {
 
   listRooms(params?: ListRoomsParams): Promise<{ rooms: RoomSummary[]; nextCursor: string | null }> {
     return this.requireClient().listRooms(params);
+  }
+
+  getRoom(roomId: string): Promise<RoomDetail> {
+    return this.requireClient().getRoom(roomId);
+  }
+
+  addParticipant(roomId: string, params: AddParticipantParams): Promise<RoomDetail> {
+    return this.requireClient().addParticipant(roomId, params);
+  }
+
+  removeParticipant(
+    roomId: string,
+    userId: string,
+    params?: RemoveParticipantParams,
+  ): Promise<RoomDetail> {
+    return this.requireClient().removeParticipant(roomId, userId, params);
   }
 
   getMessages(roomId: string, params?: ListMessagesParams) {

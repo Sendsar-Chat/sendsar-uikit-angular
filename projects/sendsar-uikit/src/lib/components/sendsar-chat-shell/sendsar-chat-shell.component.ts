@@ -50,7 +50,12 @@ export type SendsarCreateRoomHandler = (
 import { SendsarCallService } from '../../services/sendsar-call.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { isDirectMessage, isGroupRoom, parseDmPeerId, resolveRoomLabel } from '../../utils/room-label';
-import { initialsFor, userDirectoryMap, type UserDirectoryEntry } from '../../utils/user-directory';
+import {
+  displayNameFor,
+  initialsFor,
+  userDirectoryMap,
+  type UserDirectoryEntry,
+} from '../../utils/user-directory';
 
 @Component({
   selector: 'sc-chat-shell',
@@ -293,6 +298,20 @@ export class SendsarChatShellComponent implements OnInit {
     const room = this.selectedRoom();
     return room ? isGroupRoom(room) : false;
   }
+
+  /** True when the active/incoming call is in a group room (Meet grid). */
+  callIsGroup(): boolean {
+    const callRoomId =
+      this.calls.activeCall()?.roomId ?? this.calls.incomingInvite()?.roomId;
+    const room = this.selectedRoom();
+    if (room && (callRoomId == null || callRoomId === room.id)) {
+      return isGroupRoom(room);
+    }
+    return false;
+  }
+
+  readonly callIdentityLabel = (identity: string): string =>
+    displayNameFor(identity, userDirectoryMap(this.users));
 
   headerSubtitle(): string {
     const room = this.selectedRoom();

@@ -94,29 +94,59 @@
       </div>
     </header>
 
-    <div class="sc-call-stage">
-      @if (calls.remoteVideoTrack(); as remote) {
-        <video
-          class="sc-call-remote"
-          [scCallTrack]="remote"
-          autoplay
-          playsinline
-        ></video>
-      } @else {
-        <div class="sc-call-placeholder">
-          <span class="sc-call-avatar" aria-hidden="true">
-            @if (avatarUrl) {
-              <img [src]="avatarUrl" alt="" />
+    <div class="sc-call-stage" [class.sc-call-stage--grid]="useGroupGrid()">
+      @if (useGroupGrid()) {
+        <div class="sc-call-grid" [ngClass]="gridClass()">
+          <div class="sc-call-tile">
+            @if (calls.localVideoTrack(); as local) {
+              <video
+                class="sc-call-tile-video sc-call-tile-video--local"
+                [scCallTrack]="local"
+                autoplay
+                muted
+                playsinline
+              ></video>
             } @else {
-              {{ avatarLetter() }}
+              <span class="sc-call-tile-avatar" aria-hidden="true">You</span>
             }
-          </span>
-          <p class="sc-call-title">{{ title }}</p>
-          <p class="sc-call-status">{{ statusLabel() }}</p>
+            <span class="sc-call-tile-label">You</span>
+          </div>
+          @for (remote of calls.remoteVideoTracks(); track remote.sid) {
+            <div class="sc-call-tile">
+              <video
+                class="sc-call-tile-video"
+                [scCallTrack]="remote.track"
+                autoplay
+                playsinline
+              ></video>
+              <span class="sc-call-tile-label">{{ tileLabel(remote.identity) }}</span>
+            </div>
+          }
         </div>
+      } @else {
+        @if (calls.remoteVideoTrack(); as remote) {
+          <video
+            class="sc-call-remote"
+            [scCallTrack]="remote"
+            autoplay
+            playsinline
+          ></video>
+        } @else {
+          <div class="sc-call-placeholder">
+            <span class="sc-call-avatar" aria-hidden="true">
+              @if (avatarUrl) {
+                <img [src]="avatarUrl" alt="" />
+              } @else {
+                {{ avatarLetter() }}
+              }
+            </span>
+            <p class="sc-call-title">{{ title }}</p>
+            <p class="sc-call-status">{{ statusLabel() }}</p>
+          </div>
+        }
       }
 
-      @if (calls.localVideoTrack(); as local) {
+      @if (!useGroupGrid() && calls.localVideoTrack(); as local) {
         <video
           class="sc-call-local"
           [scCallTrack]="local"

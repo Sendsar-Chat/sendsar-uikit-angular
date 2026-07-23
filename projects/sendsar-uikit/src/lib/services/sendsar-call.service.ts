@@ -40,7 +40,9 @@ export class SendsarCallService {
   private readonly speakerEnabledSignal = signal(true);
   private readonly minimizedSignal = signal(false);
   private readonly localVideoTrackSignal = signal<SendsarCallMediaTrack | null>(null);
-  private readonly remoteVideoTrackSignal = signal<SendsarCallMediaTrack | null>(null);
+  private readonly remoteVideoTracksSignal = signal<
+    ReadonlyArray<{ sid: string; identity: string; track: SendsarCallMediaTrack }>
+  >([]);
   private readonly remoteAudioTrackSignal = signal<SendsarCallMediaTrack | null>(null);
 
   readonly callState = this.stateSignal.asReadonly();
@@ -65,7 +67,10 @@ export class SendsarCallService {
   readonly speakerEnabled = this.speakerEnabledSignal.asReadonly();
   readonly minimized = this.minimizedSignal.asReadonly();
   readonly localVideoTrack = this.localVideoTrackSignal.asReadonly();
-  readonly remoteVideoTrack = this.remoteVideoTrackSignal.asReadonly();
+  /** All remote video tracks (group grid). */
+  readonly remoteVideoTracks = this.remoteVideoTracksSignal.asReadonly();
+  /** First remote video — used by 1:1 PiP layouts. */
+  readonly remoteVideoTrack = computed(() => this.remoteVideoTracksSignal()[0]?.track ?? null);
   readonly remoteAudioTrack = this.remoteAudioTrackSignal.asReadonly();
 
   /** True while a call UI should be visible (outgoing, incoming, connecting, active, or dialing). */
@@ -324,16 +329,25 @@ export class SendsarCallService {
             this.localVideoTrackSignal.set(track as SendsarCallMediaTrack);
           }
         }),
-        this.client.on('remoteTrack', ({ track }) => {
+        this.client.on('remoteTrack', ({ track, participant }) => {
           if (track.kind === 'video') {
-            this.remoteVideoTrackSignal.set(track as SendsarCallMediaTrack);
+            const sid = participant?.sid ?? track.sid ?? `remote-${Date.now()}`;
+            const identity = participant?.identity ?? sid;
+            this.remoteVideoTracksSignal.update((list) => {
+              const next = list.filter((item) => item.sid !== sid);
+              next.push({ sid, identity, track: track as SendsarCallMediaTrack });
+              return next;
+            });
           } else if (track.kind === 'audio') {
             this.remoteAudioTrackSignal.set(track as SendsarCallMediaTrack);
           }
         }),
-        this.client.on('remoteTrackRemoved', ({ track }) => {
+        this.client.on('remoteTrackRemoved', ({ track, participant }) => {
           if (track.kind === 'video') {
-            this.remoteVideoTrackSignal.set(null);
+            const sid = participant?.sid ?? track.sid;
+            this.remoteVideoTracksSignal.update((list) =>
+              sid ? list.filter((item) => item.sid !== sid) : [],
+            );
           } else if (track.kind === 'audio') {
             this.remoteAudioTrackSignal.set(null);
           }
@@ -456,7 +470,7 @@ export class SendsarCallService {
 
   private clearMediaTracks(): void {
     this.localVideoTrackSignal.set(null);
-    this.remoteVideoTrackSignal.set(null);
+    this.remoteVideoTracksSignal.set([]);
     this.remoteAudioTrackSignal.set(null);
   }
 
