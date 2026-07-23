@@ -28,6 +28,7 @@ export class SendsarForwardMessageDialogComponent implements OnChanges {
   @Input() open = false;
   @Input() message: Message | null = null;
   @Input() previewText = '';
+  @Input() previewSenderName = '';
   @Input() excludeRoomId: string | null = null;
   @Input() users: UserDirectoryEntry[] = [];
   @Input() selfUserId = '';

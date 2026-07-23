@@ -158,6 +158,19 @@
                         @if (message.deletedAt) {
                           <span class="sc-deleted">{{ preview(message) }}</span>
                         } @else {
+                          @if (isForwarded(message)) {
+                            <div
+                              class="sc-forwarded-label"
+                              [class.sc-forwarded-label--self]="isSelf(message)"
+                            >
+                              <span class="material-icons" aria-hidden="true">shortcut</span>
+                              @if (forwardedFromSenderName(message); as fromName) {
+                                <span>Forwarded from {{ fromName }}</span>
+                              } @else {
+                                <span>Forwarded message</span>
+                              }
+                            </div>
+                          }
                           @if (parentReply(message); as parent) {
                             <button
                               type="button"
@@ -346,6 +359,7 @@
   [open]="showForwardDialog()"
   [message]="forwardMessage()"
   [previewText]="forwardMessage() ? preview(forwardMessage()!) : ''"
+  [previewSenderName]="forwardMessage() ? senderName(forwardMessage()!) : ''"
   [excludeRoomId]="roomId"
   [users]="users"
   [selfUserId]="selfUserId() ?? ''"

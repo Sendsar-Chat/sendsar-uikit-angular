@@ -6,10 +6,17 @@
         <button type="button" class="sc-dialog-close" (click)="close()" aria-label="Close">×</button>
       </header>
 
-      @if (previewText) {
+      @if (previewText || previewSenderName) {
         <div class="sc-forward-preview">
           <span class="material-icons" aria-hidden="true">shortcut</span>
-          <p>{{ previewText }}</p>
+          <div class="sc-forward-preview-text">
+            @if (previewSenderName) {
+              <span class="sc-forward-preview-sender">From {{ previewSenderName }}</span>
+            }
+            @if (previewText) {
+              <p>{{ previewText }}</p>
+            }
+          </div>
         </div>
       }
 

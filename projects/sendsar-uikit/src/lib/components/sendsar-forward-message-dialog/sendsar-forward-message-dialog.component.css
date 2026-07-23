@@ -59,6 +59,21 @@
   transform: scaleX(-1);
 }
 
+.sc-forward-preview-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sc-forward-preview-sender {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #2563eb;
+  line-height: 1.2;
+}
+
 .sc-forward-preview p {
   margin: 0;
   font-size: 0.8125rem;

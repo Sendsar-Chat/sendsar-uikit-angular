@@ -316,6 +316,25 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
     this.scrollToMessageId(parentId);
   }
 
+  isForwarded(message: Message): boolean {
+    return Boolean(message.forwardedFromId);
+  }
+
+  /** Original author when available (local source message or optional API fields). */
+  forwardedFromSenderName(message: Message): string | null {
+    if (!message.forwardedFromId) return null;
+    const extras = message as Message & {
+      forwardedFromSenderId?: string;
+      originalSenderId?: string;
+    };
+    const originalSenderId =
+      extras.forwardedFromSenderId ??
+      extras.originalSenderId ??
+      this.messages().find((item) => item.id === message.forwardedFromId)?.senderId;
+    if (!originalSenderId) return null;
+    return displayNameFor(originalSenderId, userDirectoryMap(this.users));
+  }
+
   reactionSummary(message: Message): { emoji: string; count: number }[] {
     const counts = new Map<string, number>();
     for (const r of message.reactions ?? []) {

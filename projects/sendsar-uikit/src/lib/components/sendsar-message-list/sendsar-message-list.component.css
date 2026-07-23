@@ -497,6 +497,27 @@
   min-width: 0;
 }
 
+.sc-forwarded-label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-bottom: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #64748b;
+  line-height: 1.2;
+}
+
+.sc-forwarded-label .material-icons {
+  font-size: 0.9rem;
+  line-height: 1;
+  transform: scaleX(-1);
+}
+
+.sc-forwarded-label--self {
+  color: rgb(255 255 255 / 80%);
+}
+
 .sc-reply-quote {
   display: flex;
   align-items: stretch;
