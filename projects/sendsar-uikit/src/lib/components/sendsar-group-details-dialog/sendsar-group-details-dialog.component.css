@@ -104,6 +104,13 @@
   /* color: #0f172a; */
 }
 
+.sc-group-dialog-member-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.15rem;
+  flex-shrink: 0;
+}
+
 .sc-group-dialog-add-member {
   flex-shrink: 0;
   display: grid;
@@ -118,9 +125,19 @@
   padding: 0;
 }
 
-.sc-group-dialog-add-member:hover {
+.sc-group-dialog-add-member:hover:not(:disabled) {
   background: #f1f5f9;
   color: #2563eb;
+}
+
+.sc-group-dialog-add-member--remove:hover:not(:disabled) {
+  color: #dc2626;
+  background: #fef2f2;
+}
+
+.sc-group-dialog-add-member:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .sc-group-dialog-add-member .material-icons {
@@ -146,6 +163,7 @@
   font-size: 0.68rem;
   font-weight: 700;
   position: relative;
+  flex-shrink: 0;
 }
 
 .sc-group-dialog-member-avatar--online::after {
@@ -164,4 +182,8 @@
   margin: 0;
   font-size: 0.8rem;
   color: #94a3b8;
+}
+
+.sc-group-dialog-empty--error {
+  color: #dc2626;
 }

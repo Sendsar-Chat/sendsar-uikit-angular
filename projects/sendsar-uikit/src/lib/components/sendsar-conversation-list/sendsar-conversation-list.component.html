@@ -105,7 +105,13 @@
                 class="sc-room-preview"
                 [class.sc-room-preview--typing]="subtitle.includes('typing')"
               >
-                {{ subtitle }}
+                @for (segment of subtitleSegments(subtitle); track $index) {
+                  @if (segment.type === 'emoji') {
+                    <sc-animated-emoji class="sc-room-preview-emoji" [emoji]="segment.value" />
+                  } @else {
+                    {{ segment.value }}
+                  }
+                }
               </span>
             }
           </span>

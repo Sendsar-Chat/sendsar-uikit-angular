@@ -12,6 +12,7 @@ export * from './lib/components/sendsar-composer/sendsar-composer.component';
 export * from './lib/components/sendsar-room-info/sendsar-room-info.component';
 export * from './lib/components/sendsar-new-chat-dialog/sendsar-new-chat-dialog.component';
 export * from './lib/components/sendsar-group-details-dialog/sendsar-group-details-dialog.component';
+export * from './lib/components/sendsar-add-members-dialog/sendsar-add-members-dialog.component';
 export * from './lib/components/sendsar-forward-message-dialog/sendsar-forward-message-dialog.component';
 export * from './lib/components/mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
 export * from './lib/components/mini-components/sendsar-voice-preview/sendsar-voice-preview.component';

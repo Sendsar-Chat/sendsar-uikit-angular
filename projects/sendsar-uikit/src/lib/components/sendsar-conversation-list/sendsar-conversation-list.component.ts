@@ -12,6 +12,8 @@ import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { formatRelativeTime } from '../../utils/format-time';
 import { isDirectMessage, resolveRoomLabel } from '../../utils/room-label';
 import { initialsFor, type UserDirectoryEntry, userDirectoryMap } from '../../utils/user-directory';
+import { segmentTextWithEmoji, type TextSegment } from '../../utils/emoji-segments';
+import { SendsarAnimatedEmojiComponent } from '../mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
 
 /** Most recent activity timestamp for inbox ordering. */
 function roomActivityAt(room: RoomSummary): number {
@@ -32,7 +34,7 @@ function sortRoomsByActivity(rooms: readonly RoomSummary[]): RoomSummary[] {
 @Component({
   selector: 'sc-conversation-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, SendsarAnimatedEmojiComponent],
   templateUrl: './sendsar-conversation-list.component.html',
   styleUrl: './sendsar-conversation-list.component.css',
 })
@@ -129,6 +131,10 @@ export class SendsarConversationListComponent implements OnInit {
         lastMessagePreview: room.lastMessage?.previewText ?? undefined,
       }) ?? ''
     );
+  }
+
+  subtitleSegments(subtitle: string): TextSegment[] {
+    return segmentTextWithEmoji(subtitle);
   }
 
   roomTime(room: RoomSummary): string {

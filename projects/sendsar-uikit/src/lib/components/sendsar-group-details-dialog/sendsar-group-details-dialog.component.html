@@ -21,24 +21,45 @@
       <section class="sc-group-dialog-members">
         <header class="sc-group-dialog-members-header">
           <h3>Members</h3>
-          <button
-            type="button"
-            class="sc-group-dialog-add-member"
-            title="Add member"
-            aria-label="Add member"
-          >
-            <span class="material-icons" aria-hidden="true">person_add</span>
-          </button>
+          @if (selfIsOperator()) {
+            <div class="sc-group-dialog-member-actions">
+              <button
+                type="button"
+                class="sc-group-dialog-add-member"
+                title="Add member"
+                aria-label="Add member"
+                [disabled]="mutating()"
+                (click)="openAddMembersDialog()"
+              >
+                <span class="material-icons" aria-hidden="true">person_add</span>
+              </button>
+              <button
+                type="button"
+                class="sc-group-dialog-add-member sc-group-dialog-add-member--remove"
+                title="Remove member"
+                aria-label="Remove member"
+                [disabled]="mutating() || removableUsers().length === 0"
+                (click)="openRemoveMembersDialog()"
+              >
+                <span class="material-icons" aria-hidden="true">person_remove</span>
+              </button>
+            </div>
+          }
         </header>
-        @if (members().length > 0) {
+
+        @if (loadingMembers()) {
+          <p class="sc-group-dialog-empty">Loading members…</p>
+        } @else if (membersError()) {
+          <p class="sc-group-dialog-empty sc-group-dialog-empty--error">{{ membersError() }}</p>
+        } @else if (members().length > 0) {
           <div class="sc-group-dialog-member-row">
-            @for (member of members(); track member.id) {
+            @for (member of members(); track member.userId) {
               <span
                 class="sc-group-dialog-member-avatar"
-                [class.sc-group-dialog-member-avatar--online]="isOnline(member.id)"
+                [class.sc-group-dialog-member-avatar--online]="isOnline(member.userId)"
                 [title]="member.displayName"
               >
-                {{ memberInitials(member) }}
+                {{ memberInitials(member.displayName) }}
               </span>
             }
           </div>
@@ -49,3 +70,29 @@
     </div>
   </div>
 }
+
+<sc-add-members-dialog
+  [open]="showAddMembersDialog()"
+  [users]="users"
+  [excludeUserIds]="excludeUserIds()"
+  [onlineUserIds]="onlineUserIds"
+  [busy]="mutating()"
+  [error]="membersActionError()"
+  (closed)="closeAddMembersDialog()"
+  (confirm)="onAddMembersConfirm($event)"
+/>
+
+<sc-add-members-dialog
+  [open]="showRemoveMembersDialog()"
+  title="Remove members"
+  hint="Select people to remove from this group."
+  emptyHint="No members available to remove."
+  confirmLabel="Remove"
+  busyLabel="Removing…"
+  [users]="removableUsers()"
+  [onlineUserIds]="onlineUserIds"
+  [busy]="mutating()"
+  [error]="membersActionError()"
+  (closed)="closeRemoveMembersDialog()"
+  (confirm)="onRemoveMembersConfirm($event)"
+/>

@@ -165,11 +165,13 @@
 
     <sc-group-details-dialog
       [open]="showGroupDetails()"
+      [roomId]="selectedRoom()?.id ?? null"
       [title]="roomTitle()"
       [users]="users"
       [selfUserId]="session.session?.chatUserId ?? ''"
       [onlineUserIds]="onlineUserIds()"
       (closed)="closeGroupDetails()"
+      (membersChanged)="onGroupMembersChanged($event)"
     />
   </div>
 }

@@ -1,0 +1,80 @@
+@if (open) {
+  <div class="sc-add-members-backdrop" (click)="close()">
+    <div
+      class="sc-add-members-dialog"
+      role="dialog"
+      aria-modal="true"
+      [attr.aria-label]="title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="sc-add-members-header">
+        <h2>{{ title }}</h2>
+        <button type="button" class="sc-add-members-close" (click)="close()" aria-label="Close">×</button>
+      </header>
+
+      @if (error) {
+        <p class="sc-add-members-error">{{ error }}</p>
+      }
+
+      <div class="sc-add-members-body">
+        <p class="sc-add-members-hint">{{ hint }}</p>
+
+        <label class="sc-add-members-search">
+          <span class="material-icons" aria-hidden="true">search</span>
+          <input
+            type="search"
+            placeholder="Search people"
+            [value]="searchQuery()"
+            (input)="searchQuery.set($any($event.target).value)"
+            [disabled]="busy"
+          />
+        </label>
+
+        @if (filteredUsers().length === 0) {
+          <p class="sc-add-members-hint">{{ emptyHint }}</p>
+        } @else {
+          <ul class="sc-add-members-list">
+            @for (user of filteredUsers(); track user.id) {
+              <li>
+                <label
+                  class="sc-add-members-row"
+                  [class.sc-add-members-row--selected]="isSelected(user.id)"
+                >
+                  <input
+                    class="sc-add-members-choice"
+                    type="checkbox"
+                    [checked]="isSelected(user.id)"
+                    [disabled]="busy"
+                    (change)="toggleUser(user.id)"
+                  />
+                  <span class="sc-add-members-choice-ui" aria-hidden="true"></span>
+                  <span class="sc-add-members-avatar">{{ initials(user.displayName) }}</span>
+                  <span class="sc-add-members-name">
+                    {{ user.displayName }}
+                    @if (isOnline(user.id)) {
+                      <span class="sc-add-members-online">online</span>
+                    }
+                  </span>
+                </label>
+              </li>
+            }
+          </ul>
+        }
+
+        <footer class="sc-add-members-footer">
+          <button type="button" class="sc-add-members-secondary" (click)="close()" [disabled]="busy">
+            Cancel
+          </button>
+          <button
+            type="button"
+            class="sc-add-members-primary"
+            [disabled]="busy || selectedIds().size === 0"
+            (click)="submit()"
+          >
+            {{ confirmButtonText() }}
+          </button>
+        </footer>
+      </div>
+    </div>
+  </div>
+}

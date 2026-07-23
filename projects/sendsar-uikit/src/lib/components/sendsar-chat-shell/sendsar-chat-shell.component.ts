@@ -18,6 +18,7 @@ import {
   formatTypingLabel,
   otherTypingUserIds,
   type Message,
+  type RoomParticipant,
   type RoomSummary,
   type TypingByRoom,
 } from '@sendsar/chat-sdk-javascript';
@@ -49,6 +50,7 @@ export type SendsarCreateRoomHandler = (
   customType?: string;
 }>;
 import { SendsarCallService } from '../../services/sendsar-call.service';
+import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { isDirectMessage, isGroupRoom, parseDmPeerId, resolveRoomLabel } from '../../utils/room-label';
 import {
@@ -77,6 +79,7 @@ import {
 export class SendsarChatShellComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private readonly calls = inject(SendsarCallService);
+  private readonly chat = inject(SendsarChatService);
   readonly session = inject(SendsarSessionService);
 
   @Input() users: UserDirectoryEntry[] = [];
@@ -90,6 +93,8 @@ export class SendsarChatShellComponent implements OnInit {
   readonly selectedRoom = signal<RoomSummary | null>(null);
   readonly typingByRoom = signal<TypingByRoom>({});
   readonly onlineUserIds = signal<ReadonlySet<string>>(new Set());
+  /** Group participants from `getRoom` for the selected room header subtitle. */
+  readonly groupParticipants = signal<RoomParticipant[]>([]);
   readonly mobileShowThread = signal(false);
   readonly showInfoPanel = signal(false);
   readonly calling = this.calls.calling;
@@ -106,6 +111,7 @@ export class SendsarChatShellComponent implements OnInit {
   private realtimeWired = false;
   private presenceTracker: ReturnType<typeof createTenantPresenceTracker> | null = null;
   private reloadTimer: ReturnType<typeof setTimeout> | null = null;
+  private participantsLoadToken = 0;
 
   ngOnInit(): void {
     const check = () => {
@@ -125,6 +131,7 @@ export class SendsarChatShellComponent implements OnInit {
     this.editingMessage.set(null);
     this.replyingToMessage.set(null);
     this.showGroupDetails.set(false);
+    void this.loadGroupParticipants(room);
   }
 
   onEditRequested(message: Message): void {
@@ -226,6 +233,10 @@ export class SendsarChatShellComponent implements OnInit {
     this.showGroupDetails.set(false);
   }
 
+  onGroupMembersChanged(participants: RoomParticipant[]): void {
+    this.groupParticipants.set(participants);
+  }
+
   @HostListener('document:click')
   closeHeaderMenu(): void {
     if (this.showHeaderMenu()) {
@@ -279,12 +290,13 @@ export class SendsarChatShellComponent implements OnInit {
     if (room) {
       this.selectedRoom.set(room);
       this.mobileShowThread.set(true);
-      // this.showInfoPanel.set(true);
+      // this.showInfoPane.set(true);
+      void this.loadGroupParticipants(room);
       return;
     }
 
     const title = opts.title?.trim() || null;
-    this.selectedRoom.set({
+    const fallbackRoom: RoomSummary = {
       id: roomId,
       name: title,
       externalId: opts.externalId ?? null,
@@ -293,9 +305,11 @@ export class SendsarChatShellComponent implements OnInit {
       isFrozen: false,
       lastMessage: null,
       createdAt: new Date().toISOString(),
-    });
+    };
+    this.selectedRoom.set(fallbackRoom);
     this.mobileShowThread.set(true);
-    // this.showInfoPanel.set(true);
+    // this.showInfoPane.set(true);
+    void this.loadGroupParticipants(fallbackRoom);
     void this.conversationList?.reload();
   }
 
@@ -335,9 +349,12 @@ export class SendsarChatShellComponent implements OnInit {
     }
 
     if (isGroupRoom(room)) {
-      const members = this.users.filter((u) => u.id !== selfId);
-      const memberCount = Math.max(members.length, 1);
-      const online = members.filter((u) => this.onlineUserIds().has(u.id)).length;
+      const members = this.groupParticipants();
+      const memberCount = members.length;
+      const online = members.filter((p) => this.onlineUserIds().has(p.userId)).length;
+      if (memberCount === 0) {
+        return 'Group';
+      }
       return `${memberCount} members, ${online} online`;
     }
 
@@ -465,6 +482,23 @@ export class SendsarChatShellComponent implements OnInit {
       }
     }
     return null;
+  }
+
+  private async loadGroupParticipants(room: RoomSummary | null): Promise<void> {
+    const token = ++this.participantsLoadToken;
+    if (!room || !isGroupRoom(room)) {
+      this.groupParticipants.set([]);
+      return;
+    }
+
+    try {
+      const detail = await this.chat.getRoom(room.id);
+      if (token !== this.participantsLoadToken) return;
+      this.groupParticipants.set(detail.participants);
+    } catch {
+      if (token !== this.participantsLoadToken) return;
+      this.groupParticipants.set([]);
+    }
   }
 
   private wireRealtime(): void {

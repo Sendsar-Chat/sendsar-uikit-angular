@@ -363,11 +363,22 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.35;
 }
 
 .sc-room-preview--typing {
   color: #2563eb;
   font-style: italic;
+}
+
+:host ::ng-deep .sc-room-preview-emoji .sc-animated-emoji__lottie {
+  width: 1.05rem;
+  height: 1.05rem;
+  vertical-align: -0.15em;
+}
+
+:host ::ng-deep .sc-room-preview-emoji .sc-animated-emoji__static {
+  font-size: 0.95em;
 }
 
 .sc-muted {
