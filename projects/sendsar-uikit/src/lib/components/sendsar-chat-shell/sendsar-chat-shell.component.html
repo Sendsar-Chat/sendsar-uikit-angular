@@ -36,26 +36,36 @@
       [typingByRoom]="typingByRoom()"
       [onlineUserIds]="onlineUserIds()"
       (roomSelect)="onRoomSelect($event)"
+      (newChat)="onSidebarNewChat()"
     />
 
     <section class="sc-thread">
       @if (selectedRoom(); as room) {
         <header class="sc-thread-header">
           <button type="button" class="sc-back" (click)="backToList()" aria-label="Back to conversations">←</button>
-          <span class="sc-header-avatar">{{ headerAvatarInitials() }}</span>
-          <div class="sc-header-text">
-            <h1>{{ roomTitle() }}</h1>
-            <span
-              class="sc-header-sub"
-              [class.sc-header-sub--typing]="!!typingLabel()"
-            >
-              {{ headerSubtitle() }}
-            </span>
-          </div>
+          <button
+            type="button"
+            class="sc-header-identity"
+            [class.sc-header-identity--clickable]="roomIsGroup()"
+            [disabled]="!roomIsGroup()"
+            (click)="onHeaderIdentityClick()"
+            [attr.aria-label]="roomIsGroup() ? 'Open group details' : null"
+          >
+            <span class="sc-header-avatar">{{ headerAvatarInitials() }}</span>
+            <div class="sc-header-text">
+              <h1>{{ roomTitle() }}</h1>
+              <span
+                class="sc-header-sub"
+                [class.sc-header-sub--typing]="!!typingLabel()"
+              >
+                {{ headerSubtitle() }}
+              </span>
+            </div>
+          </button>
           <div class="sc-header-actions">
-            <button type="button" class="sc-header-action" title="Search in conversation" aria-label="Search">
+            <!-- <button type="button" class="sc-header-action" title="Search in conversation" aria-label="Search">
               <span class="material-icons" aria-hidden="true">search</span>
-            </button>
+            </button> -->
             <button
               type="button"
               class="sc-header-action"
@@ -78,7 +88,7 @@
             >
               <span class="material-icons" aria-hidden="true">videocam</span>
             </button>
-            <div class="sc-header-menu-wrap">
+            <!-- <div class="sc-header-menu-wrap">
               <button
                 type="button"
                 class="sc-header-action"
@@ -91,15 +101,12 @@
               </button>
               @if (showHeaderMenu()) {
                 <div class="sc-header-menu" role="menu">
-                  <button type="button" class="sc-header-menu-item" (click)="onHeaderNewChat()">
-                    <span class="material-icons" aria-hidden="true">add_comment</span> New Chat
-                  </button>
                   <button type="button" class="sc-header-menu-item" (click)="onHeaderRoomDetails()">
                     <span class="material-icons" aria-hidden="true">info</span> Room Details
                   </button>
                 </div>
               }
-            </div>
+            </div> -->
           </div>
         </header>
         <sc-message-list
@@ -154,6 +161,15 @@
       [error]="newChatError()"
       (closed)="closeNewChat()"
       (create)="onNewChat($event)"
+    />
+
+    <sc-group-details-dialog
+      [open]="showGroupDetails()"
+      [title]="roomTitle()"
+      [users]="users"
+      [selfUserId]="session.session?.chatUserId ?? ''"
+      [onlineUserIds]="onlineUserIds()"
+      (closed)="closeGroupDetails()"
     />
   </div>
 }

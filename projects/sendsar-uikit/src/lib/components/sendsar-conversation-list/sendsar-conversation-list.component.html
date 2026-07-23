@@ -11,17 +11,39 @@
       autocomplete="off"
     />
   </label>
-  <button
-    type="button"
-    class="sc-icon-btn"
-    [class.sc-icon-btn--spin]="refreshing()"
-    [disabled]="refreshing() || initialLoad()"
-    (click)="reload()"
-    title="Refresh"
-    aria-label="Refresh conversations"
-  >
-    ↻
-  </button>
+  <div class="sc-menu-wrap">
+    <button
+      type="button"
+      class="sc-icon-btn sc-icon-btn--menu"
+      title="More options"
+      aria-label="More options"
+      [attr.aria-expanded]="showMenu()"
+      (click)="toggleMenu($event)"
+    >
+      <span class="material-icons" aria-hidden="true">more_vert</span>
+    </button>
+    @if (showMenu()) {
+      <div class="sc-menu" role="menu">
+        <button type="button" class="sc-menu-item" (click)="onNewChat()">
+          <span class="material-icons" aria-hidden="true">chat</span>
+          New Chat
+        </button>
+        <button
+          type="button"
+          class="sc-menu-item"
+          [disabled]="refreshing() || initialLoad()"
+          (click)="onRefresh()"
+        >
+          <span
+            class="material-icons"
+            [class.sc-menu-item-icon--spin]="refreshing()"
+            aria-hidden="true"
+          >refresh</span>
+          {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
+        </button>
+      </div>
+    }
+  </div>
 </header>
 
 @if (error() && rooms().length > 0) {

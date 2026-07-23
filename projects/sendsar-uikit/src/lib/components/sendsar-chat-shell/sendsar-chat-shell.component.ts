@@ -33,6 +33,7 @@ import {
   SendsarNewChatDialogComponent,
   type SendsarNewChatRequest,
 } from '../sendsar-new-chat-dialog/sendsar-new-chat-dialog.component';
+import { SendsarGroupDetailsDialogComponent } from '../sendsar-group-details-dialog/sendsar-group-details-dialog.component';
 
 /**
  * Creates the room on the host backend and returns its id plus optional
@@ -68,6 +69,7 @@ import {
     SendsarRoomInfoComponent,
     SendsarCallOverlayComponent,
     SendsarNewChatDialogComponent,
+    SendsarGroupDetailsDialogComponent,
   ],
   templateUrl: './sendsar-chat-shell.component.html',
   styleUrl: './sendsar-chat-shell.component.css',
@@ -89,7 +91,7 @@ export class SendsarChatShellComponent implements OnInit {
   readonly typingByRoom = signal<TypingByRoom>({});
   readonly onlineUserIds = signal<ReadonlySet<string>>(new Set());
   readonly mobileShowThread = signal(false);
-  readonly showInfoPanel = signal(true);
+  readonly showInfoPanel = signal(false);
   readonly calling = this.calls.calling;
   readonly showCallUi = this.calls.showCallUi;
   readonly callError = signal<string | null>(null);
@@ -97,6 +99,7 @@ export class SendsarChatShellComponent implements OnInit {
   readonly replyingToMessage = signal<Message | null>(null);
   readonly showHeaderMenu = signal(false);
   readonly showNewChat = signal(false);
+  readonly showGroupDetails = signal(false);
   readonly creatingChat = signal(false);
   readonly newChatError = signal<string | null>(null);
 
@@ -118,9 +121,10 @@ export class SendsarChatShellComponent implements OnInit {
   onRoomSelect(room: RoomSummary): void {
     this.selectedRoom.set(room);
     this.mobileShowThread.set(true);
-    this.showInfoPanel.set(true);
+    // this.showInfoPanel.set(true);
     this.editingMessage.set(null);
     this.replyingToMessage.set(null);
+    this.showGroupDetails.set(false);
   }
 
   onEditRequested(message: Message): void {
@@ -138,8 +142,7 @@ export class SendsarChatShellComponent implements OnInit {
     this.showHeaderMenu.update((open) => !open);
   }
 
-  onHeaderNewChat(): void {
-    this.showHeaderMenu.set(false);
+  onSidebarNewChat(): void {
     this.newChatError.set(null);
     this.showNewChat.set(true);
   }
@@ -211,7 +214,16 @@ export class SendsarChatShellComponent implements OnInit {
 
   onHeaderRoomDetails(): void {
     this.showHeaderMenu.set(false);
-    this.showInfoPanel.set(true);
+    // this.showInfoPanel.set(true);
+  }
+
+  onHeaderIdentityClick(): void {
+    if (!this.roomIsGroup()) return;
+    this.showGroupDetails.set(true);
+  }
+
+  closeGroupDetails(): void {
+    this.showGroupDetails.set(false);
   }
 
   @HostListener('document:click')
@@ -267,7 +279,7 @@ export class SendsarChatShellComponent implements OnInit {
     if (room) {
       this.selectedRoom.set(room);
       this.mobileShowThread.set(true);
-      this.showInfoPanel.set(true);
+      // this.showInfoPanel.set(true);
       return;
     }
 
@@ -283,7 +295,7 @@ export class SendsarChatShellComponent implements OnInit {
       createdAt: new Date().toISOString(),
     });
     this.mobileShowThread.set(true);
-    this.showInfoPanel.set(true);
+    // this.showInfoPanel.set(true);
     void this.conversationList?.reload();
   }
 

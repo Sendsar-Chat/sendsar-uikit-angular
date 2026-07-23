@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnInit, Output, computed, inject, signal } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, computed, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   formatTypingLabel,
@@ -46,6 +46,7 @@ export class SendsarConversationListComponent implements OnInit {
   @Input() typingByRoom: TypingByRoom = {};
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
   @Output() readonly roomSelect = new EventEmitter<RoomSummary>();
+  @Output() readonly newChat = new EventEmitter<void>();
 
   readonly rooms = signal<RoomSummary[]>([]);
   /** First load with no cached rooms — show skeletons. */
@@ -54,6 +55,7 @@ export class SendsarConversationListComponent implements OnInit {
   readonly refreshing = signal(false);
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
+  readonly showMenu = signal(false);
 
   readonly filteredRooms = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -156,6 +158,28 @@ export class SendsarConversationListComponent implements OnInit {
   onSearchInput(event: Event): void {
     const value = (event.target as HTMLInputElement).value;
     this.searchQuery.set(value);
+  }
+
+  toggleMenu(event: Event): void {
+    event.stopPropagation();
+    this.showMenu.update((open) => !open);
+  }
+
+  @HostListener('document:click')
+  closeMenu(): void {
+    if (this.showMenu()) {
+      this.showMenu.set(false);
+    }
+  }
+
+  onNewChat(): void {
+    this.showMenu.set(false);
+    this.newChat.emit();
+  }
+
+  onRefresh(): void {
+    this.showMenu.set(false);
+    void this.reload();
   }
 
   private async waitForSessionAndLoad(): Promise<void> {

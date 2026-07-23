@@ -47,13 +47,18 @@
           <ul class="sc-dialog-user-list">
             @for (room of filteredRooms(); track room.id) {
               <li>
-                <label class="sc-dialog-user-row">
+                <label
+                  class="sc-dialog-user-row"
+                  [class.sc-dialog-user-row--selected]="isSelected(room.id)"
+                >
                   <input
+                    class="sc-dialog-choice"
                     type="checkbox"
                     [checked]="isSelected(room.id)"
                     [disabled]="busy"
                     (change)="toggleRoom(room.id)"
                   />
+                  <span class="sc-dialog-choice-ui sc-dialog-choice-ui--check" aria-hidden="true"></span>
                   <span class="sc-dialog-avatar">{{ roomInitials(room) }}</span>
                   <span class="sc-dialog-name">{{ roomLabel(room) }}</span>
                 </label>

@@ -1,4 +1,12 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { initialsFor, type UserDirectoryEntry } from '../../utils/user-directory';
 
@@ -13,7 +21,7 @@ export type SendsarNewChatRequest = SendsarNewChatDirect | SendsarNewChatGroup;
   templateUrl: './sendsar-new-chat-dialog.component.html',
   styleUrl: './sendsar-new-chat-dialog.component.css',
 })
-export class SendsarNewChatDialogComponent {
+export class SendsarNewChatDialogComponent implements OnChanges {
   @Input({ required: true }) selfId!: string;
   @Input({ required: true }) users: UserDirectoryEntry[] = [];
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
@@ -27,9 +35,19 @@ export class SendsarNewChatDialogComponent {
   readonly tab = signal<'direct' | 'group'>('direct');
   readonly selectedPeerId = signal('');
   readonly selectedMembers = signal<Set<string>>(new Set());
+  readonly searchQuery = signal('');
 
-  peers(): UserDirectoryEntry[] {
-    return this.users.filter((u) => u.id !== this.selfId);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open']?.currentValue === true) {
+      this.reset();
+    }
+  }
+
+  filteredPeers(): UserDirectoryEntry[] {
+    const query = this.searchQuery().trim().toLowerCase();
+    const peers = this.users.filter((u) => u.id !== this.selfId);
+    if (!query) return peers;
+    return peers.filter((user) => user.displayName.toLowerCase().includes(query));
   }
 
   initials(name: string): string {
@@ -42,6 +60,7 @@ export class SendsarNewChatDialogComponent {
 
   setTab(tab: 'direct' | 'group'): void {
     this.tab.set(tab);
+    this.searchQuery.set('');
   }
 
   toggleMember(userId: string): void {
@@ -78,5 +97,6 @@ export class SendsarNewChatDialogComponent {
     this.tab.set('direct');
     this.selectedPeerId.set('');
     this.selectedMembers.set(new Set());
+    this.searchQuery.set('');
   }
 }

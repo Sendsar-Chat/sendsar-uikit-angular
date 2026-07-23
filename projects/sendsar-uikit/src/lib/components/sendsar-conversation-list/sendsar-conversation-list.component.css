@@ -72,6 +72,83 @@
   animation: sc-spin 0.8s linear infinite;
 }
 
+.sc-icon-btn--menu {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+
+.sc-icon-btn--menu .material-icons {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.sc-menu-wrap {
+  position: relative;
+}
+
+.sc-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 30;
+  min-width: 10.5rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.75rem;
+  box-shadow: 0 10px 28px rgb(15 23 42 / 16%);
+  animation: sc-menu-in 0.12s ease-out;
+}
+
+@keyframes sc-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sc-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.55rem;
+  font-size: 0.85rem;
+  color: #1e293b;
+  text-align: left;
+  cursor: pointer;
+}
+
+.sc-menu-item:hover {
+  background: #f1f5f9;
+}
+
+.sc-menu-item .material-icons {
+  font-size: 1.1rem;
+  color: #64748b;
+}
+
+.sc-menu-item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sc-menu-item-icon--spin {
+  animation: sc-spin 0.8s linear infinite;
+}
+
 @keyframes sc-spin {
   to {
     transform: rotate(360deg);

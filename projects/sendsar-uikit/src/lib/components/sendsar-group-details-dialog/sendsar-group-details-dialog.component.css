@@ -1,0 +1,167 @@
+.sc-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgb(15 23 42 / 45%);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.sc-group-dialog {
+  position: relative;
+  width: min(100%, 18.5rem);
+  background: #f8fafc;
+  border-radius: 0.85rem;
+  box-shadow: 0 20px 40px rgb(15 23 42 / 18%);
+  border: 1px solid #e2e8f0;
+  overflow: hidden;
+}
+
+.sc-group-dialog-close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.4rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: #94a3b8;
+}
+
+.sc-group-dialog-close:hover {
+  color: #64748b;
+  background: #f1f5f9;
+}
+
+.sc-group-dialog-close .material-icons {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.sc-group-dialog-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1.25rem 1.15rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sc-group-dialog-avatar {
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+}
+
+.sc-group-dialog-title {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.sc-group-dialog-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #64748b;
+}
+
+.sc-group-dialog-desc {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
+
+.sc-group-dialog-members {
+  padding: 0.95rem 1.1rem 1.15rem;
+}
+
+.sc-group-dialog-members-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.sc-group-dialog-members-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  /* font-weight: 700; */
+  /* color: #0f172a; */
+}
+
+.sc-group-dialog-add-member {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: none;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: #64748b;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-group-dialog-add-member:hover {
+  background: #f1f5f9;
+  color: #2563eb;
+}
+
+.sc-group-dialog-add-member .material-icons {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.sc-group-dialog-member-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.sc-group-dialog-member-avatar {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  position: relative;
+}
+
+.sc-group-dialog-member-avatar--online::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #22c55e;
+  border: 1.5px solid #f8fafc;
+}
+
+.sc-group-dialog-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #94a3b8;
+}
