@@ -124,6 +124,21 @@ export class SendsarRoomInfoComponent implements OnChanges {
 
   readonly memberCount = computed(() => Math.max(this.memberRows().length, 0));
 
+  readonly membersSubtitle = computed(() => {
+    if (this.isGroup()) {
+      const members = this.participants();
+      if (members.length === 0) return 'Group';
+      const online = members.filter((p) => this.onlineUserIds.has(p.userId)).length;
+      return `${members.length} members, ${online} online`;
+    }
+    if (this.isDm()) {
+      const peer = this.memberRows()[0];
+      if (peer && this.isOnline(peer.userId)) return 'Online';
+      return '';
+    }
+    return '';
+  });
+
   readonly addableUsers = computed(() => {
     const inRoom = new Set(this.participants().map((p) => p.userId));
     return this.users.filter((u) => u.id !== this.selfUserId && !inRoom.has(u.id));

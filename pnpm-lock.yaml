@@ -31,13 +31,13 @@ importers:
         version: 19.2.25(@angular/common@19.2.25(@angular/core@19.2.25(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@19.2.25(rxjs@7.8.2)(zone.js@0.15.1))(@angular/platform-browser@19.2.25(@angular/common@19.2.25(@angular/core@19.2.25(rxjs@7.8.2)(zone.js@0.15.1))(rxjs@7.8.2))(@angular/core@19.2.25(rxjs@7.8.2)(zone.js@0.15.1)))(rxjs@7.8.2)
       '@sendsar/call-sdk-javascript':
         specifier: ^0.2.0
-        version: 0.2.0(@sendsar/chat-sdk-javascript@0.3.0)(@types/dom-mediacapture-record@1.0.22)
+        version: 0.2.0(@sendsar/chat-sdk-javascript@0.6.0)(@types/dom-mediacapture-record@1.0.22)
       '@sendsar/chat-sdk-javascript':
+        specifier: ^0.6.0
+        version: 0.6.0
+      '@sendsar/protocol':
         specifier: ^0.3.0
         version: 0.3.0
-      '@sendsar/protocol':
-        specifier: ^0.2.0
-        version: 0.2.0
       lottie-web:
         specifier: ^5.13.0
         version: 5.13.0
@@ -1433,8 +1433,8 @@ packages:
   '@livekit/mutex@1.1.1':
     resolution: {integrity: sha512-EsshAucklmpuUAfkABPxJNhzj9v2sG7JuzFDL4ML1oJQSV14sqrpTYnsaOudMAw9yOaW53NU3QQTlUQoRs4czw==}
 
-  '@livekit/protocol@1.46.6':
-    resolution: {integrity: sha512-upzlHP1vi/kZ/QqALZTFskQ0ifqc2f15RKucHYOsIHJsaXvEYanG75mAb7o+Yomfs4XhQ4BaRsdY+TFHXpaqrg==}
+  '@livekit/protocol@1.50.4':
+    resolution: {integrity: sha512-L1uggNQAqyY21smQY8AllyOYbcv9Me9TaxwuLytL1R8ck9nbYPmQLNwEDi3pOFGAMa5F8I2nUi2Jc59W5awxlA==}
 
   '@lmdb/lmdb-darwin-arm64@3.2.6':
     resolution: {integrity: sha512-yF/ih9EJJZc72psFQbwnn8mExIWfTnzWJg+N02hnpXtDPETYLmQswIMBn7+V88lfCaFrMozJsUvcEQIkEPU0Gg==}
@@ -2063,11 +2063,14 @@ packages:
     peerDependencies:
       '@sendsar/chat-sdk-javascript': '>=0.2.0'
 
-  '@sendsar/chat-sdk-javascript@0.3.0':
-    resolution: {integrity: sha512-k0q0POEoMrQczMmRmldhyZriETO+EE9oGrrJ8Qr3dFzt2aMfGNuI9orgCJ3kn9MRivPoqglBbHpPWEfG0qf1rg==}
+  '@sendsar/chat-sdk-javascript@0.6.0':
+    resolution: {integrity: sha512-IJ8PLQfwdzNJMbS8JX0CWhBQY9aABxVZkidr5EgVxXRpAiPccK1BuDx6inJNf8RrUDAF5lujvv7mnrVU2byMNw==}
 
   '@sendsar/protocol@0.2.0':
     resolution: {integrity: sha512-hAPgHrfSYfs4NY0XGUHzE4Dt9jBLz72p6I6BQiX9eP/bOI4U3d27H8OjfHLFCgqPfg1Zpb1MtcXuNx8HYV/ykA==}
+
+  '@sendsar/protocol@0.3.0':
+    resolution: {integrity: sha512-rh4eifJFc22Z6qxPClxCPKa1NbwVEQ6jbwgJojrDIDVXpfmXFKvgKDx4GFj4lS0cy3GYnN0VBwrOGnQGeA6PFA==}
 
   '@sigstore/bundle@3.1.0':
     resolution: {integrity: sha512-Mm1E3/CmDDCz3nDhFKTuYdB47EdRFRQMOE/EAbiG1MJW77/w1b3P7Qx7JSrVJs8PfwOLOVcKQCHErIwCTyPbag==}
@@ -2765,8 +2768,8 @@ packages:
   ee-first@1.1.1:
     resolution: {integrity: sha512-WMwm9LhRUo+WUaRN+vRuETqG89IgZphVSNkdFgeb6sS/E4OrDIN7t48CAewSHXc6C8lefD8KKfr5vY61brQlow==}
 
-  electron-to-chromium@1.5.395:
-    resolution: {integrity: sha512-7zt9Aw+SrmxLWLN0zhaTWZQiCdryLVrYTq5R7iZakLvi2UQPYMMsROYV/2qVCzMeCiSXHwKOU+sZ4zOVVlrtKA==}
+  electron-to-chromium@1.5.396:
+    resolution: {integrity: sha512-yHiw2Y3C3H9U6TMbOfoWK/BPreiOPXRfTWPBwQBoZG6/8TB6eOPnsy5oaRYuatR7Fw2SJ4kKforgufeo7fq0EQ==}
 
   emoji-regex@10.6.0:
     resolution: {integrity: sha512-toUI84YS5YmxW219erniWD0CIVOo46xGKColeNQRgOzDorgBi1v4D71/OFzgD9GO2UGKIv1C3Sp8DAn0+j5w7A==}
@@ -3495,8 +3498,8 @@ packages:
     resolution: {integrity: sha512-iyAZCeyD+c1gPyE9qpFu8af0Y+MRtmKOncdGoA2S5EY8iFq99dmmvkNnHiWo+pj0s7yH7l3KPIgee77tKpXPWQ==}
     engines: {node: '>=18.0.0'}
 
-  livekit-client@2.20.2:
-    resolution: {integrity: sha512-rGV0Y+HgqI4yROq/4Get7wZ62DbYI55GumrI7FHJsUNFzPCl6xSqYBVlkVaCEvyOk14PdANLK/EHgMPJbvD68w==}
+  livekit-client@2.21.0:
+    resolution: {integrity: sha512-RBUhPkV/sl1nzl8lokVlK5uATPwn0AlsudCBZXissw/kDl9yz8ac4pNJ43iPpMVoHOeBYH/BZ3vUC1adqa/zFQ==}
     peerDependencies:
       '@types/dom-mediacapture-record': ^1
 
@@ -4289,8 +4292,8 @@ packages:
       webpack:
         optional: true
 
-  sass@1.101.6:
-    resolution: {integrity: sha512-j8qYug9WuX19eU5sxJWQlbR8RYhKgXiOYgGjkJRkcW35c3neWtxPdcUW0saN6Od2L0aqEp0AmH9R/QeAxrffMQ==}
+  sass@1.101.7:
+    resolution: {integrity: sha512-cDeUYU0dhwKVbpYg/ppsjyuoddxYhWlJOkRoI7+/iZsaSp7iowWDfm+tL2HcUafedWBDvbf/+hx0QRgKG4JSHA==}
     engines: {node: '>=20.19.0'}
     hasBin: true
 
@@ -6441,7 +6444,7 @@ snapshots:
 
   '@livekit/mutex@1.1.1': {}
 
-  '@livekit/protocol@1.46.6':
+  '@livekit/protocol@1.50.4':
     dependencies:
       '@bufbuild/protobuf': 1.10.1
 
@@ -6870,17 +6873,17 @@ snapshots:
     transitivePeerDependencies:
       - chokidar
 
-  '@sendsar/call-sdk-javascript@0.2.0(@sendsar/chat-sdk-javascript@0.3.0)(@types/dom-mediacapture-record@1.0.22)':
+  '@sendsar/call-sdk-javascript@0.2.0(@sendsar/chat-sdk-javascript@0.6.0)(@types/dom-mediacapture-record@1.0.22)':
     dependencies:
-      '@sendsar/chat-sdk-javascript': 0.3.0
+      '@sendsar/chat-sdk-javascript': 0.6.0
       '@sendsar/protocol': 0.2.0
-      livekit-client: 2.20.2(@types/dom-mediacapture-record@1.0.22)
+      livekit-client: 2.21.0(@types/dom-mediacapture-record@1.0.22)
     transitivePeerDependencies:
       - '@types/dom-mediacapture-record'
 
-  '@sendsar/chat-sdk-javascript@0.3.0':
+  '@sendsar/chat-sdk-javascript@0.6.0':
     dependencies:
-      '@sendsar/protocol': 0.2.0
+      '@sendsar/protocol': 0.3.0
       socket.io-client: 4.8.3
     transitivePeerDependencies:
       - bufferutil
@@ -6888,6 +6891,8 @@ snapshots:
       - utf-8-validate
 
   '@sendsar/protocol@0.2.0': {}
+
+  '@sendsar/protocol@0.3.0': {}
 
   '@sigstore/bundle@3.1.0':
     dependencies:
@@ -7310,7 +7315,7 @@ snapshots:
     dependencies:
       baseline-browser-mapping: 2.11.1
       caniuse-lite: 1.0.30001806
-      electron-to-chromium: 1.5.395
+      electron-to-chromium: 1.5.396
       node-releases: 2.0.51
       update-browserslist-db: 1.2.3(browserslist@4.28.7)
 
@@ -7649,7 +7654,7 @@ snapshots:
 
   ee-first@1.1.1: {}
 
-  electron-to-chromium@1.5.395: {}
+  electron-to-chromium@1.5.396: {}
 
   emoji-regex@10.6.0: {}
 
@@ -8488,10 +8493,10 @@ snapshots:
       rfdc: 1.4.1
       wrap-ansi: 9.0.2
 
-  livekit-client@2.20.2(@types/dom-mediacapture-record@1.0.22):
+  livekit-client@2.21.0(@types/dom-mediacapture-record@1.0.22):
     dependencies:
       '@livekit/mutex': 1.1.1
-      '@livekit/protocol': 1.46.6
+      '@livekit/protocol': 1.50.4
       '@types/dom-mediacapture-record': 1.0.22
       events: 3.3.0
       jose: 6.2.4
@@ -8806,7 +8811,7 @@ snapshots:
       piscina: 4.9.3
       postcss: 8.5.22
       rxjs: 7.8.2
-      sass: 1.101.6
+      sass: 1.101.7
       tslib: 2.8.1
       typescript: 5.7.3
     optionalDependencies:
@@ -9382,7 +9387,7 @@ snapshots:
       sass: 1.85.0
       webpack: 5.105.0(esbuild@0.28.0)(postcss@8.5.12)
 
-  sass@1.101.6:
+  sass@1.101.7:
     dependencies:
       chokidar: 5.0.0
       immutable: 5.1.9

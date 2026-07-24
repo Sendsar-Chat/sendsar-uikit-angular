@@ -95,6 +95,16 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
 
   readonly memberCount = computed(() => this.members().length);
 
+  readonly onlineMemberCount = computed(
+    () => this.participants().filter((p) => this.onlineUserIds.has(p.userId)).length,
+  );
+
+  readonly membersSubtitle = computed(() => {
+    const n = this.memberCount();
+    if (n === 0) return 'Group';
+    return `${n} members, ${this.onlineMemberCount()} online`;
+  });
+
   readonly selfIsOperator = computed(() =>
     this.participants().some((p) => p.userId === this.selfUserId && p.role === 'OPERATOR'),
   );

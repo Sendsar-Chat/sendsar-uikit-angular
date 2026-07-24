@@ -394,7 +394,7 @@ export class SendsarChatShellComponent implements OnInit {
       if (peerId && this.onlineUserIds().has(peerId)) {
         return 'Online';
       }
-      return 'Direct message';
+      return '';
     }
 
     return 'Conversation';

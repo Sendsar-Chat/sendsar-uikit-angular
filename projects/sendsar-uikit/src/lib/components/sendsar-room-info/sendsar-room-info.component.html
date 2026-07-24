@@ -10,13 +10,11 @@
       <span class="sc-info-avatar">{{ avatarInitials() }}</span>
       <h2 class="sc-info-title">{{ title }}</h2>
       @if (isGroup()) {
-        <p class="sc-info-subtitle">{{ memberCount() }} members</p>
+        <p class="sc-info-subtitle">{{ membersSubtitle() }}</p>
         <p class="sc-info-desc">Group conversation</p>
       } @else if (isDm()) {
-        @if (memberRows()[0]; as peer) {
-          <p class="sc-info-subtitle">
-            {{ isOnline(peer.userId) ? 'Online' : 'Offline' }}
-          </p>
+        @if (membersSubtitle(); as status) {
+          <p class="sc-info-subtitle">{{ status }}</p>
         }
         <p class="sc-info-desc">Direct message</p>
       }
