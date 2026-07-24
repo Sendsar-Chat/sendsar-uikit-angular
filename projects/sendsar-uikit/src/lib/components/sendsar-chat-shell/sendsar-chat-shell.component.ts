@@ -237,6 +237,16 @@ export class SendsarChatShellComponent implements OnInit {
     this.groupParticipants.set(participants);
   }
 
+  onLeftGroup(roomId: string): void {
+    this.showGroupDetails.set(false);
+    if (this.selectedRoom()?.id === roomId) {
+      this.selectedRoom.set(null);
+      this.groupParticipants.set([]);
+      this.mobileShowThread.set(false);
+    }
+    void this.conversationList?.reload();
+  }
+
   @HostListener('document:click')
   closeHeaderMenu(): void {
     if (this.showHeaderMenu()) {

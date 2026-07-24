@@ -172,6 +172,7 @@
       [onlineUserIds]="onlineUserIds()"
       (closed)="closeGroupDetails()"
       (membersChanged)="onGroupMembersChanged($event)"
+      (left)="onLeftGroup($event)"
     />
   </div>
 }

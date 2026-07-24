@@ -1,10 +1,13 @@
 import {
   Component,
+  ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   Output,
   SimpleChanges,
+  ViewChild,
   computed,
   inject,
   signal,
@@ -35,6 +38,8 @@ type MemberRow = {
 export class SendsarGroupDetailsDialogComponent implements OnChanges {
   private readonly chat = inject(SendsarChatService);
 
+  @ViewChild('membersMenuWrap') private membersMenuWrap?: ElementRef<HTMLElement>;
+
   @Input() open = false;
   @Input() roomId: string | null = null;
   @Input() title = '';
@@ -45,11 +50,15 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   @Output() readonly closed = new EventEmitter<void>();
   /** Fired when membership changes so the shell can refresh the header subtitle. */
   @Output() readonly membersChanged = new EventEmitter<RoomParticipant[]>();
+  /** Fired after the current user leaves the group. */
+  @Output() readonly left = new EventEmitter<string>();
 
   readonly participants = signal<RoomParticipant[]>([]);
   readonly loadingMembers = signal(false);
   readonly membersError = signal<string | null>(null);
   readonly mutating = signal(false);
+  readonly leaving = signal(false);
+  readonly showMembersMenu = signal(false);
   readonly showAddMembersDialog = signal(false);
   readonly showRemoveMembersDialog = signal(false);
   readonly membersActionError = signal<string | null>(null);
@@ -102,10 +111,12 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
         this.participants.set([]);
         this.membersError.set(null);
         this.loadingMembers.set(false);
+        this.showMembersMenu.set(false);
         this.showAddMembersDialog.set(false);
         this.showRemoveMembersDialog.set(false);
         this.membersActionError.set(null);
         this.mutating.set(false);
+        this.leaving.set(false);
       }
     }
   }
@@ -122,7 +133,29 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
     return this.onlineUserIds.has(userId);
   }
 
+  toggleMembersMenu(event: Event): void {
+    event.stopPropagation();
+    this.showMembersMenu.update((open) => !open);
+  }
+
+  /** Clicks inside the dialog (outside the menu) should close the menu. */
+  onGroupDialogClick(event: MouseEvent): void {
+    if (!this.showMembersMenu()) return;
+    const wrap = this.membersMenuWrap?.nativeElement;
+    if (wrap && !wrap.contains(event.target as Node)) {
+      this.showMembersMenu.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showMembersMenu()) {
+      this.showMembersMenu.set(false);
+    }
+  }
+
   openAddMembersDialog(): void {
+    this.showMembersMenu.set(false);
     this.membersActionError.set(null);
     this.showRemoveMembersDialog.set(false);
     this.showAddMembersDialog.set(true);
@@ -135,6 +168,7 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   }
 
   openRemoveMembersDialog(): void {
+    this.showMembersMenu.set(false);
     this.membersActionError.set(null);
     this.showAddMembersDialog.set(false);
     this.showRemoveMembersDialog.set(true);
@@ -162,6 +196,7 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
         participants = detail.participants;
       }
       this.participants.set(participants);
+      console.log('participants', participants);
       this.membersChanged.emit(participants);
       this.showAddMembersDialog.set(false);
     } catch (err) {
@@ -193,12 +228,31 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
     }
   }
 
+  async leaveGroup(): Promise<void> {
+    const roomId = this.roomId;
+    const selfId = this.selfUserId;
+    if (!roomId || !selfId || this.mutating() || this.leaving()) return;
+
+    this.leaving.set(true);
+    this.membersError.set(null);
+    try {
+      await this.chat.removeParticipant(roomId, selfId);
+      this.left.emit(roomId);
+      this.close();
+    } catch (err) {
+      this.membersError.set(err instanceof Error ? err.message : 'Failed to leave group');
+    } finally {
+      this.leaving.set(false);
+    }
+  }
+
   close(): void {
     this.closed.emit();
   }
 
   private async reloadMembers(): Promise<void> {
     const roomId = this.roomId;
+    this.showMembersMenu.set(false);
     this.showAddMembersDialog.set(false);
     this.showRemoveMembersDialog.set(false);
     this.membersActionError.set(null);
