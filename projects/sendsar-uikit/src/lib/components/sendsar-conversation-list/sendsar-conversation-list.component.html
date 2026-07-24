@@ -20,7 +20,7 @@
       [attr.aria-expanded]="showMenu()"
       (click)="toggleMenu($event)"
     >
-      <span class="material-icons" aria-hidden="true">more_vert</span>
+      <span class="material-icons" aria-hidden="true">settings</span>
     </button>
     @if (showMenu()) {
       <div class="sc-menu" role="menu">
@@ -80,7 +80,7 @@
 } @else {
   <ul class="sc-room-list" [class.sc-room-list--dim]="refreshing()">
     @for (room of filteredRooms(); track room.id) {
-      <li class="sc-room-li">
+      <li class="sc-room-li" [class.sc-room-li--menu-open]="roomMenuId() === room.id">
         <button
           type="button"
           class="sc-room-item"
@@ -116,12 +116,13 @@
             }
           </span>
         </button>
-        <div class="sc-room-actions">
+        <div class="sc-room-actions" (click)="$event.stopPropagation()">
           <button
             type="button"
             class="sc-room-more"
             title="Conversation options"
             aria-label="Conversation options"
+            [attr.aria-expanded]="roomMenuId() === room.id"
             (click)="toggleRoomMenu($event, room.id)"
           >
             <span class="material-icons" aria-hidden="true">more_vert</span>

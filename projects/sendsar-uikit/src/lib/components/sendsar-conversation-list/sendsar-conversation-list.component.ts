@@ -1,4 +1,4 @@
-import { Component, EventEmitter, HostListener, Input, OnInit, Output, computed, inject, signal } from '@angular/core';
+import { Component, EventEmitter, HostListener, Input, OnInit, Output, computed, inject, output, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import {
   formatTypingLabel,
@@ -49,8 +49,8 @@ export class SendsarConversationListComponent implements OnInit {
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
   @Output() readonly roomSelect = new EventEmitter<RoomSummary>();
   @Output() readonly newChat = new EventEmitter<void>();
-  @Output() readonly roomDeleted = new EventEmitter<string>();
-  @Output() readonly historyCleared = new EventEmitter<string>();
+  readonly roomDeleted = output<string>();
+  readonly historyCleared = output<string>();
 
   readonly rooms = signal<RoomSummary[]>([]);
   /** First load with no cached rooms — show skeletons. */

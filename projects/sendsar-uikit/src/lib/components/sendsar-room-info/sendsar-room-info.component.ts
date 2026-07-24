@@ -8,6 +8,7 @@ import {
   SimpleChanges,
   computed,
   inject,
+  output,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -54,8 +55,8 @@ export class SendsarRoomInfoComponent implements OnChanges {
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
   @Input() title = '';
   @Output() readonly closed = new EventEmitter<void>();
-  @Output() readonly conversationDeleted = new EventEmitter<string>();
-  @Output() readonly historyCleared = new EventEmitter<string>();
+  readonly conversationDeleted = output<string>();
+  readonly historyCleared = output<string>();
 
   readonly participants = signal<RoomParticipant[]>([]);
   readonly loadingMembers = signal(false);

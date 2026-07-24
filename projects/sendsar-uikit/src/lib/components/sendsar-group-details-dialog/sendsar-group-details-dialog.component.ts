@@ -11,6 +11,7 @@ import {
   ViewChild,
   computed,
   inject,
+  output,
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -59,8 +60,8 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   @Output() readonly closed = new EventEmitter<void>();
   /** Fired when membership changes so the shell can refresh the header subtitle. */
   @Output() readonly membersChanged = new EventEmitter<RoomParticipant[]>();
-  @Output() readonly conversationDeleted = new EventEmitter<string>();
-  @Output() readonly historyCleared = new EventEmitter<string>();
+  readonly conversationDeleted = output<string>();
+  readonly historyCleared = output<string>();
 
   readonly participants = signal<RoomParticipant[]>([]);
   readonly loadingMembers = signal(false);

@@ -262,30 +262,42 @@
 
 .sc-room-li {
   position: relative;
-  display: flex;
-  align-items: stretch;
+  display: block;
+}
+
+.sc-room-li--menu-open {
+  z-index: 40;
 }
 
 .sc-room-li .sc-room-item {
-  flex: 1;
-  min-width: 0;
-  width: auto;
+  width: 100%;
+  /* Leave space so title/time aren't covered by the overlay more button. */
+  padding-right: 2.35rem;
 }
 
 .sc-room-actions {
-  position: relative;
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
   display: flex;
   align-items: center;
-  padding-right: 0.25rem;
-  flex-shrink: 0;
+  padding-right: 0.35rem;
+  pointer-events: none;
+}
+
+.sc-room-more,
+.sc-room-menu {
+  pointer-events: auto;
 }
 
 .sc-room-more {
   border: none;
   background: transparent;
   color: #94a3b8;
-  width: 1.75rem;
-  height: 1.75rem;
+  width: 1.45rem;
+  height: 1.50rem;
   border-radius: 0.4rem;
   display: grid;
   place-items: center;
@@ -304,14 +316,14 @@
 
 .sc-room-menu {
   position: absolute;
-  top: 100%;
-  right: 0;
-  z-index: 5;
+  top: calc(50% + 0.85rem);
+  right: 0.35rem;
+  z-index: 50;
   min-width: 10rem;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 0.5rem;
-  box-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  box-shadow: 0 10px 28px rgb(15 23 42 / 16%);
   padding: 0.25rem;
 }
 
