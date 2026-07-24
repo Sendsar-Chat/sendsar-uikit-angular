@@ -77,7 +77,9 @@ export class SendsarCallOverlayComponent implements AfterViewInit, OnDestroy {
   }
 
   tileLabel(identity: string): string {
-    return this.labelForIdentity?.(identity) ?? identity;
+    const colon = identity.lastIndexOf(':');
+    const userId = colon >= 0 ? identity.slice(colon + 1) : identity;
+    return this.labelForIdentity?.(userId) ?? this.labelForIdentity?.(identity) ?? userId;
   }
 
   gridClass(): string {

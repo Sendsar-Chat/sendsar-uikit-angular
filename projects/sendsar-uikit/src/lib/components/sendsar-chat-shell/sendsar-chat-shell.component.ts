@@ -367,8 +367,11 @@ export class SendsarChatShellComponent implements OnInit {
     return false;
   }
 
-  readonly callIdentityLabel = (identity: string): string =>
-    displayNameFor(identity, userDirectoryMap(this.users));
+  readonly callIdentityLabel = (identity: string): string => {
+    const colon = identity.lastIndexOf(':');
+    const userId = colon >= 0 ? identity.slice(colon + 1) : identity;
+    return displayNameFor(userId, userDirectoryMap(this.users));
+  };
 
   headerSubtitle(): string {
     const room = this.selectedRoom();
