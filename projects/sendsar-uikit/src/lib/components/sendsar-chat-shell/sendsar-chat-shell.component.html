@@ -37,6 +37,8 @@
       [onlineUserIds]="onlineUserIds()"
       (roomSelect)="onRoomSelect($event)"
       (newChat)="onSidebarNewChat()"
+      (roomDeleted)="onRoomDeleted($event)"
+      (historyCleared)="onHistoryCleared($event)"
     />
 
     <section class="sc-thread">
@@ -149,6 +151,8 @@
         [onlineUserIds]="onlineUserIds()"
         [title]="roomTitle()"
         (closed)="closeInfoPanel()"
+        (conversationDeleted)="onRoomDeleted($event)"
+        (historyCleared)="onHistoryCleared($event)"
       />
     }
 
@@ -172,6 +176,8 @@
       [onlineUserIds]="onlineUserIds()"
       (closed)="closeGroupDetails()"
       (membersChanged)="onGroupMembersChanged($event)"
+      (conversationDeleted)="onRoomDeleted($event)"
+      (historyCleared)="onHistoryCleared($event)"
     />
   </div>
 }

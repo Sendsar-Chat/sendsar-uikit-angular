@@ -45,6 +45,8 @@ Open **http://localhost:4300**.
 | **Read receipts** | ✓ / ✓✓ on your messages in 1:1 |
 | **Presence** | Online dot in sidebar (DM) and new-chat picker |
 | **Edit / delete** | Sender-only actions on your messages |
+| **Leave / delete / clear** | Conversation overflow + room info: leave group, hide DM, clear history for you |
+| **Group members** | Room info: list, OPERATOR add/kick; membership system lines in the thread |
 | **Pagination** | “Load older messages” in thread |
 | **Fast conversation switch** | In-memory thread cache — revisited rooms open without a loading flash |
 

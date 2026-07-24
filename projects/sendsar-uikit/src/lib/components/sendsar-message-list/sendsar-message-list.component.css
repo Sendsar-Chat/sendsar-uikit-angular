@@ -304,6 +304,21 @@
   padding: 0.35rem 0.5rem;
 }
 
+.sc-membership-row {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.25rem 0.5rem;
+}
+
+.sc-membership-label {
+  font-size: 0.78rem;
+  color: #64748b;
+  text-align: center;
+  max-width: 90%;
+}
+
 .sc-call-log-time {
   font-size: 0.7rem;
   color: #94a3b8;

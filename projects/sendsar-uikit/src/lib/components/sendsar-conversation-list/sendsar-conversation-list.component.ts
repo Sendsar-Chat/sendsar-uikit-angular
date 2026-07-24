@@ -10,7 +10,7 @@ import {
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { formatRelativeTime } from '../../utils/format-time';
-import { isDirectMessage, resolveRoomLabel } from '../../utils/room-label';
+import { isDirectMessage, isGroupRoom, resolveRoomLabel } from '../../utils/room-label';
 import { initialsFor, type UserDirectoryEntry, userDirectoryMap } from '../../utils/user-directory';
 import { segmentTextWithEmoji, type TextSegment } from '../../utils/emoji-segments';
 import { SendsarAnimatedEmojiComponent } from '../mini-components/sendsar-animated-emoji/sendsar-animated-emoji.component';
@@ -49,6 +49,8 @@ export class SendsarConversationListComponent implements OnInit {
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
   @Output() readonly roomSelect = new EventEmitter<RoomSummary>();
   @Output() readonly newChat = new EventEmitter<void>();
+  @Output() readonly roomDeleted = new EventEmitter<string>();
+  @Output() readonly historyCleared = new EventEmitter<string>();
 
   readonly rooms = signal<RoomSummary[]>([]);
   /** First load with no cached rooms — show skeletons. */
@@ -58,6 +60,8 @@ export class SendsarConversationListComponent implements OnInit {
   readonly error = signal<string | null>(null);
   readonly searchQuery = signal('');
   readonly showMenu = signal(false);
+  readonly roomMenuId = signal<string | null>(null);
+  readonly actionBusy = signal(false);
 
   readonly filteredRooms = computed(() => {
     const query = this.searchQuery().trim().toLowerCase();
@@ -176,6 +180,9 @@ export class SendsarConversationListComponent implements OnInit {
     if (this.showMenu()) {
       this.showMenu.set(false);
     }
+    if (this.roomMenuId()) {
+      this.roomMenuId.set(null);
+    }
   }
 
   onNewChat(): void {
@@ -186,6 +193,65 @@ export class SendsarConversationListComponent implements OnInit {
   onRefresh(): void {
     this.showMenu.set(false);
     void this.reload();
+  }
+
+  toggleRoomMenu(event: Event, roomId: string): void {
+    event.stopPropagation();
+    this.showMenu.set(false);
+    this.roomMenuId.update((id) => (id === roomId ? null : roomId));
+  }
+
+  isGroup(room: RoomSummary): boolean {
+    return isGroupRoom(room);
+  }
+
+  async clearHistory(event: Event, room: RoomSummary): Promise<void> {
+    event.stopPropagation();
+    this.roomMenuId.set(null);
+    if (
+      !confirm(
+        'Clear history? Messages will be removed from your view only. Others keep their copy.',
+      )
+    ) {
+      return;
+    }
+    if (this.actionBusy()) return;
+    this.actionBusy.set(true);
+    try {
+      await this.chat.clearHistory(room.id);
+      this.rooms.update((list) =>
+        list.map((r) =>
+          r.id === room.id ? { ...r, lastMessage: null, unreadCount: 0 } : r,
+        ),
+      );
+      this.historyCleared.emit(room.id);
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Failed to clear history');
+    } finally {
+      this.actionBusy.set(false);
+    }
+  }
+
+  async deleteConversation(event: Event, room: RoomSummary): Promise<void> {
+    event.stopPropagation();
+    this.roomMenuId.set(null);
+    const message = isGroupRoom(room)
+      ? 'Leave and delete this group chat? You will leave the group.'
+      : 'Delete this chat? It disappears from your list. New messages will show it again.';
+    if (!confirm(message)) {
+      return;
+    }
+    if (this.actionBusy()) return;
+    this.actionBusy.set(true);
+    try {
+      await this.chat.deleteConversation(room.id);
+      this.rooms.update((list) => list.filter((r) => r.id !== room.id));
+      this.roomDeleted.emit(room.id);
+    } catch (err) {
+      this.error.set(err instanceof Error ? err.message : 'Failed to delete conversation');
+    } finally {
+      this.actionBusy.set(false);
+    }
   }
 
   private async waitForSessionAndLoad(): Promise<void> {

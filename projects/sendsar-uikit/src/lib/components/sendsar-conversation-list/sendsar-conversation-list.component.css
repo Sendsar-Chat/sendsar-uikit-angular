@@ -260,6 +260,70 @@
   transition: opacity 0.15s ease;
 }
 
+.sc-room-li {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+}
+
+.sc-room-li .sc-room-item {
+  flex: 1;
+  min-width: 0;
+  width: auto;
+}
+
+.sc-room-actions {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding-right: 0.25rem;
+  flex-shrink: 0;
+}
+
+.sc-room-more {
+  border: none;
+  background: transparent;
+  color: #94a3b8;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.4rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-room-more:hover {
+  background: #e2e8f0;
+  color: #475569;
+}
+
+.sc-room-more .material-icons {
+  font-size: 1.1rem;
+}
+
+.sc-room-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  z-index: 5;
+  min-width: 10rem;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.5rem;
+  box-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  padding: 0.25rem;
+}
+
+.sc-room-menu .sc-menu-item {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.sc-menu-item--danger {
+  color: #dc2626 !important;
+}
+
 .sc-room-list--dim {
   opacity: 0.72;
   pointer-events: auto;

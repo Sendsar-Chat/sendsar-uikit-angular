@@ -19,8 +19,11 @@ import {
   isMessageReadByPeer,
   mergeMessagesById,
   parseCallLogPart,
+  parseMembershipPart,
+  formatMembershipPreview,
   textFromMessageParts,
   type CallLogData,
+  type MembershipData,
   type Message,
   type MessagePart,
   type ParentMessagePreview,
@@ -119,6 +122,18 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
     }
   }
 
+  /** Re-fetch thread after clear-history (bypasses local cache). */
+  reloadFromServer(): void {
+    if (this.roomId) {
+      setCachedRoomThread(this.roomId, {
+        messages: [],
+        nextCursor: null,
+        peerLastReadAt: null,
+      });
+    }
+    this.bindRoom();
+  }
+
   ngOnDestroy(): void {
     this.subscription?.destroy();
   }
@@ -182,6 +197,20 @@ export class SendsarMessageListComponent implements OnChanges, OnDestroy {
 
   callLog(message: Message): CallLogData | null {
     return parseCallLogPart(message.parts);
+  }
+
+  membership(message: Message): MembershipData | null {
+    return parseMembershipPart(message.parts);
+  }
+
+  membershipLabel(message: Message): string {
+    const data = this.membership(message);
+    if (!data) return '';
+    const map = userDirectoryMap(this.users);
+    return formatMembershipPreview(data, {
+      actor: displayNameFor(data.actorUserId, map),
+      target: displayNameFor(data.targetUserId, map),
+    });
   }
 
   selfUserId(): string | null {

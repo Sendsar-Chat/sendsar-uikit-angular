@@ -97,6 +97,11 @@
                 />
                 <time class="sc-call-log-time">{{ message.createdAt | date: 'HH:mm' }}</time>
               </div>
+            } @else if (membership(message)) {
+              <div class="sc-membership-row" role="listitem">
+                <span class="sc-membership-label">{{ membershipLabel(message) }}</span>
+                <time class="sc-call-log-time">{{ message.createdAt | date: 'HH:mm' }}</time>
+              </div>
             } @else {
               <article
                 class="sc-message"

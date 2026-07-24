@@ -1,7 +1,9 @@
 import type { Message, MessagePart } from '@sendsar/chat-sdk-javascript';
 import {
   formatCallLogPreview,
+  formatMembershipPreview,
   parseCallLogPart,
+  parseMembershipPart,
   textFromMessageParts,
 } from '@sendsar/chat-sdk-javascript';
 
@@ -117,6 +119,10 @@ export function messagePreview(
   const callLog = parseCallLogPart(message.parts);
   if (callLog) {
     return formatCallLogPreview(callLog, selfUserId);
+  }
+  const membership = parseMembershipPart(message.parts);
+  if (membership) {
+    return formatMembershipPreview(membership);
   }
   const text = textFromMessageParts(message.parts);
   if (text) return text;

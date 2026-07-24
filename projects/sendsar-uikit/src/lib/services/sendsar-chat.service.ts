@@ -48,6 +48,14 @@ export class SendsarChatService {
     return this.requireClient().removeParticipant(roomId, userId, params);
   }
 
+  deleteConversation(roomId: string) {
+    return this.requireClient().deleteConversation(roomId);
+  }
+
+  clearHistory(roomId: string) {
+    return this.requireClient().clearHistory(roomId);
+  }
+
   getMessages(roomId: string, params?: ListMessagesParams) {
     return this.requireClient().getMessages(roomId, params);
   }

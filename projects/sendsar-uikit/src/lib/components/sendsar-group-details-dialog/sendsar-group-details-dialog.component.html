@@ -67,6 +67,25 @@
           <p class="sc-group-dialog-empty">No members to show</p>
         }
       </section>
+
+      <section class="sc-group-dialog-actions">
+        <button
+          type="button"
+          class="sc-group-dialog-action"
+          [disabled]="mutating()"
+          (click)="clearHistory()"
+        >
+          Clear history
+        </button>
+        <button
+          type="button"
+          class="sc-group-dialog-action sc-group-dialog-action--danger"
+          [disabled]="mutating()"
+          (click)="leaveGroup()"
+        >
+          Leave group
+        </button>
+      </section>
     </div>
   </div>
 }

@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -10,8 +11,14 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import type { RoomParticipant, RoomSummary } from '@sendsar/chat-sdk-javascript';
+import {
+  SOCKET_EVENT,
+  type RoomParticipant,
+  type RoomParticipantsChangedEvent,
+  type RoomSummary,
+} from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
+import { SendsarSessionService } from '../../services/sendsar-session.service';
 import {
   displayNameFor,
   initialsFor,
@@ -37,6 +44,9 @@ type MemberRow = {
 })
 export class SendsarRoomInfoComponent implements OnChanges {
   private readonly chat = inject(SendsarChatService);
+  private readonly session = inject(SendsarSessionService);
+  private readonly destroyRef = inject(DestroyRef);
+  private rosterUnsub: (() => void) | null = null;
 
   @Input() room: RoomSummary | null = null;
   @Input() users: UserDirectoryEntry[] = [];
@@ -44,12 +54,21 @@ export class SendsarRoomInfoComponent implements OnChanges {
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
   @Input() title = '';
   @Output() readonly closed = new EventEmitter<void>();
+  @Output() readonly conversationDeleted = new EventEmitter<string>();
+  @Output() readonly historyCleared = new EventEmitter<string>();
 
   readonly participants = signal<RoomParticipant[]>([]);
   readonly loadingMembers = signal(false);
   readonly membersError = signal<string | null>(null);
   readonly mutating = signal(false);
   readonly showAddPicker = signal(false);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.rosterUnsub?.();
+      this.rosterUnsub = null;
+    });
+  }
 
   readonly isGroup = computed(() => {
     const room = this.room;
@@ -112,8 +131,24 @@ export class SendsarRoomInfoComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['room'] || changes['selfUserId']) {
+      this.wireRosterListener();
       void this.reloadMembers();
     }
+  }
+
+  private wireRosterListener(): void {
+    this.rosterUnsub?.();
+    this.rosterUnsub = null;
+    const client = this.session.client;
+    const roomId = this.room?.id;
+    if (!client || !roomId) return;
+    this.rosterUnsub = client.on(
+      SOCKET_EVENT.ROOM_PARTICIPANTS_CHANGED,
+      (event: RoomParticipantsChangedEvent) => {
+        if (event.roomId !== roomId) return;
+        void this.reloadMembers();
+      },
+    );
   }
 
   memberInitials(displayName: string): string {
@@ -163,6 +198,52 @@ export class SendsarRoomInfoComponent implements OnChanges {
       this.participants.set(detail.participants);
     } catch (err) {
       this.membersError.set(err instanceof Error ? err.message : 'Failed to remove member');
+    } finally {
+      this.mutating.set(false);
+    }
+  }
+
+  async clearHistory(): Promise<void> {
+    const roomId = this.room?.id;
+    if (!roomId || this.mutating()) return;
+    if (
+      !confirm(
+        'Clear history? Messages will be removed from your view only. Others keep their copy.',
+      )
+    ) {
+      return;
+    }
+    this.mutating.set(true);
+    this.membersError.set(null);
+    try {
+      await this.chat.clearHistory(roomId);
+      this.historyCleared.emit(roomId);
+    } catch (err) {
+      this.membersError.set(err instanceof Error ? err.message : 'Failed to clear history');
+    } finally {
+      this.mutating.set(false);
+    }
+  }
+
+  async deleteConversation(): Promise<void> {
+    const room = this.room;
+    if (!room || this.mutating()) return;
+    const message = this.isGroup()
+      ? 'Leave and delete this group chat? You will leave the group.'
+      : 'Delete this chat? It disappears from your list. New messages will show it again.';
+    if (!confirm(message)) {
+      return;
+    }
+    this.mutating.set(true);
+    this.membersError.set(null);
+    try {
+      await this.chat.deleteConversation(room.id);
+      this.conversationDeleted.emit(room.id);
+      this.closed.emit();
+    } catch (err) {
+      this.membersError.set(
+        err instanceof Error ? err.message : 'Failed to delete conversation',
+      );
     } finally {
       this.mutating.set(false);
     }

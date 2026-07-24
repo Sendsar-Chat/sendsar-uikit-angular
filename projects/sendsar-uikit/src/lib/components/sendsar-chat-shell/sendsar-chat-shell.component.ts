@@ -19,6 +19,7 @@ import {
   otherTypingUserIds,
   type Message,
   type RoomParticipant,
+  type RoomParticipantsChangedEvent,
   type RoomSummary,
   type TypingByRoom,
 } from '@sendsar/chat-sdk-javascript';
@@ -89,6 +90,8 @@ export class SendsarChatShellComponent implements OnInit {
 
   @ViewChild(SendsarConversationListComponent)
   private conversationList?: SendsarConversationListComponent;
+  @ViewChild(SendsarMessageListComponent)
+  private messageList?: SendsarMessageListComponent;
 
   readonly selectedRoom = signal<RoomSummary | null>(null);
   readonly typingByRoom = signal<TypingByRoom>({});
@@ -132,6 +135,24 @@ export class SendsarChatShellComponent implements OnInit {
     this.replyingToMessage.set(null);
     this.showGroupDetails.set(false);
     void this.loadGroupParticipants(room);
+  }
+
+  onRoomDeleted(roomId: string): void {
+    if (this.selectedRoom()?.id === roomId) {
+      this.selectedRoom.set(null);
+      this.mobileShowThread.set(false);
+      this.showInfoPanel.set(false);
+      this.showGroupDetails.set(false);
+      this.groupParticipants.set([]);
+    }
+    void this.conversationList?.reload();
+  }
+
+  onHistoryCleared(roomId: string): void {
+    if (this.selectedRoom()?.id === roomId) {
+      this.messageList?.reloadFromServer();
+    }
+    void this.conversationList?.reload();
   }
 
   onEditRequested(message: Message): void {
@@ -524,6 +545,13 @@ export class SendsarChatShellComponent implements OnInit {
       this.scheduleSidebarReload();
     });
 
+    const offRoster = client.on(
+      SOCKET_EVENT.ROOM_PARTICIPANTS_CHANGED,
+      (event: RoomParticipantsChangedEvent) => {
+        this.onRoomParticipantsChanged(event);
+      },
+    );
+
     this.presenceTracker = createTenantPresenceTracker(client);
     const offPresence = this.presenceTracker.subscribe((ids) => {
       this.onlineUserIds.set(ids);
@@ -533,10 +561,28 @@ export class SendsarChatShellComponent implements OnInit {
       offTyping();
       offMessage();
       offUpdated();
+      offRoster();
       offPresence();
       this.presenceTracker?.destroy();
       if (this.reloadTimer) clearTimeout(this.reloadTimer);
     });
+  }
+
+  private onRoomParticipantsChanged(event: RoomParticipantsChangedEvent): void {
+    const selfId = this.session.session?.chatUserId;
+    if (
+      selfId &&
+      event.targetUserId === selfId &&
+      (event.action === 'removed' || event.action === 'left')
+    ) {
+      this.onRoomDeleted(event.roomId);
+      return;
+    }
+    const selected = this.selectedRoom();
+    if (selected?.id === event.roomId) {
+      void this.loadGroupParticipants(selected);
+    }
+    this.scheduleSidebarReload();
   }
 
   private scheduleSidebarReload(): void {

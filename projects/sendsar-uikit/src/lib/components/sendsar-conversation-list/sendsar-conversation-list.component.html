@@ -80,7 +80,7 @@
 } @else {
   <ul class="sc-room-list" [class.sc-room-list--dim]="refreshing()">
     @for (room of filteredRooms(); track room.id) {
-      <li>
+      <li class="sc-room-li">
         <button
           type="button"
           class="sc-room-item"
@@ -116,6 +116,37 @@
             }
           </span>
         </button>
+        <div class="sc-room-actions">
+          <button
+            type="button"
+            class="sc-room-more"
+            title="Conversation options"
+            aria-label="Conversation options"
+            (click)="toggleRoomMenu($event, room.id)"
+          >
+            <span class="material-icons" aria-hidden="true">more_vert</span>
+          </button>
+          @if (roomMenuId() === room.id) {
+            <div class="sc-room-menu" role="menu" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="sc-menu-item"
+                [disabled]="actionBusy()"
+                (click)="clearHistory($event, room)"
+              >
+                Clear history
+              </button>
+              <button
+                type="button"
+                class="sc-menu-item sc-menu-item--danger"
+                [disabled]="actionBusy()"
+                (click)="deleteConversation($event, room)"
+              >
+                {{ isGroup(room) ? 'Leave & delete' : 'Delete chat' }}
+              </button>
+            </div>
+          }
+        </div>
       </li>
     }
   </ul>

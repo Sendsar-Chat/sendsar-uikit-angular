@@ -1,5 +1,6 @@
 import {
   Component,
+  DestroyRef,
   EventEmitter,
   Input,
   OnChanges,
@@ -10,8 +11,13 @@ import {
   signal,
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import type { RoomParticipant } from '@sendsar/chat-sdk-javascript';
+import {
+  SOCKET_EVENT,
+  type RoomParticipant,
+  type RoomParticipantsChangedEvent,
+} from '@sendsar/chat-sdk-javascript';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
+import { SendsarSessionService } from '../../services/sendsar-session.service';
 import {
   displayNameFor,
   initialsFor,
@@ -34,6 +40,9 @@ type MemberRow = {
 })
 export class SendsarGroupDetailsDialogComponent implements OnChanges {
   private readonly chat = inject(SendsarChatService);
+  private readonly session = inject(SendsarSessionService);
+  private readonly destroyRef = inject(DestroyRef);
+  private rosterUnsub: (() => void) | null = null;
 
   @Input() open = false;
   @Input() roomId: string | null = null;
@@ -45,6 +54,8 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   @Output() readonly closed = new EventEmitter<void>();
   /** Fired when membership changes so the shell can refresh the header subtitle. */
   @Output() readonly membersChanged = new EventEmitter<RoomParticipant[]>();
+  @Output() readonly conversationDeleted = new EventEmitter<string>();
+  @Output() readonly historyCleared = new EventEmitter<string>();
 
   readonly participants = signal<RoomParticipant[]>([]);
   readonly loadingMembers = signal(false);
@@ -53,6 +64,13 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   readonly showAddMembersDialog = signal(false);
   readonly showRemoveMembersDialog = signal(false);
   readonly membersActionError = signal<string | null>(null);
+
+  constructor() {
+    this.destroyRef.onDestroy(() => {
+      this.rosterUnsub?.();
+      this.rosterUnsub = null;
+    });
+  }
 
   readonly members = computed((): MemberRow[] => {
     const map = userDirectoryMap(this.users);
@@ -97,8 +115,11 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['open'] || changes['roomId']) {
       if (this.open && this.roomId) {
+        this.wireRosterListener();
         void this.reloadMembers();
       } else if (!this.open) {
+        this.rosterUnsub?.();
+        this.rosterUnsub = null;
         this.participants.set([]);
         this.membersError.set(null);
         this.loadingMembers.set(false);
@@ -108,6 +129,21 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
         this.mutating.set(false);
       }
     }
+  }
+
+  private wireRosterListener(): void {
+    this.rosterUnsub?.();
+    this.rosterUnsub = null;
+    const client = this.session.client;
+    const roomId = this.roomId;
+    if (!client || !roomId) return;
+    this.rosterUnsub = client.on(
+      SOCKET_EVENT.ROOM_PARTICIPANTS_CHANGED,
+      (event: RoomParticipantsChangedEvent) => {
+        if (event.roomId !== roomId || !this.open) return;
+        void this.reloadMembers();
+      },
+    );
   }
 
   avatarInitials(): string {
@@ -188,6 +224,47 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
       this.showRemoveMembersDialog.set(false);
     } catch (err) {
       this.membersActionError.set(err instanceof Error ? err.message : 'Failed to remove member');
+    } finally {
+      this.mutating.set(false);
+    }
+  }
+
+  async clearHistory(): Promise<void> {
+    const roomId = this.roomId;
+    if (!roomId || this.mutating()) return;
+    if (
+      !confirm(
+        'Clear history? Messages will be removed from your view only. Others keep their copy.',
+      )
+    ) {
+      return;
+    }
+    this.mutating.set(true);
+    this.membersError.set(null);
+    try {
+      await this.chat.clearHistory(roomId);
+      this.historyCleared.emit(roomId);
+    } catch (err) {
+      this.membersError.set(err instanceof Error ? err.message : 'Failed to clear history');
+    } finally {
+      this.mutating.set(false);
+    }
+  }
+
+  async leaveGroup(): Promise<void> {
+    const roomId = this.roomId;
+    if (!roomId || this.mutating()) return;
+    if (!confirm('Leave and delete this group chat? You will leave the group.')) {
+      return;
+    }
+    this.mutating.set(true);
+    this.membersError.set(null);
+    try {
+      await this.chat.deleteConversation(roomId);
+      this.conversationDeleted.emit(roomId);
+      this.closed.emit();
+    } catch (err) {
+      this.membersError.set(err instanceof Error ? err.message : 'Failed to leave group');
     } finally {
       this.mutating.set(false);
     }

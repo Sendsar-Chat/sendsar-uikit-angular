@@ -187,3 +187,37 @@
 .sc-group-dialog-empty--error {
   color: #dc2626;
 }
+
+.sc-group-dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 1.1rem 1.1rem;
+  border-top: 1px solid #e2e8f0;
+}
+
+.sc-group-dialog-action {
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #0f172a;
+  cursor: pointer;
+}
+
+.sc-group-dialog-action:hover:not(:disabled) {
+  background: #f8fafc;
+}
+
+.sc-group-dialog-action--danger {
+  color: #dc2626;
+  border-color: #fecaca;
+}
+
+.sc-group-dialog-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

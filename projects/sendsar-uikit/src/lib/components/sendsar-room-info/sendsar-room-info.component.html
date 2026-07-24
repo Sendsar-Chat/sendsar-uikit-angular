@@ -107,6 +107,32 @@
 
     <section class="sc-info-section">
       <header class="sc-info-section-header">
+        <h3>Chat actions</h3>
+      </header>
+      <div class="sc-info-actions">
+        <button
+          type="button"
+          class="sc-info-action"
+          [disabled]="mutating()"
+          (click)="clearHistory()"
+        >
+          Clear history
+        </button>
+        @if (isGroup() || isDm()) {
+          <button
+            type="button"
+            class="sc-info-action sc-info-action--danger"
+            [disabled]="mutating()"
+            (click)="deleteConversation()"
+          >
+            {{ isGroup() ? 'Leave group' : 'Delete chat' }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
         <h3>Photos and videos</h3>
         <button type="button" class="sc-info-link">See all</button>
       </header>
