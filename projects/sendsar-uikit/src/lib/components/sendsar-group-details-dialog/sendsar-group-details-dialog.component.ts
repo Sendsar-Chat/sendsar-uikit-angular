@@ -1,11 +1,14 @@
 import {
   Component,
   DestroyRef,
+  ElementRef,
   EventEmitter,
+  HostListener,
   Input,
   OnChanges,
   Output,
   SimpleChanges,
+  ViewChild,
   computed,
   inject,
   signal,
@@ -44,6 +47,8 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   private readonly destroyRef = inject(DestroyRef);
   private rosterUnsub: (() => void) | null = null;
 
+  @ViewChild('membersMenuWrap') private membersMenuWrap?: ElementRef<HTMLElement>;
+
   @Input() open = false;
   @Input() roomId: string | null = null;
   @Input() title = '';
@@ -61,6 +66,8 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   readonly loadingMembers = signal(false);
   readonly membersError = signal<string | null>(null);
   readonly mutating = signal(false);
+  readonly leaving = signal(false);
+  readonly showMembersMenu = signal(false);
   readonly showAddMembersDialog = signal(false);
   readonly showRemoveMembersDialog = signal(false);
   readonly membersActionError = signal<string | null>(null);
@@ -123,10 +130,12 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
         this.participants.set([]);
         this.membersError.set(null);
         this.loadingMembers.set(false);
+        this.showMembersMenu.set(false);
         this.showAddMembersDialog.set(false);
         this.showRemoveMembersDialog.set(false);
         this.membersActionError.set(null);
         this.mutating.set(false);
+        this.leaving.set(false);
       }
     }
   }
@@ -158,7 +167,29 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
     return this.onlineUserIds.has(userId);
   }
 
+  toggleMembersMenu(event: Event): void {
+    event.stopPropagation();
+    this.showMembersMenu.update((open) => !open);
+  }
+
+  /** Clicks inside the dialog (outside the menu) should close the menu. */
+  onGroupDialogClick(event: MouseEvent): void {
+    if (!this.showMembersMenu()) return;
+    const wrap = this.membersMenuWrap?.nativeElement;
+    if (wrap && !wrap.contains(event.target as Node)) {
+      this.showMembersMenu.set(false);
+    }
+  }
+
+  @HostListener('document:keydown.escape')
+  onEscape(): void {
+    if (this.showMembersMenu()) {
+      this.showMembersMenu.set(false);
+    }
+  }
+
   openAddMembersDialog(): void {
+    this.showMembersMenu.set(false);
     this.membersActionError.set(null);
     this.showRemoveMembersDialog.set(false);
     this.showAddMembersDialog.set(true);
@@ -171,6 +202,7 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
   }
 
   openRemoveMembersDialog(): void {
+    this.showMembersMenu.set(false);
     this.membersActionError.set(null);
     this.showAddMembersDialog.set(false);
     this.showRemoveMembersDialog.set(true);
@@ -198,6 +230,7 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
         participants = detail.participants;
       }
       this.participants.set(participants);
+      console.log('participants', participants);
       this.membersChanged.emit(participants);
       this.showAddMembersDialog.set(false);
     } catch (err) {
@@ -231,7 +264,7 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
 
   async clearHistory(): Promise<void> {
     const roomId = this.roomId;
-    if (!roomId || this.mutating()) return;
+    if (!roomId || this.mutating() || this.leaving()) return;
     if (
       !confirm(
         'Clear history? Messages will be removed from your view only. Others keep their copy.',
@@ -253,11 +286,11 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
 
   async leaveGroup(): Promise<void> {
     const roomId = this.roomId;
-    if (!roomId || this.mutating()) return;
+    if (!roomId || this.mutating() || this.leaving()) return;
     if (!confirm('Leave and delete this group chat? You will leave the group.')) {
       return;
     }
-    this.mutating.set(true);
+    this.leaving.set(true);
     this.membersError.set(null);
     try {
       await this.chat.deleteConversation(roomId);
@@ -266,7 +299,7 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
     } catch (err) {
       this.membersError.set(err instanceof Error ? err.message : 'Failed to leave group');
     } finally {
-      this.mutating.set(false);
+      this.leaving.set(false);
     }
   }
 
@@ -276,6 +309,7 @@ export class SendsarGroupDetailsDialogComponent implements OnChanges {
 
   private async reloadMembers(): Promise<void> {
     const roomId = this.roomId;
+    this.showMembersMenu.set(false);
     this.showAddMembersDialog.set(false);
     this.showRemoveMembersDialog.set(false);
     this.membersActionError.set(null);
