@@ -18,9 +18,10 @@ import { SendsarCallTrackDirective } from './sendsar-call-track.directive';
 /** Meet-ish column density for equal-tile grids. */
 export function callGridColsFor(n: number): number {
   if (n <= 1) return 1;
-  if (n <= 4) return n === 3 ? 3 : 2;
+  // 3 → 2 cols (2 on top, 1 centered below) avoids tall portrait strips
+  if (n <= 4) return 2;
   if (n <= 6) return 3;
-  if (n <= 9) return 4;
+  if (n <= 9) return 3;
   return Math.ceil(Math.sqrt(n));
 }
 

@@ -111,7 +111,7 @@
                 <div
                   class="sc-call-tile"
                   [class.sc-call-tile--avatar]="!tile.track"
-                  [class.sc-call-tile--voice]="isVoiceOnlyCall() || !tile.track"
+                  [class.sc-call-tile--voice]="isVoiceOnlyCall()"
                 >
                   @if (tile.track; as track) {
                     <video

@@ -20,7 +20,7 @@
   pointer-events: auto;
   display: flex;
   flex-direction: column;
-  width: min(28rem, calc(100% - 2rem));
+  width: min(32rem, calc(100% - 2rem));
   height: min(34rem, calc(100% - 2.5rem));
   border-radius: 1rem;
   overflow: hidden;
@@ -177,7 +177,7 @@
 }
 
 .sc-call-grid {
-  --sc-call-gap: 0.4rem;
+  --sc-call-gap: 0.45rem;
   --sc-call-cols: 2;
   width: 100%;
   height: 100%;
@@ -187,8 +187,14 @@
   min-height: 0;
 }
 
+/* Video grid: center tiles and keep landscape boxes (not tall strips) */
+.sc-call-grid:not(.sc-call-grid--voice) {
+  justify-content: center;
+}
+
 .sc-call-grid--voice {
   --sc-call-gap: 0.55rem;
+  justify-content: center;
 }
 
 .sc-call-grid-row {
@@ -199,6 +205,18 @@
   gap: var(--sc-call-gap);
   min-height: 0;
   min-width: 0;
+}
+
+/* Video rows hug aspect-ratio tiles instead of stretching full stage height */
+.sc-call-grid:not(.sc-call-grid--voice) .sc-call-grid-row {
+  flex: 0 1 auto;
+  align-items: center;
+}
+
+/* Voice rows hug their tiles instead of stretching into full-height columns */
+.sc-call-grid--voice .sc-call-grid-row {
+  flex: 0 1 auto;
+  align-items: center;
 }
 
 .sc-call-tile {
@@ -214,17 +232,39 @@
   );
   min-width: 0;
   min-height: 0;
-  border-radius: 0.65rem;
+  border-radius: 0.75rem;
   overflow: hidden;
   background: #1e293b;
+  box-shadow: 0 0 0 1px rgb(148 163 184 / 12%);
 }
 
-/* Voice tiles: transparent “cards” — circle + name only */
+/* Video tiles: Meet-style landscape boxes */
+.sc-call-grid:not(.sc-call-grid--voice) .sc-call-tile:not(.sc-call-tile--voice) {
+  aspect-ratio: 4 / 3;
+  max-height: min(100%, 13.5rem);
+}
+
+.sc-call-dialog--expanded .sc-call-grid:not(.sc-call-grid--voice) .sc-call-tile:not(.sc-call-tile--voice),
+.sc-call-dialog:fullscreen .sc-call-grid:not(.sc-call-grid--voice) .sc-call-tile:not(.sc-call-tile--voice) {
+  max-height: min(100%, 42vh);
+}
+
+/* Voice tiles: boxed cards — circle on top, name stacked right beneath it */
 .sc-call-grid--voice .sc-call-tile,
 .sc-call-tile--voice {
-  background: transparent;
-  border-radius: 0;
-  overflow: visible;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  box-sizing: border-box;
+  aspect-ratio: 1;
+  max-height: 100%;
+  background: rgb(30 41 59 / 55%);
+  border: 1px solid rgb(148 163 184 / 18%);
+  border-radius: 0.85rem;
+  overflow: hidden;
 }
 
 .sc-call-tile-video {
@@ -248,6 +288,18 @@
   box-sizing: border-box;
 }
 
+/* Voice tiles lay out in normal flow so the name sits under the circle.
+   Full width keeps the disc's percentage sizing resolvable (else it collapses). */
+.sc-call-grid--voice .sc-call-tile-avatar,
+.sc-call-tile--voice .sc-call-tile-avatar {
+  position: static;
+  inset: auto;
+  padding-bottom: 0;
+  flex: 0 1 auto;
+  width: 100%;
+  min-height: 0;
+}
+
 .sc-call-tile-avatar-img,
 .sc-call-tile-avatar-disc {
   width: min(42%, 5.5rem);
@@ -262,14 +314,16 @@
 .sc-call-tile--voice .sc-call-tile-avatar-disc,
 .sc-call-grid--voice .sc-call-tile-avatar-img,
 .sc-call-grid--voice .sc-call-tile-avatar-disc {
-  width: min(55%, 9.5rem);
+  width: min(58%, 7rem);
+  max-height: 100%;
+  flex: none;
   box-shadow:
     0 12px 28px rgb(0 0 0 / 35%),
     0 0 0 3px rgb(148 163 184 / 22%);
 }
 
 .sc-call-grid--voice .sc-call-tile-avatar-disc {
-  font-size: clamp(1.15rem, 4.5vw, 2.1rem);
+  font-size: clamp(0.9rem, 2.6vw, 1.6rem);
   background: linear-gradient(145deg, #60a5fa, #2563eb 55%, #1d4ed8);
 }
 
@@ -281,27 +335,36 @@
   font-weight: 600;
   font-size: clamp(0.85rem, 3.5vw, 1.35rem);
   letter-spacing: 0.02em;
+  line-height: 1;
+  overflow: hidden;
 }
 
 .sc-call-tile-label {
   position: absolute;
-  left: 0.5rem;
-  bottom: 0.45rem;
-  right: 0.5rem;
+  left: 0.45rem;
+  bottom: 0.4rem;
+  right: auto;
+  max-width: calc(100% - 0.9rem);
+  padding: 0.18rem 0.45rem;
+  border-radius: 0.35rem;
+  background: rgb(2 6 23 / 55%);
   color: #fff;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
-  text-shadow: 0 1px 4px rgb(0 0 0 / 70%);
+  text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.sc-call-grid--voice .sc-call-tile-label {
+.sc-call-grid--voice .sc-call-tile-label,
+.sc-call-tile--voice .sc-call-tile-label {
+  position: static;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  max-width: 100%;
   text-align: center;
-  left: 0.35rem;
-  right: 0.35rem;
-  bottom: 0.35rem;
   font-size: 0.8rem;
   font-weight: 600;
   color: #e2e8f0;
