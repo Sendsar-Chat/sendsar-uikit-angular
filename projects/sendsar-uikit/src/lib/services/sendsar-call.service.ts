@@ -454,13 +454,13 @@ export class SendsarCallService {
 
   async hangUp(options?: {
     reason?: 'cancelled' | 'no_answer';
-    endForAll?: boolean;
   }): Promise<CallRecord | null> {
     this.stopTones();
     try {
       const callClient = this.requireCallClient();
-      const endForAll = options?.endForAll ?? this.shouldEndCallForAll();
-      const result = await callClient.hangUp({ ...options, endForAll });
+      // Group hangup is always a Leave — the gateway ends the call for
+      // everyone once fewer than 2 participants remain in LiveKit.
+      const result = await callClient.hangUp(options);
       this.resetCallUi(true);
       if (!result && (this.calling() || this.callState() === 'outgoing' || this.callState() === 'connecting')) {
         this.callingSignal.set(false);
@@ -475,20 +475,7 @@ export class SendsarCallService {
     }
   }
 
-  /** Group call creator should end for everyone; others leave. */
-  shouldEndCallForAll(): boolean {
-    const call = this.activeCallSignal();
-    if (!call || callRecordIsGroup(call) !== true) {
-      return false;
-    }
-    const selfId = this.session.session?.chatUserId;
-    return Boolean(selfId && call.createdByUserId === selfId);
-  }
-
   hangUpLabel(): string {
-    if (this.shouldEndCallForAll()) {
-      return 'End for everyone';
-    }
     if (callRecordIsGroup(this.activeCallSignal()) === true) {
       return 'Leave';
     }
