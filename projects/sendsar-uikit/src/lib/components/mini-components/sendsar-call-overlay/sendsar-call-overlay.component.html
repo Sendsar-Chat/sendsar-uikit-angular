@@ -20,8 +20,8 @@
       class="sc-call-chip-hangup"
       role="button"
       tabindex="0"
-      title="Hang up"
-      aria-label="Hang up"
+      [title]="calls.hangUpLabel()"
+      [attr.aria-label]="calls.hangUpLabel()"
       (click)="hangUp(); $event.stopPropagation()"
       (keydown.enter)="hangUp(); $event.stopPropagation()"
     >
@@ -94,37 +94,51 @@
       </div>
     </header>
 
-    <div class="sc-call-stage" [class.sc-call-stage--grid]="useGroupGrid()">
+    <div
+      class="sc-call-stage"
+      [class.sc-call-stage--grid]="useGroupGrid()"
+      [class.sc-call-stage--voice]="isVoiceOnlyCall()"
+    >
       @if (useGroupGrid()) {
-        <div class="sc-call-grid" [ngClass]="gridClass()">
-          <div class="sc-call-tile">
-            @if (calls.localVideoTrack(); as local) {
-              <video
-                class="sc-call-tile-video sc-call-tile-video--local"
-                [scCallTrack]="local"
-                autoplay
-                muted
-                playsinline
-              ></video>
-            } @else {
-              <span class="sc-call-tile-avatar" aria-hidden="true">You</span>
-            }
-            <span class="sc-call-tile-label">You</span>
-          </div>
-          @for (remote of calls.remoteVideoTracks(); track remote.sid) {
-            <div class="sc-call-tile">
-              <video
-                class="sc-call-tile-video"
-                [scCallTrack]="remote.track"
-                autoplay
-                playsinline
-              ></video>
-              <span class="sc-call-tile-label">{{ tileLabel(remote.identity) }}</span>
+        <div
+          class="sc-call-grid"
+          [class.sc-call-grid--voice]="isVoiceOnlyCall()"
+          [style.--sc-call-cols]="gridCols()"
+        >
+          @for (row of gridRows(); track $index) {
+            <div class="sc-call-grid-row">
+              @for (tile of row; track tile.key) {
+                <div
+                  class="sc-call-tile"
+                  [class.sc-call-tile--avatar]="!tile.track"
+                  [class.sc-call-tile--voice]="isVoiceOnlyCall() || !tile.track"
+                >
+                  @if (tile.track; as track) {
+                    <video
+                      class="sc-call-tile-video"
+                      [class.sc-call-tile-video--local]="tile.isLocal"
+                      [scCallTrack]="track"
+                      autoplay
+                      [muted]="tile.isLocal"
+                      playsinline
+                    ></video>
+                  } @else {
+                    <div class="sc-call-tile-avatar" aria-hidden="true">
+                      @if (tile.avatarUrl) {
+                        <img class="sc-call-tile-avatar-img" [src]="tile.avatarUrl" alt="" />
+                      } @else {
+                        <span class="sc-call-tile-avatar-disc">{{ tile.initials }}</span>
+                      }
+                    </div>
+                  }
+                  <span class="sc-call-tile-label">{{ tile.label }}</span>
+                </div>
+              }
             </div>
           }
         </div>
       } @else {
-        @if (calls.remoteVideoTrack(); as remote) {
+        @if (!isVoiceOnlyCall() && calls.remoteVideoTrack(); as remote) {
           <video
             class="sc-call-remote"
             [scCallTrack]="remote"
@@ -132,8 +146,8 @@
             playsinline
           ></video>
         } @else {
-          <div class="sc-call-placeholder">
-            <span class="sc-call-avatar" aria-hidden="true">
+          <div class="sc-call-placeholder" [class.sc-call-placeholder--voice]="isVoiceOnlyCall()">
+            <span class="sc-call-avatar" [class.sc-call-avatar--voice]="isVoiceOnlyCall()" aria-hidden="true">
               @if (avatarUrl) {
                 <img [src]="avatarUrl" alt="" />
               } @else {
@@ -146,7 +160,7 @@
         }
       }
 
-      @if (!useGroupGrid() && calls.localVideoTrack(); as local) {
+      @if (!useGroupGrid() && !isVoiceOnlyCall() && calls.localVideoTrack(); as local) {
         <video
           class="sc-call-local"
           [scCallTrack]="local"
@@ -172,8 +186,8 @@
           <button
             type="button"
             class="sc-call-btn sc-call-btn--decline"
-            title="Decline"
-            aria-label="Decline call"
+            [title]="declineLabel()"
+            [attr.aria-label]="declineLabel() + ' call'"
             (click)="decline()"
           >
             <span class="material-icons" aria-hidden="true">call_end</span>
@@ -235,8 +249,8 @@
           <button
             type="button"
             class="sc-call-btn sc-call-btn--hangup"
-            title="Hang up"
-            aria-label="Hang up"
+            [title]="calls.hangUpLabel()"
+            [attr.aria-label]="calls.hangUpLabel()"
             (click)="hangUp()"
           >
             <span class="material-icons" aria-hidden="true">call_end</span>

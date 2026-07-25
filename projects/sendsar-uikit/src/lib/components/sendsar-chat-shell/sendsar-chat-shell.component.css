@@ -271,6 +271,24 @@
   background: #fef2f2;
 }
 
+.sc-call-toast {
+  position: absolute;
+  left: 50%;
+  bottom: 5.5rem;
+  z-index: 30;
+  transform: translateX(-50%);
+  max-width: min(22rem, calc(100% - 1.5rem));
+  margin: 0;
+  padding: 0.65rem 0.95rem;
+  border-radius: 0.65rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: #fff;
+  background: rgb(15 23 42 / 92%);
+  box-shadow: 0 10px 30px rgb(15 23 42 / 28%);
+  pointer-events: none;
+}
+
 .sc-thread-empty {
   flex: 1;
   display: grid;

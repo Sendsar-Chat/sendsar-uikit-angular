@@ -11,9 +11,28 @@ import {
   inject,
   signal,
 } from '@angular/core';
-import { SendsarCallService } from '../../../services/sendsar-call.service';
+import { SendsarCallService, callRecordIsGroup } from '../../../services/sendsar-call.service';
 import { initialsFor } from '../../../utils/user-directory';
 import { SendsarCallTrackDirective } from './sendsar-call-track.directive';
+
+/** Meet-ish column density for equal-tile grids. */
+export function callGridColsFor(n: number): number {
+  if (n <= 1) return 1;
+  if (n <= 4) return n === 3 ? 3 : 2;
+  if (n <= 6) return 3;
+  if (n <= 9) return 4;
+  return Math.ceil(Math.sqrt(n));
+}
+
+export type CallGridTile = {
+  key: string;
+  identity: string;
+  label: string;
+  track: ReturnType<SendsarCallService['localVideoTrack']> | null;
+  isLocal: boolean;
+  avatarUrl: string | null;
+  initials: string;
+};
 
 @Component({
   selector: 'sc-call-overlay',
@@ -36,6 +55,8 @@ export class SendsarCallOverlayComponent implements AfterViewInit, OnDestroy {
   @Input() isGroup = false;
   /** Resolve LiveKit identity → display label for grid tiles. */
   @Input() labelForIdentity: ((identity: string) => string) | null = null;
+  /** Resolve LiveKit identity (or `'local'`) → avatar URL for no-video tiles. */
+  @Input() avatarForIdentity: ((identity: string) => string | null) | null = null;
 
   /** Expanded to fill the chat shell / viewport (CSS). */
   readonly expanded = signal(false);
@@ -69,24 +90,105 @@ export class SendsarCallOverlayComponent implements AfterViewInit, OnDestroy {
   }
 
   useGroupGrid(): boolean {
-    if (!this.isGroup) {
+    const state = this.calls.callState();
+    if (state !== 'active' && state !== 'connecting') {
       return false;
     }
-    const state = this.calls.callState();
-    return state === 'active' || state === 'connecting';
+    const count = this.calls.inCallParticipantCount();
+    // Group voice: show participant avatar tiles from 2+ (not 1:1 PiP — group
+    // has no single "peer", so PiP only showed a room-letter disc).
+    if (this.isGroupVoiceCall() && count >= 2) {
+      return true;
+    }
+    // Meet equal-tile grid when local + remotes >= 3 (LiveKit count).
+    return count >= 3;
+  }
+
+  /** Audio call in a group room (or call.isGroup). */
+  isGroupVoiceCall(): boolean {
+    const call = this.calls.activeCall() ?? this.calls.incomingInvite();
+    const type = call && 'type' in call ? call.type : null;
+    const audio = type === 'audio';
+    if (!audio) {
+      return false;
+    }
+    return callRecordIsGroup(this.calls.activeCall()) === true || this.isGroup;
+  }
+
+  /** Enlarge circular avatars when the call is voice / tile has no video. */
+  isVoiceOnlyCall(): boolean {
+    const call = this.calls.activeCall() ?? this.calls.incomingInvite();
+    return call?.type === 'audio';
+  }
+
+  /** Decline (1:1) vs Dismiss (group) — group decline is local-only. */
+  declineLabel(): string {
+    const call = this.calls.activeCall() ?? this.calls.joinableCall();
+    if (callRecordIsGroup(call) === true || this.isGroup) {
+      return 'Dismiss';
+    }
+    return 'Decline';
+  }
+
+  private identityUserId(identity: string): string {
+    const colon = identity.lastIndexOf(':');
+    return colon >= 0 ? identity.slice(colon + 1) : identity;
   }
 
   tileLabel(identity: string): string {
-    const colon = identity.lastIndexOf(':');
-    const userId = colon >= 0 ? identity.slice(colon + 1) : identity;
+    const userId = this.identityUserId(identity);
     return this.labelForIdentity?.(userId) ?? this.labelForIdentity?.(identity) ?? userId;
   }
 
-  gridClass(): string {
-    const count = 1 + this.calls.remoteVideoTracks().length;
-    if (count <= 1) return 'sc-call-grid--1';
-    if (count <= 4) return 'sc-call-grid--2';
-    return 'sc-call-grid--3';
+  tileAvatarUrl(identity: string): string | null {
+    const userId = this.identityUserId(identity);
+    return this.avatarForIdentity?.(userId) ?? this.avatarForIdentity?.(identity) ?? null;
+  }
+
+  /** Local + remote tiles for Meet-style grid (avatar when no video). */
+  gridTiles(): CallGridTile[] {
+    const tiles: CallGridTile[] = [
+      {
+        key: 'local',
+        identity: 'local',
+        label: 'You',
+        track: this.isVoiceOnlyCall() ? null : this.calls.localVideoTrack(),
+        isLocal: true,
+        avatarUrl: this.avatarForIdentity?.('local') ?? null,
+        initials: initialsFor('You'),
+      },
+    ];
+    for (const remote of this.calls.remoteParticipants()) {
+      const label = this.tileLabel(remote.identity);
+      const videoTrack = this.isVoiceOnlyCall() ? null : remote.videoTrack;
+      tiles.push({
+        key: remote.sid,
+        identity: remote.identity,
+        label,
+        track: videoTrack,
+        isLocal: false,
+        avatarUrl: this.tileAvatarUrl(remote.identity),
+        initials: initialsFor(label),
+      });
+    }
+    return tiles;
+  }
+
+  /** Max columns for the current participant count (Meet density). */
+  gridCols(): number {
+    return callGridColsFor(this.gridTiles().length);
+  }
+
+  /** Row chunks; incomplete last row is centered via CSS (equal tile widths). */
+  gridRows(): CallGridTile[][] {
+    const tiles = this.gridTiles();
+    const n = tiles.length;
+    const cols = callGridColsFor(n);
+    const rows: CallGridTile[][] = [];
+    for (let i = 0; i < n; i += cols) {
+      rows.push(tiles.slice(i, i + cols));
+    }
+    return rows;
   }
 
   statusLabel(): string {

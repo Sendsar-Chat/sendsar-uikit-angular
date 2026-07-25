@@ -433,6 +433,16 @@
   place-items: center;
 }
 
+.sc-live-call {
+  display: inline-flex;
+  align-items: center;
+  color: #16a34a;
+}
+
+.sc-live-call .material-icons {
+  font-size: 1rem;
+}
+
 .sc-room-preview {
   font-size: 0.85rem;
   color: #64748b;

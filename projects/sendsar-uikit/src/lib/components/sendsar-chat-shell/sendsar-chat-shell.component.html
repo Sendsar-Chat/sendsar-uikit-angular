@@ -25,6 +25,7 @@
         [peerInitials]="callOverlayInitials()"
         [isGroup]="callIsGroup()"
         [labelForIdentity]="callIdentityLabel"
+        [avatarForIdentity]="callIdentityAvatar"
       />
     }
 
@@ -35,6 +36,7 @@
       [selfUserId]="session.session?.chatUserId ?? ''"
       [typingByRoom]="typingByRoom()"
       [onlineUserIds]="onlineUserIds()"
+      [liveCallRoomIds]="calls.liveCallRoomIds()"
       (roomSelect)="onRoomSelect($event)"
       (newChat)="onSidebarNewChat()"
       (roomDeleted)="onRoomDeleted($event)"
@@ -111,6 +113,9 @@
             </div> -->
           </div>
         </header>
+        @if (calls.showJoinBanner()) {
+          <sc-join-call-bar />
+        }
         <sc-message-list
           [roomId]="room.id"
           [isGroup]="roomIsGroup()"
@@ -130,7 +135,7 @@
           (replyClosed)="replyingToMessage.set(null)"
         />
         @if (callError()) {
-          <p class="sc-call-error">{{ callError() }}</p>
+          <div class="sc-call-toast" role="alert">{{ callError() }}</div>
         }
       } @else {
         <div class="sc-thread-empty">

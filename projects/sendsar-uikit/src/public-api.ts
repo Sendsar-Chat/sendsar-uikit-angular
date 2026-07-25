@@ -20,6 +20,7 @@ export * from './lib/components/mini-components/sendsar-file-preview/sendsar-fil
 export * from './lib/components/mini-components/sendsar-voice-message/sendsar-voice-message.component';
 export * from './lib/components/mini-components/sendsar-emoji-picker/sendsar-emoji-picker.component';
 export * from './lib/components/mini-components/sendsar-call-overlay/sendsar-call-overlay.component';
+export * from './lib/components/mini-components/sendsar-join-call-bar/sendsar-join-call-bar.component';
 export * from './lib/components/mini-components/sendsar-call-log-bubble/sendsar-call-log-bubble.component';
 export * from './lib/utils/voice-waveform';
 export * from './lib/utils/emoji-groups';

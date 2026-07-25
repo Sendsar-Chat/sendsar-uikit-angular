@@ -47,6 +47,8 @@ export class SendsarConversationListComponent implements OnInit {
   @Input() selfUserId = '';
   @Input() typingByRoom: TypingByRoom = {};
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
+  /** Room IDs with a ringing/active call (Telegram-style inbox badge). */
+  @Input() liveCallRoomIds: ReadonlySet<string> = new Set();
   @Output() readonly roomSelect = new EventEmitter<RoomSummary>();
   @Output() readonly newChat = new EventEmitter<void>();
   readonly roomDeleted = output<string>();
@@ -159,6 +161,10 @@ export class SendsarConversationListComponent implements OnInit {
           .find((id) => id !== selfId)
       : null;
     return Boolean(peerId && this.onlineUserIds.has(peerId));
+  }
+
+  hasLiveCall(room: RoomSummary): boolean {
+    return this.liveCallRoomIds.has(room.id);
   }
 
   unreadCount(room: RoomSummary): number {

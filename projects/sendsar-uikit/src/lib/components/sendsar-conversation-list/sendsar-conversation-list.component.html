@@ -94,6 +94,11 @@
             <span class="sc-room-row">
               <span class="sc-room-title">{{ roomLabel(room) }}</span>
               <span class="sc-room-meta">
+                @if (hasLiveCall(room)) {
+                  <span class="sc-live-call" title="Ongoing call" aria-label="Ongoing call">
+                    <span class="material-icons" aria-hidden="true">call</span>
+                  </span>
+                }
                 @if (unreadCount(room) > 0) {
                   <span class="sc-unread">{{ unreadCount(room) }}</span>
                 }

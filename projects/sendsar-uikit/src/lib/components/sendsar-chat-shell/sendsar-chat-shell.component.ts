@@ -7,6 +7,7 @@ import {
   OnInit,
   Output,
   ViewChild,
+  effect,
   inject,
   signal,
 } from '@angular/core';
@@ -24,6 +25,7 @@ import {
   type TypingByRoom,
 } from '@sendsar/chat-sdk-javascript';
 import { SendsarCallOverlayComponent } from '../mini-components/sendsar-call-overlay/sendsar-call-overlay.component';
+import { SendsarJoinCallBarComponent } from '../mini-components/sendsar-join-call-bar/sendsar-join-call-bar.component';
 import { SendsarComposerComponent } from '../sendsar-composer/sendsar-composer.component';
 import { SendsarConversationListComponent } from '../sendsar-conversation-list/sendsar-conversation-list.component';
 import {
@@ -50,7 +52,11 @@ export type SendsarCreateRoomHandler = (
   externalId?: string;
   customType?: string;
 }>;
-import { SendsarCallService } from '../../services/sendsar-call.service';
+import {
+  callRecordIsGroup,
+  formatCallFailureMessage,
+  SendsarCallService,
+} from '../../services/sendsar-call.service';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
 import { isDirectMessage, isGroupRoom, parseDmPeerId, resolveRoomLabel } from '../../utils/room-label';
@@ -71,6 +77,7 @@ import {
     SendsarComposerComponent,
     SendsarRoomInfoComponent,
     SendsarCallOverlayComponent,
+    SendsarJoinCallBarComponent,
     SendsarNewChatDialogComponent,
     SendsarGroupDetailsDialogComponent,
   ],
@@ -79,7 +86,7 @@ import {
 })
 export class SendsarChatShellComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
-  private readonly calls = inject(SendsarCallService);
+  readonly calls = inject(SendsarCallService);
   private readonly chat = inject(SendsarChatService);
   readonly session = inject(SendsarSessionService);
 
@@ -115,6 +122,17 @@ export class SendsarChatShellComponent implements OnInit {
   private presenceTracker: ReturnType<typeof createTenantPresenceTracker> | null = null;
   private reloadTimer: ReturnType<typeof setTimeout> | null = null;
   private participantsLoadToken = 0;
+  private toastClearTimer: ReturnType<typeof setTimeout> | null = null;
+
+  constructor() {
+    effect(() => {
+      const message = this.calls.error();
+      if (!message) {
+        return;
+      }
+      this.showCallToast(message);
+    });
+  }
 
   ngOnInit(): void {
     const check = () => {
@@ -134,6 +152,7 @@ export class SendsarChatShellComponent implements OnInit {
     this.editingMessage.set(null);
     this.replyingToMessage.set(null);
     this.showGroupDetails.set(false);
+    this.calls.setWatchedRoom(room.id);
     void this.loadGroupParticipants(room);
   }
 
@@ -144,6 +163,7 @@ export class SendsarChatShellComponent implements OnInit {
       this.showInfoPanel.set(false);
       this.showGroupDetails.set(false);
       this.groupParticipants.set([]);
+      this.calls.setWatchedRoom(null);
     }
     void this.conversationList?.reload();
   }
@@ -322,6 +342,7 @@ export class SendsarChatShellComponent implements OnInit {
       this.selectedRoom.set(room);
       this.mobileShowThread.set(true);
       // this.showInfoPane.set(true);
+      this.calls.setWatchedRoom(room.id);
       void this.loadGroupParticipants(room);
       return;
     }
@@ -340,6 +361,7 @@ export class SendsarChatShellComponent implements OnInit {
     this.selectedRoom.set(fallbackRoom);
     this.mobileShowThread.set(true);
     // this.showInfoPane.set(true);
+    this.calls.setWatchedRoom(fallbackRoom.id);
     void this.loadGroupParticipants(fallbackRoom);
     void this.conversationList?.reload();
   }
@@ -356,10 +378,18 @@ export class SendsarChatShellComponent implements OnInit {
     return room ? isGroupRoom(room) : false;
   }
 
-  /** True when the active/incoming call is in a group room (Meet grid). */
+  /** Prefer server `call.isGroup`; fall back to room type. */
   callIsGroup(): boolean {
+    const call = this.calls.activeCall() ?? this.calls.joinableCall();
+    const flag = callRecordIsGroup(call);
+    if (flag === true) {
+      return true;
+    }
+    if (flag === false) {
+      return false;
+    }
     const callRoomId =
-      this.calls.activeCall()?.roomId ?? this.calls.incomingInvite()?.roomId;
+      call?.roomId ?? this.calls.incomingInvite()?.roomId;
     const room = this.selectedRoom();
     if (room && (callRoomId == null || callRoomId === room.id)) {
       return isGroupRoom(room);
@@ -371,6 +401,18 @@ export class SendsarChatShellComponent implements OnInit {
     const colon = identity.lastIndexOf(':');
     const userId = colon >= 0 ? identity.slice(colon + 1) : identity;
     return displayNameFor(userId, userDirectoryMap(this.users));
+  };
+
+  readonly callIdentityAvatar = (identity: string): string | null => {
+    const map = userDirectoryMap(this.users);
+    if (identity === 'local') {
+      const selfId = this.session.session?.chatUserId;
+      if (!selfId) return null;
+      return map.get(selfId)?.avatarUrl ?? null;
+    }
+    const colon = identity.lastIndexOf(':');
+    const userId = colon >= 0 ? identity.slice(colon + 1) : identity;
+    return map.get(userId)?.avatarUrl ?? map.get(identity)?.avatarUrl ?? null;
   };
 
   headerSubtitle(): string {
@@ -433,12 +475,13 @@ export class SendsarChatShellComponent implements OnInit {
     }
 
     this.callError.set(null);
+    this.calls.clearError();
 
     try {
       await this.calls.startVideoCall(roomId);
       this.callStarted.emit({ roomId, type: 'video' });
     } catch (err) {
-      this.callError.set(err instanceof Error ? err.message : 'Failed to start video call');
+      this.showCallToast(formatCallFailureMessage(err, 'Failed to start video call'));
     }
   }
 
@@ -449,12 +492,13 @@ export class SendsarChatShellComponent implements OnInit {
     }
 
     this.callError.set(null);
+    this.calls.clearError();
 
     try {
       await this.calls.startAudioCall(roomId);
       this.callStarted.emit({ roomId, type: 'audio' });
     } catch (err) {
-      this.callError.set(err instanceof Error ? err.message : 'Failed to start voice call');
+      this.showCallToast(formatCallFailureMessage(err, 'Failed to start voice call'));
     }
   }
 
@@ -494,8 +538,21 @@ export class SendsarChatShellComponent implements OnInit {
       await this.calls.startCallOfType(event.roomId, event.type);
       this.callStarted.emit(event);
     } catch (err) {
-      this.callError.set(err instanceof Error ? err.message : 'Failed to start call');
+      this.showCallToast(formatCallFailureMessage(err, 'Failed to start call'));
     }
+  }
+
+  private showCallToast(message: string): void {
+    this.callError.set(message);
+    if (this.toastClearTimer) {
+      clearTimeout(this.toastClearTimer);
+    }
+    this.toastClearTimer = setTimeout(() => {
+      if (this.callError() === message) {
+        this.callError.set(null);
+      }
+      this.calls.clearError();
+    }, 4500);
   }
 
   private callPeerUser(): UserDirectoryEntry | null {
@@ -578,6 +635,7 @@ export class SendsarChatShellComponent implements OnInit {
       offPresence();
       this.presenceTracker?.destroy();
       if (this.reloadTimer) clearTimeout(this.reloadTimer);
+      if (this.toastClearTimer) clearTimeout(this.toastClearTimer);
     });
   }
 
