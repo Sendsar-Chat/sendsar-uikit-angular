@@ -59,6 +59,7 @@ import {
 } from '../../services/sendsar-call.service';
 import { SendsarChatService } from '../../services/sendsar-chat.service';
 import { SendsarSessionService } from '../../services/sendsar-session.service';
+import { SENDSAR_CONFIG } from '../../config/sendsar-config';
 import { isDirectMessage, isGroupRoom, parseDmPeerId, resolveRoomLabel } from '../../utils/room-label';
 import {
   displayNameFor,
@@ -86,6 +87,7 @@ import {
 })
 export class SendsarChatShellComponent implements OnInit {
   private readonly destroyRef = inject(DestroyRef);
+  private readonly config = inject(SENDSAR_CONFIG, { optional: true });
   readonly calls = inject(SendsarCallService);
   private readonly chat = inject(SendsarChatService);
   readonly session = inject(SendsarSessionService);
@@ -135,6 +137,16 @@ export class SendsarChatShellComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const status = this.session.state().status;
+    if (
+      this.config?.autoStartSession !== false &&
+      (status === 'idle' || status === 'error' || status === 'offline')
+    ) {
+      void this.session.start().catch(() => {
+        // error surfaces via session state / host UI
+      });
+    }
+
     const check = () => {
       if (this.session.isReady && !this.realtimeWired) {
         this.wireRealtime();

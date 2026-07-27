@@ -1,7 +1,49 @@
 # @sendsar/chat-uikit-angular
 
-Angular chat components for Sendsar. Peer dependency: `@sendsar/chat-sdk-javascript`.
+Angular chat components for Sendsar.
 
-Conversation list and room info expose **Leave group** / **Delete chat** and **Clear history** (built on `deleteConversation` / `clearHistory`). Group room info lists members with OPERATOR add/kick.
+## Install
 
-See the [repository README](../../README.md) for the sample app and integration guide.
+```bash
+npm install @sendsar/chat-uikit-angular @sendsar/chat-sdk-javascript @sendsar/call-sdk-javascript @sendsar/protocol
+```
+
+## Use (drop-in)
+
+### NgModule
+
+```ts
+import { SendsarChatModule } from '@sendsar/chat-uikit-angular';
+
+@NgModule({
+  imports: [
+    SendsarChatModule.forRoot({
+      fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+    }),
+  ],
+})
+export class AppModule {}
+```
+
+```html
+<sc-chat-shell [users]="users" />
+```
+
+### Standalone
+
+```ts
+providers: [
+  provideSendsar({
+    fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+  }),
+]
+```
+
+```html
+<sc-chat-shell [users]="users" />
+```
+
+`forRoot` / `provideSendsar` registers session, chat, and call services.  
+`<sc-chat-shell>` auto-starts the session.
+
+See the [repository README](../../README.md) for the sample app and full guide.

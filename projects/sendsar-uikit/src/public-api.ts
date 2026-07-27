@@ -2,6 +2,7 @@ export * from './lib/utils/user-directory';
 export * from './lib/utils/room-label';
 export * from './lib/config/sendsar-config';
 export * from './lib/provide-sendsar';
+export * from './lib/sendsar-chat.module';
 export * from './lib/services/sendsar-session.service';
 export * from './lib/services/sendsar-chat.service';
 export * from './lib/services/sendsar-call.service';

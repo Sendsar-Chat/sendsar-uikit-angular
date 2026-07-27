@@ -52,19 +52,76 @@ Open **http://localhost:4300**.
 
 ## Integrate in your app
 
+Install:
+
+```bash
+npm install @sendsar/chat-uikit-angular @sendsar/chat-sdk-javascript @sendsar/call-sdk-javascript @sendsar/protocol
+```
+
+### Option A — NgModule apps
+
 ```ts
-provideSendsar({
-  fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+import { NgModule } from '@angular/core';
+import { SendsarChatModule } from '@sendsar/chat-uikit-angular';
+
+@NgModule({
+  imports: [
+    SendsarChatModule.forRoot({
+      fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+    }),
+  ],
 })
+export class AppModule {}
 ```
 
 ```html
-<sc-chat-shell [users]="yourUserDirectory" />
+<!-- any component template -->
+<sc-chat-shell [users]="users" />
 ```
 
-Pass a **user directory** (`{ id, displayName }[]`) so DM rooms show peer names instead of internal `externalId` values.
+`forRoot` registers **all** UI kit services (`SendsarSessionService`, `SendsarChatService`, `SendsarCallService`, emoji).  
+`<sc-chat-shell>` **auto-starts** the session — you do not call `session.start()` yourself.
 
-See the [JavaScript SDK docs](https://docs.sendsar.com/sdk/javascript/html) for session shape and gateway URLs.
+### Option B — Standalone apps (Angular 15+)
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideSendsar } from '@sendsar/chat-uikit-angular';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideSendsar({
+      fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+    }),
+  ],
+};
+```
+
+```ts
+import { Component } from '@angular/core';
+import { SendsarChatShellComponent, type UserDirectoryEntry } from '@sendsar/chat-uikit-angular';
+
+@Component({
+  standalone: true,
+  imports: [SendsarChatShellComponent],
+  template: `<sc-chat-shell [users]="users" />`,
+})
+export class ChatPageComponent {
+  users: UserDirectoryEntry[] = [
+    { id: 'usr_alice', displayName: 'Alice' },
+  ];
+}
+```
+
+Pass a **user directory** (`{ id, displayName }[]`) so DM rooms show peer names instead of internal ids.
+
+Your backend must mint a session JWT (never put `sk_*` in the browser). See the [JavaScript SDK docs](https://docs.sendsar.com/sdk/javascript/html).
+
+Also add Material Icons (used by call / action buttons):
+
+```html
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+```
 
 ## UI kit components
 

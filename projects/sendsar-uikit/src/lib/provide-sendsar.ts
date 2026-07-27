@@ -16,15 +16,31 @@ function sendsarServiceProviders(animatedEmoji = true): Provider[] {
 }
 
 /**
- * Session + chat services (and animated emoji by default).
+ * Session + chat + call services (and animated emoji by default).
  * Use with a separate `SENDSAR_CONFIG` provider when config needs `inject()`.
+ *
+ * Prefer {@link provideSendsar} or {@link SendsarChatModule.forRoot} for a full setup.
  */
 export function provideSendsarCore(options?: { animatedEmoji?: boolean }): EnvironmentProviders {
   const animatedEmoji = options?.animatedEmoji !== false;
   return makeEnvironmentProviders(sendsarServiceProviders(animatedEmoji));
 }
 
-/** Register Sendsar session + chat services for your Angular app. */
+/**
+ * Register all Sendsar UI kit services for a standalone Angular app.
+ *
+ * ```ts
+ * providers: [
+ *   provideSendsar({
+ *     fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+ *   }),
+ * ]
+ * ```
+ *
+ * Then render `<sc-chat-shell [users]="users" />` — session starts automatically.
+ *
+ * For NgModule apps, use {@link SendsarChatModule.forRoot}.
+ */
 export function provideSendsar(config: SendsarConfig): EnvironmentProviders {
   const animatedEmoji = config.animatedEmoji !== false;
   return makeEnvironmentProviders([
