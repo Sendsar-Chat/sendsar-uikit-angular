@@ -4,8 +4,8 @@
   gap: 0.55rem;
   padding: 0.45rem 0.55rem;
   border-radius: 0.55rem;
-  background: #f8fafc;
-  border: 1px solid #e2e8f0;
+  background: var(--sc-surface-raised);
+  border: 1px solid var(--sc-border);
   max-width: 100%;
 }
 
@@ -23,11 +23,11 @@ a.sc-file-preview {
 .sc-file-preview--inverted {
   background: rgb(255 255 255 / 14%);
   border-color: transparent;
-  color: #fff;
+  color: var(--sc-on-accent);
 }
 
 .sc-file-preview--inverted .sc-file-preview-name {
-  color: #fff;
+  color: var(--sc-on-accent);
 }
 
 .sc-file-preview-thumb {
@@ -58,8 +58,8 @@ a.sc-file-preview {
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 0.35rem;
-  background: #fff;
-  color: #2563eb;
+  background: var(--sc-surface);
+  color: var(--sc-accent);
   display: grid;
   place-items: center;
   font-size: 1.15rem;
@@ -67,7 +67,7 @@ a.sc-file-preview {
 
 .sc-file-preview--inverted .sc-file-preview-icon {
   background: rgb(255 255 255 / 18%);
-  color: #fff;
+  color: var(--sc-on-accent);
 }
 
 .sc-file-preview-name {
@@ -75,7 +75,7 @@ a.sc-file-preview {
   min-width: 0;
   font-size: 0.85rem;
   font-weight: 500;
-  color: #334155;
+  color: var(--sc-text-secondary);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -91,13 +91,13 @@ a.sc-file-preview {
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--sc-text-faint);
   padding: 0;
 }
 
 .sc-file-preview-remove:hover:not(:disabled) {
-  color: #64748b;
-  background: #f1f5f9;
+  color: var(--sc-text-muted);
+  background: var(--sc-hover);
 }
 
 .sc-file-preview-remove:disabled {

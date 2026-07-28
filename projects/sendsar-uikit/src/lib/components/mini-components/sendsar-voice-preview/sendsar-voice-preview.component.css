@@ -15,7 +15,7 @@
   min-width: 11rem;
   padding: 0.65rem 0.7rem;
   border-radius: 0.85rem;
-  background: #eef2f6;
+  background: var(--sc-bubble-theirs);
 }
 
 .sc-voice-preview-play {
@@ -24,8 +24,8 @@
   height: 2.1rem;
   border: none;
   border-radius: 999px;
-  background: #2563eb;
-  color: #fff;
+  background: var(--sc-accent);
+  color: var(--sc-on-accent);
   display: grid;
   place-items: center;
   cursor: pointer;
@@ -92,11 +92,11 @@
 }
 
 .sc-voice-preview-bar--active {
-  background: #2563eb;
+  background: var(--sc-accent);
 }
 
 .sc-voice-preview-bar--inactive {
-  background: #d4d4d4;
+  background: var(--sc-border-strong);
 }
 
 .sc-voice-preview-meta {
@@ -112,19 +112,19 @@
   gap: 0.35rem;
   font-size: 0.78rem;
   font-weight: 500;
-  color: #2563eb;
+  color: var(--sc-accent);
 }
 
 .sc-voice-preview-dot {
   width: 0.28rem;
   height: 0.28rem;
   border-radius: 999px;
-  background: #2563eb;
+  background: var(--sc-accent);
 }
 
 .sc-voice-preview-stamp {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--sc-text-faint);
 }
 
 .sc-voice-preview-remove {
@@ -137,12 +137,12 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: #94a3b8;
+  color: var(--sc-text-faint);
   padding: 0;
 }
 
 .sc-voice-preview-remove:hover {
-  color: #64748b;
+  color: var(--sc-text-muted);
   background: rgb(255 255 255 / 55%);
 }
 

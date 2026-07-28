@@ -9,11 +9,13 @@
   grid-template-columns: minmax(260px, 300px) minmax(0, 1fr) minmax(240px, 300px);
   height: 100%;
   min-height: inherit;
-  border: 1px solid #e2e8f0;
+  border: 1px solid var(--sc-border);
   border-radius: 0.75rem;
   overflow: hidden;
-  background: #fff;
-  box-shadow: 0 1px 3px rgb(15 23 42 / 6%);
+  background: var(--sc-surface);
+  /* Isolate from host page color (e.g. white text on a dark shell wrapper). */
+  color: var(--sc-text);
+  box-shadow: var(--sc-shadow);
   position: relative;
 }
 
@@ -29,16 +31,16 @@
   gap: 0.5rem;
   padding: 0.4rem 0.75rem;
   font-size: 0.8rem;
-  color: #475569;
-  background: #fffbeb;
-  border-bottom: 1px solid #fde68a;
+  color: var(--sc-warning-text);
+  background: var(--sc-warning-soft);
+  border-bottom: 1px solid var(--sc-warning-border);
 }
 
 .sc-connecting-spin {
   width: 0.85rem;
   height: 0.85rem;
-  border: 2px solid #fcd34d;
-  border-top-color: #d97706;
+  border: 2px solid var(--sc-warning-spin);
+  border-top-color: var(--sc-warning-spin-top);
   border-radius: 999px;
   animation: sc-spin 0.7s linear infinite;
 }
@@ -52,18 +54,18 @@
 .sc-header-sub {
   display: block;
   font-size: 0.8rem;
-  color: #94a3b8;
+  color: var(--sc-text-faint);
 }
 
 .sc-header-sub--typing {
-  color: #2563eb;
+  color: var(--sc-accent);
   font-style: italic;
 }
 
 .sc-status {
   padding: 2rem;
   text-align: center;
-  color: #64748b;
+  color: var(--sc-text-muted);
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -71,13 +73,13 @@
 }
 
 .sc-status button {
-  border: 1px solid #cbd5e1;
-  background: #fff;
+  border: 1px solid var(--sc-border-strong);
+  background: var(--sc-surface);
   border-radius: 0.5rem;
   padding: 0.5rem 1rem;
   font-weight: 600;
   cursor: pointer;
-  color: #334155;
+  color: var(--sc-text-secondary);
 }
 
 .sc-sidebar,
@@ -91,9 +93,9 @@
   flex-direction: column;
   min-width: 0;
   min-height: 0;
-  background: #f1f5f9;
-  border-left: 1px solid #e2e8f0;
-  border-right: 1px solid #e2e8f0;
+  background: var(--sc-thread-bg);
+  border-left: 1px solid var(--sc-border);
+  border-right: 1px solid var(--sc-border);
 }
 
 .sc-thread-header {
@@ -101,8 +103,8 @@
   align-items: center;
   gap: 0.75rem;
   padding: 0.85rem 1rem;
-  border-bottom: 1px solid #e2e8f0;
-  background: #fff;
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-header-bg);
 }
 
 .sc-back {
@@ -111,7 +113,7 @@
   background: transparent;
   font-size: 1.25rem;
   cursor: pointer;
-  color: #475569;
+  color: var(--sc-text-muted);
   padding: 0.25rem;
 }
 
@@ -119,8 +121,8 @@
   width: 2.25rem;
   height: 2.25rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #fff;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
   display: grid;
   place-items: center;
   font-size: 0.75rem;
@@ -164,6 +166,8 @@
 .sc-thread-header h1 {
   margin: 0;
   font-size: 1.05rem;
+  font-weight: 600;
+  color: var(--sc-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -185,12 +189,12 @@
   display: grid;
   place-items: center;
   cursor: pointer;
-  color: #64748b;
+  color: var(--sc-text-muted);
 }
 
 .sc-header-action:hover:not(:disabled) {
-  background: #f1f5f9;
-  color: #334155;
+  background: var(--sc-hover);
+  color: var(--sc-text-secondary);
 }
 
 .sc-header-action:disabled {
@@ -199,8 +203,8 @@
 }
 
 .sc-header-action--active {
-  color: #2563eb;
-  background: #eff6ff;
+  color: var(--sc-accent);
+  background: var(--sc-accent-soft);
 }
 
 .sc-header-action .material-icons {
@@ -221,10 +225,10 @@
   display: flex;
   flex-direction: column;
   padding: 0.3rem;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--sc-menu-bg);
+  border: 1px solid var(--sc-border);
   border-radius: 0.75rem;
-  box-shadow: 0 10px 28px rgb(15 23 42 / 16%);
+  box-shadow: var(--sc-shadow-lg);
   animation: sc-header-menu-in 0.12s ease-out;
 }
 
@@ -249,26 +253,26 @@
   padding: 0.5rem 0.65rem;
   border-radius: 0.55rem;
   font-size: 0.85rem;
-  color: #1e293b;
+  color: var(--sc-text-secondary);
   text-align: left;
   cursor: pointer;
 }
 
 .sc-header-menu-item:hover {
-  background: #f1f5f9;
+  background: var(--sc-menu-hover);
 }
 
 .sc-header-menu-item .material-icons {
   font-size: 1.1rem;
-  color: #64748b;
+  color: var(--sc-text-muted);
 }
 
 .sc-call-error {
   margin: 0;
   padding: 0.5rem 1rem;
   font-size: 0.8rem;
-  color: #b91c1c;
-  background: #fef2f2;
+  color: var(--sc-danger-text);
+  background: var(--sc-danger-soft);
 }
 
 .sc-call-toast {
@@ -283,9 +287,9 @@
   border-radius: 0.65rem;
   font-size: 0.82rem;
   font-weight: 600;
-  color: #fff;
-  background: rgb(15 23 42 / 92%);
-  box-shadow: 0 10px 30px rgb(15 23 42 / 28%);
+  color: var(--sc-on-accent);
+  background: var(--sc-overlay);
+  box-shadow: var(--sc-shadow-lg);
   pointer-events: none;
 }
 
@@ -295,14 +299,14 @@
   place-content: center;
   text-align: center;
   padding: 2rem;
-  color: #64748b;
+  color: var(--sc-text-muted);
 }
 
 .sc-thread-empty-title {
   margin: 0 0 0.35rem;
   font-size: 1.25rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--sc-text-secondary);
 }
 
 .sc-thread-empty-hint {
@@ -312,7 +316,7 @@
 }
 
 .sc-status--error {
-  color: #b91c1c;
+  color: var(--sc-danger-text);
 }
 
 .sc-status--error p {

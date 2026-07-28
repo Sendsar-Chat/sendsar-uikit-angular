@@ -13,7 +13,7 @@
   padding: 0.55rem 0.7rem;
   border-radius: 0.85rem;
   background: rgb(255 255 255 / 70%);
-  color: #64748b;
+  color: var(--sc-text-muted);
   font-size: 0.78rem;
 }
 
@@ -21,7 +21,7 @@
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 999px;
-  background: #2563eb;
+  background: var(--sc-accent);
   animation: sc-voice-message-pulse 1s ease-in-out infinite;
 }
 

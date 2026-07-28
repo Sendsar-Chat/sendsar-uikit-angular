@@ -46,4 +46,19 @@ providers: [
 `forRoot` / `provideSendsar` registers session, chat, and call services.  
 `<sc-chat-shell>` auto-starts the session.
 
+Include the stylesheet (theme tokens + Material Icons font helper):
+
+```ts
+// angular.json styles
+"node_modules/@sendsar/chat-uikit-angular/styles/sendsar-uikit.css"
+```
+
+### Light / dark
+
+Set `data-theme="light"` or `data-theme="dark"` on `<html>`. The kit reads `--sc-*` CSS variables from that attribute.
+
+```ts
+document.documentElement.setAttribute('data-theme', 'dark');
+```
+
 See the [repository README](../../README.md) for the sample app and full guide.

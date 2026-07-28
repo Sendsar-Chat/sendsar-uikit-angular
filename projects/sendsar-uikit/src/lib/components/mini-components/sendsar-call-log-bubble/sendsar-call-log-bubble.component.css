@@ -9,8 +9,8 @@
   padding: 0.35rem 0.65rem;
   border: none;
   border-radius: 999px;
-  background: #e2e8f0;
-  color: #334155;
+  background: var(--sc-border);
+  color: var(--sc-text-secondary);
   font-size: 0.9rem;
   font-weight: 500;
   line-height: 1.35;
@@ -19,27 +19,27 @@
 }
 
 .sc-call-log:hover {
-  background: #cbd5e1;
+  background: var(--sc-border-strong);
 }
 
 .sc-call-log-icon {
   font-size: 1.15rem;
-  color: #64748b;
+  color: var(--sc-text-muted);
 }
 
 .sc-call-log--missed,
 .sc-call-log--missed .sc-call-log-icon {
-  color: #dc2626;
+  color: var(--sc-danger);
 }
 
 .sc-call-log--missed {
-  background: #fee2e2;
+  background: var(--sc-danger-soft);
 }
 
 .sc-call-log--missed:hover {
-  background: #fecaca;
+  background: var(--sc-danger-border);
 }
 
 .sc-call-log--video:not(.sc-call-log--missed) .sc-call-log-icon {
-  color: #2563eb;
+  color: var(--sc-accent);
 }

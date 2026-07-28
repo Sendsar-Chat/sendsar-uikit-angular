@@ -1,7 +1,7 @@
 .sc-add-members-backdrop {
   position: fixed;
   inset: 0;
-  background: rgb(15 23 42 / 45%);
+  background: var(--sc-overlay);
   display: grid;
   place-items: center;
   z-index: 1100;
@@ -11,9 +11,9 @@
 .sc-add-members-dialog {
   width: min(100%, 26rem);
   max-height: min(90vh, 32rem);
-  background: #fff;
+  background: var(--sc-surface);
   border-radius: 0.85rem;
-  box-shadow: 0 20px 40px rgb(15 23 42 / 18%);
+  box-shadow: var(--sc-shadow-lg);
   display: flex;
   flex-direction: column;
   overflow: hidden;
@@ -29,7 +29,7 @@
 .sc-add-members-header h2 {
   margin: 0;
   font-size: 1.1rem;
-  color: #0f172a;
+  color: var(--sc-text);
 }
 
 .sc-add-members-close {
@@ -38,15 +38,15 @@
   font-size: 1.5rem;
   line-height: 1;
   cursor: pointer;
-  color: #64748b;
+  color: var(--sc-text-muted);
 }
 
 .sc-add-members-error {
   margin: 0.5rem 1rem 0;
   padding: 0.45rem 0.65rem;
   border-radius: 0.5rem;
-  background: #fef2f2;
-  color: #b91c1c;
+  background: var(--sc-danger-soft);
+  color: var(--sc-danger-text);
   font-size: 0.8rem;
 }
 
@@ -61,7 +61,7 @@
 .sc-add-members-hint {
   margin: 0;
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--sc-text-muted);
 }
 
 .sc-add-members-search {
@@ -69,14 +69,14 @@
   align-items: center;
   gap: 0.45rem;
   padding: 0.45rem 0.65rem;
-  border: 1px solid #cbd5e1;
+  border: 1px solid var(--sc-border-strong);
   border-radius: 0.55rem;
-  background: #fff;
+  background: var(--sc-surface);
 }
 
 .sc-add-members-search .material-icons {
   font-size: 1.1rem;
-  color: #94a3b8;
+  color: var(--sc-text-faint);
 }
 
 .sc-add-members-search input {
@@ -85,7 +85,7 @@
   border: none;
   outline: none;
   font-size: 0.875rem;
-  color: #1e293b;
+  color: var(--sc-text-secondary);
   background: transparent;
 }
 
@@ -113,12 +113,12 @@
 }
 
 .sc-add-members-row:hover {
-  background: #f1f5f9;
+  background: var(--sc-hover);
 }
 
 .sc-add-members-row--selected {
-  background: #eff6ff;
-  border-color: #bfdbfe;
+  background: var(--sc-selected);
+  border-color: var(--sc-selected-border);
 }
 
 .sc-add-members-choice {
@@ -138,9 +138,9 @@
   flex-shrink: 0;
   width: 0.95rem;
   height: 0.95rem;
-  border: 1.5px solid #cbd5e1;
+  border: 1.5px solid var(--sc-border-strong);
   border-radius: 0.25rem;
-  background: #fff;
+  background: var(--sc-surface);
   box-sizing: border-box;
   display: grid;
   place-items: center;
@@ -150,7 +150,7 @@
   content: '';
   width: 0.22rem;
   height: 0.42rem;
-  border: solid #fff;
+  border: solid var(--sc-on-accent);
   border-width: 0 1.5px 1.5px 0;
   transform: rotate(45deg) scale(0);
   opacity: 0;
@@ -159,8 +159,8 @@
 }
 
 .sc-add-members-choice:checked + .sc-add-members-choice-ui {
-  background: #2563eb;
-  border-color: #2563eb;
+  background: var(--sc-accent);
+  border-color: var(--sc-accent);
 }
 
 .sc-add-members-choice:checked + .sc-add-members-choice-ui::after {
@@ -170,15 +170,15 @@
 
 .sc-add-members-choice:focus-visible + .sc-add-members-choice-ui {
   box-shadow: 0 0 0 3px rgb(37 99 235 / 22%);
-  border-color: #2563eb;
+  border-color: var(--sc-accent);
 }
 
 .sc-add-members-avatar {
   width: 2rem;
   height: 2rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #3b82f6, #2563eb);
-  color: #fff;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
   display: grid;
   place-items: center;
   font-size: 0.7rem;
@@ -189,13 +189,13 @@
 .sc-add-members-name {
   flex: 1;
   font-weight: 500;
-  color: #0f172a;
+  color: var(--sc-text);
 }
 
 .sc-add-members-online {
   margin-left: 0.35rem;
   font-size: 0.75rem;
-  color: #16a34a;
+  color: var(--sc-success);
   font-weight: 600;
 }
 
@@ -216,9 +216,9 @@
 }
 
 .sc-add-members-secondary {
-  border: 1px solid #cbd5e1;
-  background: #fff;
-  color: #334155;
+  border: 1px solid var(--sc-border-strong);
+  background: var(--sc-surface);
+  color: var(--sc-text-secondary);
 }
 
 .sc-add-members-secondary:disabled,
@@ -229,6 +229,6 @@
 
 .sc-add-members-primary {
   border: none;
-  background: #2563eb;
-  color: #fff;
+  background: var(--sc-accent);
+  color: var(--sc-on-accent);
 }

@@ -117,11 +117,44 @@ Pass a **user directory** (`{ id, displayName }[]`) so DM rooms show peer names 
 
 Your backend must mint a session JWT (never put `sk_*` in the browser). See the [JavaScript SDK docs](https://docs.sendsar.com/sdk/javascript/html).
 
-Also add Material Icons (used by call / action buttons):
+Also add the UI kit stylesheet (theme tokens):
+
+```ts
+// angular.json → projects.*.architect.build.options.styles
+"styles": [
+  "src/styles.css",
+  "node_modules/@sendsar/chat-uikit-angular/styles/sendsar-uikit.css"
+]
+```
+
+### Light / dark theme
+
+The UI kit follows `data-theme` on `<html>` (or any ancestor). Default is **light**; set **dark** to switch the chat palette.
 
 ```html
-<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+<html lang="en" data-theme="light">
 ```
+
+```ts
+// toggle from your app
+document.documentElement.setAttribute('data-theme', 'dark'); // or 'light'
+```
+
+Tokens live in `styles/sendsar-uikit.css` as `--sc-*` CSS variables (surfaces, borders, text, accent, bubbles, etc.). Override any token in your global CSS to brand the kit:
+
+```css
+[data-theme='light'] {
+  --sc-accent: #0ea5e9;
+  --sc-bubble-mine: #0ea5e9;
+}
+
+[data-theme='dark'] {
+  --sc-surface: #111827;
+  --sc-thread-bg: #030712;
+}
+```
+
+Call UI (`sc-call-overlay`) stays dark by design and does not flip with the theme toggle.
 
 ## UI kit components
 
