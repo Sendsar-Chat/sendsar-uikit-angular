@@ -1,0 +1,51 @@
+@if (href) {
+  <a
+    class="sc-file-preview"
+    [class.sc-file-preview--inverted]="tone === 'inverted'"
+    [href]="href"
+    target="_blank"
+    rel="noopener noreferrer"
+  >
+    <ng-container *ngTemplateOutlet="content" />
+  </a>
+} @else {
+  <div class="sc-file-preview" [class.sc-file-preview--inverted]="tone === 'inverted'">
+    <ng-container *ngTemplateOutlet="content" />
+  </div>
+}
+
+<ng-template #content>
+  @if (attachment.previewUrl) {
+    @if (isImagePreview()) {
+      <a
+        class="sc-file-preview-thumb-link"
+        [href]="attachment.previewUrl"
+        target="_blank"
+        rel="noopener noreferrer"
+        title="View image"
+        aria-label="View image"
+      >
+        <img [src]="attachment.previewUrl" alt="" class="sc-file-preview-thumb" />
+      </a>
+    } @else {
+      <img [src]="attachment.previewUrl" alt="" class="sc-file-preview-thumb" />
+    }
+  } @else {
+    <span class="sc-file-preview-icon material-icons" aria-hidden="true">
+      {{ iconName() }}
+    </span>
+  }
+  <span class="sc-file-preview-name">{{ attachment.name }}</span>
+  @if (removable) {
+    <button
+      type="button"
+      class="sc-file-preview-remove"
+      title="Remove attachment"
+      aria-label="Remove attachment"
+      [disabled]="disabled"
+      (click)="removed.emit()"
+    >
+      <span class="material-icons" aria-hidden="true">close</span>
+    </button>
+  }
+</ng-template>

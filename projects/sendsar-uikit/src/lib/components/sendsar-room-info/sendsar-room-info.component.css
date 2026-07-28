@@ -1,0 +1,350 @@
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+  background: var(--sc-sidebar-bg);
+  border-left: 1px solid var(--sc-border);
+}
+
+.sc-info {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 1.25rem 1rem 1.5rem;
+}
+
+.sc-info-close {
+  position: absolute;
+  top: 0.65rem;
+  right: 0.65rem;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.4rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--sc-text-faint);
+}
+
+.sc-info-close:hover {
+  color: var(--sc-text-muted);
+  background: var(--sc-hover);
+}
+
+.sc-info-close svg {
+  width: 1.1rem;
+  height: 1.1rem;
+  fill: none;
+  stroke: currentcolor;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.sc-info--empty {
+  display: grid;
+  place-content: center;
+  text-align: center;
+  color: var(--sc-text-faint);
+  font-size: 0.9rem;
+  padding: 2rem 1rem;
+}
+
+.sc-info-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid var(--sc-border);
+  margin-bottom: 1rem;
+}
+
+.sc-info-avatar {
+  width: 4.5rem;
+  height: 4.5rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 1.1rem;
+  font-weight: 700;
+  margin-bottom: 0.75rem;
+}
+
+.sc-info-title {
+  margin: 0 0 0.25rem;
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--sc-text);
+}
+
+.sc-info-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--sc-text-muted);
+}
+
+.sc-info-desc {
+  margin: 0.5rem 0 0;
+  font-size: 0.8rem;
+  color: var(--sc-text-faint);
+  line-height: 1.45;
+  max-width: 14rem;
+}
+
+.sc-info-section {
+  padding: 0.85rem 0;
+  border-bottom: 1px solid var(--sc-border);
+}
+
+.sc-info-section:last-child {
+  border-bottom: none;
+}
+
+.sc-info-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.65rem;
+}
+
+.sc-info-section-header h3 {
+  margin: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text-secondary);
+}
+
+.sc-info-link {
+  border: none;
+  background: transparent;
+  color: var(--sc-accent);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-info-link:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-info-error {
+  margin: 0 0 0.65rem;
+  font-size: 0.8rem;
+  color: var(--sc-danger);
+}
+
+.sc-member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sc-member-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 0;
+}
+
+.sc-member-meta {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sc-member-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-member-you {
+  font-weight: 500;
+  color: var(--sc-text-faint);
+}
+
+.sc-member-badge {
+  align-self: flex-start;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--sc-accent-hover);
+  background: var(--sc-accent-soft-border);
+  border-radius: 999px;
+  padding: 0.1rem 0.45rem;
+}
+
+.sc-member-remove {
+  border: none;
+  background: transparent;
+  color: var(--sc-danger);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+  border-radius: 0.35rem;
+  flex-shrink: 0;
+}
+
+.sc-member-remove:hover:not(:disabled) {
+  background: var(--sc-danger-soft);
+}
+
+.sc-member-remove:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-add-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 0.75rem;
+  max-height: 10rem;
+  overflow: auto;
+  border: 1px solid var(--sc-border);
+  border-radius: 0.5rem;
+  padding: 0.35rem;
+  background: var(--sc-surface);
+}
+
+.sc-add-option {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.4rem 0.45rem;
+  border-radius: 0.4rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.sc-add-option:hover:not(:disabled) {
+  background: var(--sc-hover);
+}
+
+.sc-add-option:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-add-option-name {
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--sc-text);
+}
+
+.sc-member-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sc-member-avatar--sm {
+  width: 1.75rem;
+  height: 1.75rem;
+  font-size: 0.55rem;
+}
+
+.sc-member-avatar--online::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--sc-online);
+  border: 2px solid var(--sc-sidebar-bg);
+}
+
+.sc-member-overflow {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  background: var(--sc-accent-soft-border);
+  color: var(--sc-accent);
+  display: grid;
+  place-items: center;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.sc-media-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.sc-media-slot {
+  aspect-ratio: 1;
+  border-radius: 0.5rem;
+  background: linear-gradient(135deg, var(--sc-skeleton-from), var(--sc-skeleton-to));
+}
+
+.sc-info-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sc-text-faint);
+}
+
+.sc-info-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.sc-info-action {
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text);
+  cursor: pointer;
+}
+
+.sc-info-action:hover:not(:disabled) {
+  background: var(--sc-surface-raised);
+}
+
+.sc-info-action--danger {
+  color: var(--sc-danger);
+  border-color: var(--sc-danger-border);
+}
+
+.sc-info-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

@@ -1,0 +1,4 @@
+/* IDE / language-service entry for the library (Angular CLI still uses tsconfig.lib*.json). */
+{
+  "extends": "./tsconfig.lib.json"
+}

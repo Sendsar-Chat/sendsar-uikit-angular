@@ -1,0 +1,266 @@
+@if (calls.minimized()) {
+  <button
+    type="button"
+    class="sc-call-chip"
+    (click)="restore()"
+    [attr.aria-label]="'Return to call with ' + title"
+  >
+    <span class="sc-call-chip-avatar" aria-hidden="true">
+      @if (avatarUrl) {
+        <img [src]="avatarUrl" alt="" />
+      } @else {
+        {{ avatarLetter() }}
+      }
+    </span>
+    <span class="sc-call-chip-text">
+      <span class="sc-call-chip-title">{{ title }}</span>
+      <span class="sc-call-chip-status">{{ statusLabel() }}</span>
+    </span>
+    <span
+      class="sc-call-chip-hangup"
+      role="button"
+      tabindex="0"
+      [title]="calls.hangUpLabel()"
+      [attr.aria-label]="calls.hangUpLabel()"
+      (click)="hangUp(); $event.stopPropagation()"
+      (keydown.enter)="hangUp(); $event.stopPropagation()"
+    >
+      <span class="material-icons" aria-hidden="true">call_end</span>
+    </span>
+  </button>
+} @else {
+  <div class="sc-call-backdrop" aria-hidden="true"></div>
+
+  <div
+    #dialogEl
+    class="sc-call-dialog"
+    [class.sc-call-dialog--expanded]="expanded() || nativeFullscreen()"
+    [class.sc-call-dialog--dragging]="dragging()"
+    [style.transform]="dialogTransform()"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Active call"
+  >
+    <header
+      class="sc-call-header"
+      [class.sc-call-header--dragging]="dragging()"
+      [class.sc-call-header--draggable]="canDrag()"
+      (pointerdown)="onDragStart($event)"
+      (pointermove)="onDragMove($event)"
+      (pointerup)="onDragEnd($event)"
+      (pointercancel)="onDragEnd($event)"
+    >
+      <div class="sc-call-header-text">
+        <h2 class="sc-call-header-title">{{ title }}</h2>
+        <span class="sc-call-header-status">{{ statusLabel() }}</span>
+      </div>
+
+      <div class="sc-call-header-actions">
+        @if (canMinimize()) {
+          <button
+            type="button"
+            class="sc-call-icon-btn"
+            title="Minimize"
+            aria-label="Minimize call"
+            (click)="minimize()"
+          >
+            <span class="material-icons" aria-hidden="true">minimize</span>
+          </button>
+        }
+
+        <button
+          type="button"
+          class="sc-call-icon-btn"
+          [title]="expanded() || nativeFullscreen() ? 'Exit expand' : 'Expand'"
+          [attr.aria-label]="expanded() || nativeFullscreen() ? 'Exit expand' : 'Expand call window'"
+          (click)="toggleExpanded()"
+        >
+          <span class="material-icons" aria-hidden="true">
+            {{ expanded() || nativeFullscreen() ? 'close_fullscreen' : 'open_in_full' }}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          class="sc-call-icon-btn"
+          [title]="nativeFullscreen() ? 'Exit fullscreen' : 'Fullscreen'"
+          [attr.aria-label]="nativeFullscreen() ? 'Exit fullscreen' : 'Enter fullscreen'"
+          (click)="toggleFullscreen()"
+        >
+          <span class="material-icons" aria-hidden="true">
+            {{ nativeFullscreen() ? 'fullscreen_exit' : 'fullscreen' }}
+          </span>
+        </button>
+      </div>
+    </header>
+
+    <div
+      class="sc-call-stage"
+      [class.sc-call-stage--grid]="useGroupGrid()"
+      [class.sc-call-stage--voice]="isVoiceOnlyCall()"
+    >
+      @if (useGroupGrid()) {
+        <div
+          class="sc-call-grid"
+          [class.sc-call-grid--voice]="isVoiceOnlyCall()"
+          [style.--sc-call-cols]="gridCols()"
+        >
+          @for (row of gridRows(); track $index) {
+            <div class="sc-call-grid-row">
+              @for (tile of row; track tile.key) {
+                <div
+                  class="sc-call-tile"
+                  [class.sc-call-tile--avatar]="!tile.track"
+                  [class.sc-call-tile--voice]="isVoiceOnlyCall()"
+                >
+                  @if (tile.track; as track) {
+                    <video
+                      class="sc-call-tile-video"
+                      [class.sc-call-tile-video--local]="tile.isLocal"
+                      [scCallTrack]="track"
+                      autoplay
+                      [muted]="tile.isLocal"
+                      playsinline
+                    ></video>
+                  } @else {
+                    <div class="sc-call-tile-avatar" aria-hidden="true">
+                      @if (tile.avatarUrl) {
+                        <img class="sc-call-tile-avatar-img" [src]="tile.avatarUrl" alt="" />
+                      } @else {
+                        <span class="sc-call-tile-avatar-disc">{{ tile.initials }}</span>
+                      }
+                    </div>
+                  }
+                  <span class="sc-call-tile-label">{{ tile.label }}</span>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        @if (!isVoiceOnlyCall() && calls.remoteVideoTrack(); as remote) {
+          <video
+            class="sc-call-remote"
+            [scCallTrack]="remote"
+            autoplay
+            playsinline
+          ></video>
+        } @else {
+          <div class="sc-call-placeholder" [class.sc-call-placeholder--voice]="isVoiceOnlyCall()">
+            <span class="sc-call-avatar" [class.sc-call-avatar--voice]="isVoiceOnlyCall()" aria-hidden="true">
+              @if (avatarUrl) {
+                <img [src]="avatarUrl" alt="" />
+              } @else {
+                {{ avatarLetter() }}
+              }
+            </span>
+            <p class="sc-call-title">{{ title }}</p>
+            <p class="sc-call-status">{{ statusLabel() }}</p>
+          </div>
+        }
+      }
+
+      @if (!useGroupGrid() && !isVoiceOnlyCall() && calls.localVideoTrack(); as local) {
+        <video
+          class="sc-call-local"
+          [scCallTrack]="local"
+          autoplay
+          muted
+          playsinline
+        ></video>
+      }
+
+      @if (calls.remoteAudioTrack(); as audio) {
+        <audio
+          #remoteAudioEl
+          class="sc-call-audio"
+          [scCallTrack]="audio"
+          autoplay
+        ></audio>
+      }
+    </div>
+
+    <div class="sc-call-footer">
+      <div class="sc-call-controls">
+        @if (calls.callState() === 'incoming' && !calls.calling()) {
+          <button
+            type="button"
+            class="sc-call-btn sc-call-btn--decline"
+            [title]="declineLabel()"
+            [attr.aria-label]="declineLabel() + ' call'"
+            (click)="decline()"
+          >
+            <span class="material-icons" aria-hidden="true">call_end</span>
+          </button>
+          <button
+            type="button"
+            class="sc-call-btn sc-call-btn--accept"
+            title="Accept"
+            aria-label="Accept call"
+            (click)="accept()"
+          >
+            <span class="material-icons" aria-hidden="true">call</span>
+          </button>
+        } @else {
+          <button
+            type="button"
+            class="sc-call-btn"
+            [class.sc-call-btn--off]="!calls.micEnabled()"
+            [attr.aria-pressed]="!calls.micEnabled()"
+            [title]="calls.micEnabled() ? 'Mute' : 'Unmute'"
+            [attr.aria-label]="calls.micEnabled() ? 'Mute microphone' : 'Unmute microphone'"
+            (click)="toggleMic()"
+          >
+            <span class="material-icons" aria-hidden="true">
+              {{ calls.micEnabled() ? 'mic' : 'mic_off' }}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            class="sc-call-btn"
+            [class.sc-call-btn--off]="!calls.speakerEnabled()"
+            [attr.aria-pressed]="calls.speakerEnabled()"
+            [title]="calls.speakerEnabled() ? 'Speaker on' : 'Speaker off'"
+            [attr.aria-label]="calls.speakerEnabled() ? 'Turn speaker off' : 'Turn speaker on'"
+            (click)="toggleSpeaker()"
+          >
+            <span class="material-icons" aria-hidden="true">
+              {{ calls.speakerEnabled() ? 'volume_up' : 'volume_down' }}
+            </span>
+          </button>
+
+          @if (calls.activeCall()?.type !== 'audio' && calls.incomingInvite()?.type !== 'audio') {
+            <button
+              type="button"
+              class="sc-call-btn"
+              [class.sc-call-btn--off]="!calls.cameraEnabled()"
+              [attr.aria-pressed]="!calls.cameraEnabled()"
+              [title]="calls.cameraEnabled() ? 'Turn camera off' : 'Turn camera on'"
+              [attr.aria-label]="calls.cameraEnabled() ? 'Turn camera off' : 'Turn camera on'"
+              (click)="toggleCamera()"
+            >
+              <span class="material-icons" aria-hidden="true">
+                {{ calls.cameraEnabled() ? 'videocam' : 'videocam_off' }}
+              </span>
+            </button>
+          }
+
+          <button
+            type="button"
+            class="sc-call-btn sc-call-btn--hangup"
+            [title]="calls.hangUpLabel()"
+            [attr.aria-label]="calls.hangUpLabel()"
+            (click)="hangUp()"
+          >
+            <span class="material-icons" aria-hidden="true">call_end</span>
+          </button>
+        }
+      </div>
+
+      @if (calls.error()) {
+        <p class="sc-call-error">{{ calls.error() }}</p>
+      }
+    </div>
+  </div>
+}

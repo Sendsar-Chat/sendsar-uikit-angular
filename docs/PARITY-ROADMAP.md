@@ -402,9 +402,13 @@ Confirm / document in Angular context:
 ### 6.5 Acceptance criteria
 
 - [ ] 1:1 video call from sample app; callee sees ring UI.
-- [ ] Call end posts `data-call` row in thread.
+- [ ] Call end posts `data-call` row in thread (rendered via `SendsarCallLogBubbleComponent` with duration).
+- [ ] Live call overlay shows `mm:ss` duration while connected.
+- [ ] Ring/ringback/end tones; minimize-to-chip; speaker toggle; peer name/avatar; tap history to redial; busy ignores second invite.
 - [ ] Group call join (auto-active) works for 3+ members.
 - [ ] Chat works when `calls.enabled: false` (buttons hidden).
+
+**Phase 6 Telegram polish (done in UIKit/SDK):** ring/ringback/end tones; peer name+avatar; minimize-to-chip; speaker toggle; busy-while-in-call; tap call-log to redial.
 
 **Estimate:** 2–3 weeks (LiveKit Angular integration + polish).
 

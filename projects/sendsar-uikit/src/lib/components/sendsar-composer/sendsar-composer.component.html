@@ -1,48 +1,158 @@
 <form class="sc-composer" (ngSubmit)="submit()">
-  @if (showAttach()) {
-    <div class="sc-attach-panel">
-      <label class="sc-attach-label">
-        Image / file URL
-        <input
-          type="url"
-          name="attachUrl"
-          [(ngModel)]="attachUrl"
-          placeholder="https://example.com/photo.jpg"
-          [disabled]="sending() || !!pendingFile()"
-        />
-      </label>
-      <label class="sc-file-btn">
-        Upload image
-        <input type="file" accept="image/*" hidden (change)="onFileSelected($event)" />
-      </label>
-      @if (pendingFile(); as file) {
-        <div class="sc-pending">
-          <img [src]="file.url" alt="" class="sc-pending-thumb" />
-          <span>{{ file.filename }}</span>
-          <button type="button" (click)="clearAttachment()">×</button>
+  <div class="sc-box">
+    @if (editing) {
+      <div class="sc-editing-bar">
+        <span class="material-icons sc-editing-icon" aria-hidden="true">edit</span>
+        <div class="sc-editing-info">
+          <span class="sc-editing-title">Edit message</span>
+          <span class="sc-editing-preview">{{ editingPreview() }}</span>
         </div>
-      }
-    </div>
-  }
+        <button
+          type="button"
+          class="sc-editing-cancel"
+          title="Cancel editing"
+          aria-label="Cancel editing"
+          (click)="cancelEditing()"
+        >
+          <span class="material-icons" aria-hidden="true">close</span>
+        </button>
+      </div>
+    }
 
-  <div class="sc-row">
-    <button type="button" class="sc-icon-btn" title="Attach" (click)="toggleAttach()">📎</button>
-    <input
-      type="text"
+    @if (replyingTo && !editing) {
+      <div class="sc-replying-bar">
+        <span class="material-icons sc-replying-icon" aria-hidden="true">reply</span>
+        <div class="sc-editing-info">
+          <span class="sc-editing-title">Replying to message</span>
+          <span class="sc-editing-preview">{{ replyingPreview() }}</span>
+        </div>
+        <button
+          type="button"
+          class="sc-editing-cancel"
+          title="Cancel reply"
+          aria-label="Cancel reply"
+          (click)="cancelReplying()"
+        >
+          <span class="material-icons" aria-hidden="true">close</span>
+        </button>
+      </div>
+    }
+
+    @if (editingVoiceLabel(); as voiceLabel) {
+      <div class="sc-editing-voice" aria-label="Voice message kept">
+        <span class="material-icons" aria-hidden="true">mic</span>
+        <span class="sc-editing-voice-label">{{ voiceLabel }}</span>
+        <span class="sc-editing-voice-hint">Add or edit caption</span>
+      </div>
+    }
+
+    @if (pendingFile(); as attachment) {
+      <sc-file-preview
+        [attachment]="attachment"
+        [disabled]="sending() || recording()"
+        (removed)="removePendingFile()"
+      />
+    }
+
+    @if (pendingVoice(); as voice) {
+      <sc-voice-preview
+        [voice]="voice"
+        [disabled]="sending() || recording()"
+        (removed)="removePendingVoice()"
+      />
+    }
+
+    <textarea
+      #messageInput
+      class="sc-message-input"
       name="message"
       [(ngModel)]="text"
       (ngModelChange)="onTextChange()"
       [disabled]="sending()"
-      placeholder="Type a message…"
+      [placeholder]="editingVoiceLabel() ? 'Add a caption…' : (replyingTo && !editing ? 'Write a reply…' : 'Enter to send Shift + Enter to add new line')"
+      rows="1"
       autocomplete="off"
+      (keydown.enter)="onEnterKey($event)"
+      (keydown.escape)="onEscapeKey()"
+    ></textarea>
+
+    @if (showEmojiPicker()) {
+      <sc-emoji-picker (emojiSelected)="pickEmoji($event)" />
+    }
+
+    <input
+      #fileInput
+      type="file"
+      hidden
+      [disabled]="sending() || recording()"
+      (change)="onFileSelected($event)"
     />
-    <button type="submit" class="sc-send-btn" [disabled]="sending() || (!text.trim() && !attachUrl.trim() && !pendingFile())">
-      @if (sending()) {
-        <span class="sc-send-spin"></span> Sending…
-      } @else {
-        Send
-      }
-    </button>
+
+    @if (recording()) {
+      <div class="sc-voice-recording" aria-live="polite">
+        <span class="sc-voice-recording-dot" aria-hidden="true"></span>
+        <span>Recording {{ recordingSeconds() }}s — tap mic to stop</span>
+      </div>
+    }
+
+    <div class="sc-toolbar">
+      <div class="sc-toolbar-left">
+        <button
+          type="button"
+          class="sc-tool-btn"
+          [class.sc-tool-btn--active]="showEmojiPicker()"
+          title="Emoji"
+          aria-label="Emoji picker"
+          [attr.aria-expanded]="showEmojiPicker()"
+          (click)="toggleEmojiPicker($event)"
+        >
+          <span class="material-icons" aria-hidden="true">mood</span>
+        </button>
+
+        <button
+          type="button"
+          class="sc-tool-btn"
+          title="Attach"
+          (click)="openFilePicker()"
+          aria-label="Attach file"
+          [disabled]="sending() || recording() || (editing && !canReplaceAttachment())"
+        >
+          <span class="material-icons" aria-hidden="true">attach_file</span>
+        </button>
+
+        <button
+          type="button"
+          class="sc-tool-btn"
+          title="Voice message"
+          aria-label="Voice message"
+          [class.sc-tool-btn--active]="recording()"
+          [attr.aria-pressed]="recording()"
+          [disabled]="sending() || !!editing"
+          (click)="voiceMessage()"
+        >
+          <span class="material-icons" aria-hidden="true">mic</span>
+        </button>
+
+      </div>
+
+      <div
+        class="sc-send-split"
+        [class.sc-send-split--disabled]="sending() || recording() || (!editing && !text.trim() && !pendingVoice() && !pendingFile()) || (!!editing && !text.trim() && !pendingFile() && !editingVoiceLabel())"
+      >
+        <button
+          type="submit"
+          class="sc-send-main"
+          [disabled]="sending() || recording() || (!editing && !text.trim() && !pendingVoice() && !pendingFile()) || (!!editing && !text.trim() && !pendingFile() && !editingVoiceLabel())"
+          aria-label="Send message"
+        >
+          @if (sending()) {
+            <span class="sc-send-spin"></span>
+          } @else {
+            <span class="material-icons" aria-hidden="true">{{ editing ? 'check' : 'send' }}</span>
+          }
+        </button>
+      </div>
+    </div>
   </div>
 </form>
 @if (error()) {

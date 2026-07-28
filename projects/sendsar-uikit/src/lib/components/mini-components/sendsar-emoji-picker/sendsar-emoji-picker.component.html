@@ -1,0 +1,19 @@
+<div class="sc-emoji-picker" role="dialog" aria-label="Emoji picker">
+  @for (group of groups; track group.label) {
+    <section class="sc-emoji-group">
+      <p class="sc-emoji-group-title">{{ group.label }}</p>
+      <div class="sc-emoji-grid">
+        @for (emoji of group.emojis; track emoji) {
+          <button
+            type="button"
+            class="sc-emoji-option"
+            [title]="emoji"
+            (click)="selectEmoji(emoji)"
+          >
+            <sc-animated-emoji [emoji]="emoji" />
+          </button>
+        }
+      </div>
+    </section>
+  }
+</div>

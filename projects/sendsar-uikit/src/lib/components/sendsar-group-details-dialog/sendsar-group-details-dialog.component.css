@@ -1,0 +1,334 @@
+.sc-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--sc-overlay);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.sc-group-dialog {
+  position: relative;
+  width: min(100%, 18.5rem);
+  background: var(--sc-surface-raised);
+  border-radius: 0.85rem;
+  box-shadow: var(--sc-shadow-lg);
+  border: 1px solid var(--sc-border);
+  /* Keep visible so the members more-menu can overflow outside the card. */
+  overflow: visible;
+}
+
+.sc-group-dialog-close {
+  position: absolute;
+  top: 0.55rem;
+  right: 0.55rem;
+  z-index: 1;
+  border: none;
+  background: transparent;
+  width: 1.75rem;
+  height: 1.75rem;
+  border-radius: 0.4rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  color: var(--sc-text-faint);
+}
+
+.sc-group-dialog-close:hover {
+  color: var(--sc-text-muted);
+  background: var(--sc-hover);
+}
+
+.sc-group-dialog-close .material-icons {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.sc-group-dialog-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 1.5rem 1.25rem 1.15rem;
+  border-bottom: 1px solid var(--sc-border);
+  border-radius: 0.85rem 0.85rem 0 0;
+  overflow: hidden;
+}
+
+.sc-group-dialog-avatar {
+  width: 4.25rem;
+  height: 4.25rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 0.7rem;
+}
+
+.sc-group-dialog-title {
+  margin: 0 0 0.2rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--sc-text);
+}
+
+.sc-group-dialog-subtitle {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--sc-text-muted);
+}
+
+.sc-group-dialog-desc {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: var(--sc-text-faint);
+}
+
+.sc-group-dialog-actions {
+  display: flex;
+  justify-content: center;
+  padding: 0.45rem 1.1rem;
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-surface-raised);
+}
+
+.sc-group-dialog-leave {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.15rem;
+  min-width: 3.15rem;
+  padding: 0.35rem 0.55rem 0.3rem;
+  border: 1px solid var(--sc-danger-border);
+  border-radius: 0.45rem;
+  background: var(--sc-danger-soft);
+  color: var(--sc-danger-text);
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 600;
+  line-height: 1.1;
+  box-shadow: var(--sc-shadow);
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+}
+
+.sc-group-dialog-leave .material-icons {
+  font-size: 0.95rem;
+  line-height: 1;
+  color: var(--sc-danger);
+}
+
+.sc-group-dialog-leave:hover:not(:disabled) {
+  background: var(--sc-danger-soft);
+  border-color: var(--sc-danger-border);
+  color: var(--sc-danger-hover);
+}
+
+.sc-group-dialog-leave:hover:not(:disabled) .material-icons {
+  color: var(--sc-danger-text);
+}
+
+.sc-group-dialog-leave:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sc-group-dialog-members {
+  position: relative;
+  padding: 0.95rem 1.1rem 1.15rem;
+  border-radius: 0 0 0.85rem 0.85rem;
+  overflow: visible;
+}
+
+.sc-group-dialog-members-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.7rem;
+}
+
+.sc-group-dialog-members-header h3 {
+  margin: 0;
+  font-size: 0.9rem;
+  /* font-weight: 700; */
+}
+
+.sc-group-dialog-menu-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sc-group-dialog-menu-btn {
+  display: grid;
+  place-items: center;
+  width: 1.85rem;
+  height: 1.85rem;
+  border: none;
+  border-radius: 0.4rem;
+  background: transparent;
+  color: var(--sc-text-muted);
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-group-dialog-menu-btn:hover:not(:disabled) {
+  background: var(--sc-hover);
+  color: var(--sc-accent);
+}
+
+.sc-group-dialog-menu-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sc-group-dialog-menu-btn .material-icons {
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.sc-group-dialog-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 50;
+  min-width: 10.5rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  background: var(--sc-menu-bg);
+  border: 1px solid var(--sc-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--sc-shadow-lg);
+  animation: sc-group-dialog-menu-in 0.12s ease-out;
+}
+
+@keyframes sc-group-dialog-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sc-group-dialog-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.55rem;
+  font-size: 0.85rem;
+  color: var(--sc-text-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sc-group-dialog-menu-item:hover:not(:disabled) {
+  background: var(--sc-hover);
+}
+
+.sc-group-dialog-menu-item .material-icons {
+  font-size: 1.1rem;
+  color: var(--sc-text-muted);
+}
+
+.sc-group-dialog-menu-item--danger:hover:not(:disabled) {
+  background: var(--sc-danger-soft);
+  color: var(--sc-danger);
+}
+
+.sc-group-dialog-menu-item--danger:hover:not(:disabled) .material-icons {
+  color: var(--sc-danger);
+}
+
+.sc-group-dialog-menu-item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sc-group-dialog-member-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.sc-group-dialog-member-avatar {
+  width: 2.35rem;
+  height: 2.35rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 0.68rem;
+  font-weight: 700;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sc-group-dialog-member-avatar--online::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 0.45rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: var(--sc-online);
+  border: 1.5px solid var(--sc-surface-raised);
+}
+
+.sc-group-dialog-empty {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--sc-text-faint);
+}
+
+.sc-group-dialog-empty--error {
+  color: var(--sc-danger);
+}
+
+.sc-group-dialog-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.85rem 1.1rem 1.1rem;
+  border-top: 1px solid var(--sc-border);
+}
+
+.sc-group-dialog-action {
+  border: 1px solid var(--sc-border);
+  background: var(--sc-surface);
+  border-radius: 0.5rem;
+  padding: 0.55rem 0.75rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--sc-text);
+  cursor: pointer;
+}
+
+.sc-group-dialog-action:hover:not(:disabled) {
+  background: var(--sc-surface-raised);
+}
+
+.sc-group-dialog-action--danger {
+  color: var(--sc-danger);
+  border-color: var(--sc-danger-border);
+}
+
+.sc-group-dialog-action:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

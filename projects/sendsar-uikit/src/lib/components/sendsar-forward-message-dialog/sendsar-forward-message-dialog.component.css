@@ -1,0 +1,286 @@
+.sc-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  background: var(--sc-overlay);
+  display: grid;
+  place-items: center;
+  z-index: 1000;
+  padding: 1rem;
+}
+
+.sc-dialog {
+  width: min(100%, 26rem);
+  max-height: min(90vh, 34rem);
+  background: var(--sc-surface);
+  border-radius: 0.85rem;
+  box-shadow: var(--sc-shadow-lg);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sc-dialog-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1rem 0.5rem;
+}
+
+.sc-dialog-header h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.sc-dialog-close {
+  border: none;
+  background: transparent;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--sc-text-muted);
+}
+
+.sc-forward-preview {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin: 0 1rem 0.75rem;
+  padding: 0.55rem 0.65rem;
+  border-radius: 0.55rem;
+  background: var(--sc-surface-raised);
+  border: 1px solid var(--sc-border);
+}
+
+.sc-forward-preview .material-icons {
+  flex-shrink: 0;
+  font-size: 1rem;
+  line-height: 1.2;
+  color: var(--sc-text-muted);
+  transform: scaleX(-1);
+}
+
+.sc-forward-preview-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+}
+
+.sc-forward-preview-sender {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--sc-accent);
+  line-height: 1.2;
+}
+
+.sc-forward-preview p {
+  margin: 0;
+  font-size: 0.8125rem;
+  color: var(--sc-text-muted);
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.sc-dialog-error {
+  margin: 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.5rem;
+  background: var(--sc-danger-soft);
+  color: var(--sc-danger-text);
+  font-size: 0.8rem;
+}
+
+.sc-dialog-panel {
+  padding: 0 1rem 1rem;
+  overflow: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-height: 0;
+}
+
+.sc-dialog-hint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--sc-text-muted);
+}
+
+.sc-forward-search {
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid var(--sc-border-strong);
+  border-radius: 0.55rem;
+  background: var(--sc-surface);
+}
+
+.sc-forward-search .material-icons {
+  font-size: 1.1rem;
+  color: var(--sc-text-faint);
+}
+
+.sc-forward-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  font-size: 0.875rem;
+  color: var(--sc-text-secondary);
+  background: transparent;
+}
+
+.sc-dialog-user-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  max-height: min(42vh, 18rem);
+  overflow: auto;
+}
+
+.sc-dialog-user-row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.5rem;
+  border: 1px solid transparent;
+  cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.sc-dialog-user-row:hover {
+  background: var(--sc-hover);
+}
+
+.sc-dialog-user-row--selected {
+  background: var(--sc-selected);
+  border-color: var(--sc-selected-border);
+}
+
+.sc-dialog-user-row--selected:hover {
+  background: var(--sc-accent-soft-border);
+}
+
+.sc-dialog-choice {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+  opacity: 0;
+}
+
+.sc-dialog-choice-ui {
+  flex-shrink: 0;
+  width: 0.95rem;
+  height: 0.95rem;
+  border: 1.5px solid var(--sc-border-strong);
+  background: var(--sc-surface);
+  box-sizing: border-box;
+  display: grid;
+  place-items: center;
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.sc-dialog-choice-ui--check {
+  border-radius: 0.25rem;
+}
+
+.sc-dialog-choice-ui--check::after {
+  content: '';
+  width: 0.22rem;
+  height: 0.42rem;
+  border: solid var(--sc-on-accent);
+  border-width: 0 1.5px 1.5px 0;
+  transform: rotate(45deg) scale(0);
+  opacity: 0;
+  margin-top: -0.08rem;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+}
+
+.sc-dialog-choice:focus-visible + .sc-dialog-choice-ui {
+  box-shadow: 0 0 0 3px rgb(37 99 235 / 22%);
+  border-color: var(--sc-accent);
+}
+
+.sc-dialog-choice:checked + .sc-dialog-choice-ui {
+  background: var(--sc-accent);
+  border-color: var(--sc-accent);
+}
+
+.sc-dialog-choice:checked + .sc-dialog-choice-ui--check::after {
+  opacity: 1;
+  transform: rotate(45deg) scale(1);
+}
+
+.sc-dialog-choice:disabled + .sc-dialog-choice-ui {
+  opacity: 0.55;
+}
+
+.sc-dialog-avatar {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
+  display: grid;
+  place-items: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.sc-dialog-name {
+  flex: 1;
+  font-weight: 500;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-dialog-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: auto;
+  padding-top: 0.5rem;
+}
+
+.sc-dialog-secondary,
+.sc-dialog-primary {
+  border-radius: 0.5rem;
+  padding: 0.5rem 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.sc-dialog-secondary {
+  border: 1px solid var(--sc-border-strong);
+  background: var(--sc-surface);
+  color: var(--sc-text-secondary);
+}
+
+.sc-dialog-primary {
+  border: none;
+  background: var(--sc-accent);
+  color: var(--sc-on-accent);
+}
+
+.sc-dialog-primary:disabled,
+.sc-dialog-secondary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

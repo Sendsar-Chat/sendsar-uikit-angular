@@ -1,0 +1,173 @@
+@font-face {
+  font-family: 'Material Icons';
+  font-style: normal;
+  font-weight: 400;
+  src: url(https://fonts.gstatic.com/s/materialicons/v145/flUhRq6tzZclQEJ-Vdg-IuiaDsNc.woff2) format('woff2');
+}
+
+.material-icons {
+  font-family: 'Material Icons';
+  font-weight: normal;
+  font-style: normal;
+  font-size: 24px;
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+}
+
+/*
+ * Theme tokens — host apps set `data-theme="light"|"dark"` on <html> (or any ancestor).
+ * Defaults match the light palette; dark overrides apply under [data-theme="dark"].
+ */
+:root,
+[data-theme='light'] {
+  color-scheme: light;
+
+  --sc-surface: #ffffff;
+  --sc-surface-raised: #f8fafc;
+  --sc-surface-sunken: #f1f5f9;
+  --sc-sidebar-bg: #f8fafc;
+  --sc-thread-bg: #f1f5f9;
+  --sc-header-bg: #ffffff;
+
+  --sc-border: #e2e8f0;
+  --sc-border-strong: #cbd5e1;
+
+  --sc-text: #0f172a;
+  --sc-text-secondary: #334155;
+  --sc-text-muted: #64748b;
+  --sc-text-faint: #94a3b8;
+
+  --sc-hover: #f1f5f9;
+  --sc-hover-row: #e8edf3;
+  --sc-selected: #eff6ff;
+  --sc-selected-border: #bfdbfe;
+
+  --sc-accent: #2563eb;
+  --sc-accent-hover: #1d4ed8;
+  --sc-accent-soft: #eff6ff;
+  --sc-accent-soft-border: #dbeafe;
+  --sc-on-accent: #ffffff;
+  --sc-on-accent-muted: rgb(255 255 255 / 78%);
+
+  --sc-bubble-mine: #2563eb;
+  --sc-bubble-mine-text: #ffffff;
+  --sc-bubble-theirs: #e8edf3;
+  --sc-bubble-theirs-text: #0f172a;
+
+  --sc-success: #16a34a;
+  --sc-success-soft: #f0fdf4;
+  --sc-online: #22c55e;
+
+  --sc-danger: #dc2626;
+  --sc-danger-hover: #b91c1c;
+  --sc-danger-soft: #fef2f2;
+  --sc-danger-border: #fecaca;
+  --sc-danger-text: #b91c1c;
+
+  --sc-warning-soft: #fffbeb;
+  --sc-warning-border: #fde68a;
+  --sc-warning-spin: #fcd34d;
+  --sc-warning-spin-top: #d97706;
+  --sc-warning-text: #475569;
+
+  --sc-overlay: rgb(15 23 42 / 45%);
+  --sc-shadow: 0 1px 3px rgb(15 23 42 / 6%);
+  --sc-shadow-lg: 0 8px 24px rgb(15 23 42 / 12%);
+
+  --sc-skeleton-from: #e2e8f0;
+  --sc-skeleton-to: #f1f5f9;
+
+  --sc-input-bg: #ffffff;
+  --sc-composer-bg: #ffffff;
+  --sc-menu-bg: #ffffff;
+  --sc-menu-hover: #f1f5f9;
+
+  --sc-emoji-picker-bg: #ffffff;
+  --sc-emoji-picker-border: #e2e8f0;
+  --sc-emoji-picker-shadow: 0 8px 24px rgb(15 23 42 / 12%);
+  --sc-emoji-picker-title: #64748b;
+  --sc-emoji-picker-hover: #f1f5f9;
+  --sc-emoji-picker-scrollbar: #cbd5e1;
+  --sc-emoji-picker-scrollbar-hover: #94a3b8;
+  --sc-emoji-picker-scrollbar-edge: #ffffff;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+
+  --sc-surface: #0f172a;
+  --sc-surface-raised: #1e293b;
+  --sc-surface-sunken: #020617;
+  --sc-sidebar-bg: #020617;
+  --sc-thread-bg: #0b1220;
+  --sc-header-bg: #0f172a;
+
+  --sc-border: #334155;
+  --sc-border-strong: #475569;
+
+  --sc-text: #f8fafc;
+  --sc-text-secondary: #e2e8f0;
+  --sc-text-muted: #94a3b8;
+  --sc-text-faint: #64748b;
+
+  --sc-hover: #1e293b;
+  --sc-hover-row: #334155;
+  --sc-selected: rgb(37 99 235 / 18%);
+  --sc-selected-border: rgb(59 130 246 / 40%);
+
+  --sc-accent: #3b82f6;
+  --sc-accent-hover: #60a5fa;
+  --sc-accent-soft: rgb(37 99 235 / 18%);
+  --sc-accent-soft-border: rgb(59 130 246 / 35%);
+  --sc-on-accent: #ffffff;
+  --sc-on-accent-muted: rgb(255 255 255 / 78%);
+
+  --sc-bubble-mine: #2563eb;
+  --sc-bubble-mine-text: #ffffff;
+  --sc-bubble-theirs: #1e293b;
+  --sc-bubble-theirs-text: #e2e8f0;
+
+  --sc-success: #22c55e;
+  --sc-success-soft: rgb(22 163 74 / 18%);
+  --sc-online: #22c55e;
+
+  --sc-danger: #f87171;
+  --sc-danger-hover: #fca5a5;
+  --sc-danger-soft: rgb(185 28 28 / 22%);
+  --sc-danger-border: #991b1b;
+  --sc-danger-text: #fca5a5;
+
+  --sc-warning-soft: rgb(217 119 6 / 18%);
+  --sc-warning-border: #d97706;
+  --sc-warning-spin: #fbbf24;
+  --sc-warning-spin-top: #f59e0b;
+  --sc-warning-text: #e2e8f0;
+
+  --sc-overlay: rgb(2 6 23 / 72%);
+  --sc-shadow: 0 1px 3px rgb(0 0 0 / 35%);
+  --sc-shadow-lg: 0 8px 24px rgb(0 0 0 / 45%);
+
+  --sc-skeleton-from: #334155;
+  --sc-skeleton-to: #1e293b;
+
+  --sc-input-bg: #1e293b;
+  --sc-composer-bg: #0f172a;
+  --sc-menu-bg: #1e293b;
+  --sc-menu-hover: #334155;
+
+  --sc-emoji-picker-bg: #1f2937;
+  --sc-emoji-picker-border: #444;
+  --sc-emoji-picker-shadow: 0 8px 24px rgb(0 0 0 / 35%);
+  --sc-emoji-picker-title: #cbd5e1;
+  --sc-emoji-picker-hover: #334155;
+  --sc-emoji-picker-scrollbar: #64748b;
+  --sc-emoji-picker-scrollbar-hover: #94a3b8;
+  --sc-emoji-picker-scrollbar-edge: #1f2937;
+}

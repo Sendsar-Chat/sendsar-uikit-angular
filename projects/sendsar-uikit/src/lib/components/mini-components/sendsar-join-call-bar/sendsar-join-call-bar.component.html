@@ -1,0 +1,14 @@
+@if (calls.showJoinBanner()) {
+  <div class="sc-join-call-bar" role="status">
+    <span class="material-icons sc-join-call-bar-icon" aria-hidden="true">phone_in_talk</span>
+    <span class="sc-join-call-bar-label">{{ label() }}</span>
+    <button
+      type="button"
+      class="sc-join-call-bar-btn"
+      [disabled]="calls.calling()"
+      (click)="join()"
+    >
+      {{ calls.calling() ? 'Joining…' : 'Join' }}
+    </button>
+  </div>
+}

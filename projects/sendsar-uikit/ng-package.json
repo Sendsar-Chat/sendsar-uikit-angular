@@ -3,5 +3,16 @@
   "dest": "../../dist/sendsar-uikit",
   "lib": {
     "entryFile": "src/public-api.ts"
-  }
+  },
+  "assets": [
+    {
+      "glob": "**/*.css",
+      "input": "src/styles",
+      "output": "/styles"
+    }
+  ],
+  "allowedNonPeerDependencies": [
+    "lottie-web",
+    "ngx-lottie"
+  ]
 }

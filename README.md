@@ -33,12 +33,6 @@ npm start
 
 Open **http://localhost:4300**.
 
-The SDK installs from npm (`@sendsar/chat-sdk-javascript`). To develop against a local monorepo checkout instead:
-
-```bash
-npm run use:local-sdk   # requires ../sendsar-monorepo
-```
-
 ## Sample app features
 
 | Feature | How it works |
@@ -51,23 +45,116 @@ npm run use:local-sdk   # requires ../sendsar-monorepo
 | **Read receipts** | ✓ / ✓✓ on your messages in 1:1 |
 | **Presence** | Online dot in sidebar (DM) and new-chat picker |
 | **Edit / delete** | Sender-only actions on your messages |
+| **Leave / delete / clear** | Conversation overflow + room info: leave group, hide DM, clear history for you |
+| **Group members** | Room info: list, OPERATOR add/kick; membership system lines in the thread |
 | **Pagination** | “Load older messages” in thread |
+| **Fast conversation switch** | In-memory thread cache — revisited rooms open without a loading flash |
 
 ## Integrate in your app
 
+Install:
+
+```bash
+npm install @sendsar/chat-uikit-angular @sendsar/chat-sdk-javascript @sendsar/call-sdk-javascript @sendsar/protocol
+```
+
+### Option A — NgModule apps
+
 ```ts
-provideSendsar({
-  fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+import { NgModule } from '@angular/core';
+import { SendsarChatModule } from '@sendsar/chat-uikit-angular';
+
+@NgModule({
+  imports: [
+    SendsarChatModule.forRoot({
+      fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+    }),
+  ],
 })
+export class AppModule {}
 ```
 
 ```html
-<sc-chat-shell [users]="yourUserDirectory" />
+<!-- any component template -->
+<sc-chat-shell [users]="users" />
 ```
 
-Pass a **user directory** (`{ id, displayName }[]`) so DM rooms show peer names instead of internal `externalId` values.
+`forRoot` registers **all** UI kit services (`SendsarSessionService`, `SendsarChatService`, `SendsarCallService`, emoji).  
+`<sc-chat-shell>` **auto-starts** the session — you do not call `session.start()` yourself.
 
-See the [JavaScript SDK docs](https://docs.sendsar.com/sdk/javascript/html) for session shape and gateway URLs.
+### Option B — Standalone apps (Angular 15+)
+
+```ts
+import { ApplicationConfig } from '@angular/core';
+import { provideSendsar } from '@sendsar/chat-uikit-angular';
+
+export const appConfig: ApplicationConfig = {
+  providers: [
+    provideSendsar({
+      fetchSession: () => fetch('/api/chat/session').then((r) => r.json()),
+    }),
+  ],
+};
+```
+
+```ts
+import { Component } from '@angular/core';
+import { SendsarChatShellComponent, type UserDirectoryEntry } from '@sendsar/chat-uikit-angular';
+
+@Component({
+  standalone: true,
+  imports: [SendsarChatShellComponent],
+  template: `<sc-chat-shell [users]="users" />`,
+})
+export class ChatPageComponent {
+  users: UserDirectoryEntry[] = [
+    { id: 'usr_alice', displayName: 'Alice' },
+  ];
+}
+```
+
+Pass a **user directory** (`{ id, displayName }[]`) so DM rooms show peer names instead of internal ids.
+
+Your backend must mint a session JWT (never put `sk_*` in the browser). See the [JavaScript SDK docs](https://docs.sendsar.com/sdk/javascript/html).
+
+Also add the UI kit stylesheet (theme tokens):
+
+```ts
+// angular.json → projects.*.architect.build.options.styles
+"styles": [
+  "src/styles.css",
+  "node_modules/@sendsar/chat-uikit-angular/styles/sendsar-uikit.css"
+]
+```
+
+### Light / dark theme
+
+The UI kit follows `data-theme` on `<html>` (or any ancestor). Default is **light**; set **dark** to switch the chat palette.
+
+```html
+<html lang="en" data-theme="light">
+```
+
+```ts
+// toggle from your app
+document.documentElement.setAttribute('data-theme', 'dark'); // or 'light'
+```
+
+Tokens live in `styles/sendsar-uikit.css` as `--sc-*` CSS variables (surfaces, borders, text, accent, bubbles, etc.). Override any token in your global CSS to brand the kit:
+
+```css
+[data-theme='light'] {
+  --sc-accent: #0ea5e9;
+  --sc-bubble-mine: #0ea5e9;
+}
+
+[data-theme='dark'] {
+  --sc-surface: #111827;
+  --sc-thread-bg: #030712;
+}
+```
+
+Call UI (`sc-call-overlay`) stays dark by design and does not flip with the theme toggle.
 
 ## UI kit components
 
@@ -75,7 +162,7 @@ See the [JavaScript SDK docs](https://docs.sendsar.com/sdk/javascript/html) for 
 |-----------|-------------|
 | `SendsarChatShellComponent` | Inbox + thread, typing, presence, mobile layout |
 | `SendsarConversationListComponent` | Rooms, unread badges, avatars |
-| `SendsarMessageListComponent` | Live messages, media, reactions, receipts |
+| `SendsarMessageListComponent` | Live messages, media, reactions, receipts; caches threads when switching rooms |
 | `SendsarComposerComponent` | Text + attachments + typing |
 
 **Scripts:** `npm run build:lib` · `npm run build` (lib + sample app)

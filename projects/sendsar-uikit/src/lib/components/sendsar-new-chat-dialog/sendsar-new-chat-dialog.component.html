@@ -1,0 +1,147 @@
+@if (open) {
+  <div class="sc-dialog-backdrop" (click)="close()">
+    <div class="sc-dialog" role="dialog" aria-modal="true" (click)="$event.stopPropagation()">
+      <header class="sc-dialog-header">
+        <h2>New conversation</h2>
+        <button type="button" class="sc-dialog-close" (click)="close()" aria-label="Close">×</button>
+      </header>
+
+      <div class="sc-dialog-tabs">
+        <button
+          type="button"
+          [class.sc-dialog-tab--active]="tab() === 'direct'"
+          (click)="setTab('direct')"
+        >
+          Direct message
+        </button>
+        <button
+          type="button"
+          [class.sc-dialog-tab--active]="tab() === 'group'"
+          (click)="setTab('group')"
+        >
+          Group
+        </button>
+      </div>
+
+      @if (error) {
+        <p class="sc-dialog-error">{{ error }}</p>
+      }
+
+      @if (tab() === 'direct') {
+        <div class="sc-dialog-panel">
+          <p class="sc-dialog-hint">Pick someone to message 1:1.</p>
+          <label class="sc-dialog-search">
+            <span class="material-icons" aria-hidden="true">search</span>
+            <input
+              type="search"
+              placeholder="Search people"
+              [value]="searchQuery()"
+              (input)="searchQuery.set($any($event.target).value)"
+              [disabled]="busy"
+            />
+          </label>
+          @if (filteredPeers().length === 0) {
+            <p class="sc-dialog-hint">No people found.</p>
+          } @else {
+            <ul class="sc-dialog-user-list">
+              @for (user of filteredPeers(); track user.id) {
+                <li>
+                  <label
+                    class="sc-dialog-user-row"
+                    [class.sc-dialog-user-row--selected]="selectedPeerId() === user.id"
+                  >
+                    <input
+                      class="sc-dialog-choice"
+                      type="radio"
+                      name="peer"
+                      [value]="user.id"
+                      [checked]="selectedPeerId() === user.id"
+                      (change)="selectedPeerId.set(user.id)"
+                    />
+                    <span class="sc-dialog-choice-ui sc-dialog-choice-ui--radio" aria-hidden="true"></span>
+                    <span class="sc-dialog-avatar">{{ initials(user.displayName) }}</span>
+                    <span class="sc-dialog-name">
+                      {{ user.displayName }}
+                      @if (isOnline(user.id)) {
+                        <span class="sc-dialog-online">online</span>
+                      }
+                    </span>
+                  </label>
+                </li>
+              }
+            </ul>
+          }
+          <footer class="sc-dialog-footer">
+            <button type="button" class="sc-dialog-secondary" (click)="close()">Cancel</button>
+            <button
+              type="button"
+              class="sc-dialog-primary"
+              [disabled]="busy || !selectedPeerId()"
+              (click)="submitDirect()"
+            >
+              {{ busy ? 'Creating…' : 'Start chat' }}
+            </button>
+          </footer>
+        </div>
+      } @else {
+        <div class="sc-dialog-panel">
+          <label class="sc-dialog-field">
+            Group name
+            <input
+              #groupNameInput
+              type="text"
+              placeholder="e.g. Shop team"
+              [disabled]="busy"
+            />
+          </label>
+          <p class="sc-dialog-hint">Select members (including you).</p>
+          <label class="sc-dialog-search">
+            <span class="material-icons" aria-hidden="true">search</span>
+            <input
+              type="search"
+              placeholder="Search people"
+              [value]="searchQuery()"
+              (input)="searchQuery.set($any($event.target).value)"
+              [disabled]="busy"
+            />
+          </label>
+          @if (filteredPeers().length === 0) {
+            <p class="sc-dialog-hint">No people found.</p>
+          } @else {
+            <ul class="sc-dialog-user-list">
+              @for (user of filteredPeers(); track user.id) {
+                <li>
+                  <label
+                    class="sc-dialog-user-row"
+                    [class.sc-dialog-user-row--selected]="isMemberSelected(user.id)"
+                  >
+                    <input
+                      class="sc-dialog-choice"
+                      type="checkbox"
+                      [checked]="isMemberSelected(user.id)"
+                      (change)="toggleMember(user.id)"
+                    />
+                    <span class="sc-dialog-choice-ui sc-dialog-choice-ui--check" aria-hidden="true"></span>
+                    <span class="sc-dialog-avatar">{{ initials(user.displayName) }}</span>
+                    <span class="sc-dialog-name">{{ user.displayName }}</span>
+                  </label>
+                </li>
+              }
+            </ul>
+          }
+          <footer class="sc-dialog-footer">
+            <button type="button" class="sc-dialog-secondary" (click)="close()">Cancel</button>
+            <button
+              type="button"
+              class="sc-dialog-primary"
+              [disabled]="busy || selectedMembers().size === 0 || !groupNameInput.value.trim()"
+              (click)="submitGroup(groupNameInput.value)"
+            >
+              {{ busy ? 'Creating…' : 'Create group' }}
+            </button>
+          </footer>
+        </div>
+      }
+    </div>
+  </div>
+}

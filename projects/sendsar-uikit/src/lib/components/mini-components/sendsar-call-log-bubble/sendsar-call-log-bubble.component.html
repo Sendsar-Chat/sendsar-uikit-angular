@@ -1,0 +1,12 @@
+<button
+  type="button"
+  class="sc-call-log"
+  [class.sc-call-log--missed]="missed()"
+  [class.sc-call-log--video]="data.callType === 'video'"
+  [attr.aria-label]="'Call again: ' + label()"
+  title="Call again"
+  (click)="onActivate()"
+>
+  <span class="material-icons sc-call-log-icon" aria-hidden="true">{{ icon() }}</span>
+  <span class="sc-call-log-label">{{ label() }}</span>
+</button>

@@ -1,0 +1,47 @@
+:host {
+  display: block;
+}
+
+.sc-join-call-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.45rem 0.85rem;
+  background: var(--sc-success);
+  color: var(--sc-on-accent);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.sc-join-call-bar-icon {
+  font-size: 1rem;
+}
+
+.sc-join-call-bar-label {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-join-call-bar-btn {
+  margin-left: 0.35rem;
+  border: 0;
+  border-radius: 999px;
+  padding: 0.28rem 0.85rem;
+  font: inherit;
+  font-weight: 700;
+  color: var(--sc-success);
+  background: var(--sc-on-accent);
+  cursor: pointer;
+}
+
+.sc-join-call-bar-btn:hover:not(:disabled) {
+  background: var(--sc-success-soft);
+}
+
+.sc-join-call-bar-btn:disabled {
+  opacity: 0.7;
+  cursor: wait;
+}

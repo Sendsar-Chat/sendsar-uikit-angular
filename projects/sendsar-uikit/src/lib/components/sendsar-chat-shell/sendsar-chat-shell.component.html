@@ -6,12 +6,27 @@
 } @else if (session.state().status === 'offline') {
   <p class="sc-status">Chat is offline.</p>
 } @else {
-  <div class="sc-layout" [class.sc-layout--thread]="mobileShowThread()">
+  <div
+    class="sc-layout"
+    [class.sc-layout--thread]="mobileShowThread()"
+    [class.sc-layout--info-closed]="!showInfoPanel()"
+  >
     @if (session.state().status === 'loading') {
       <div class="sc-connecting-bar">
         <span class="sc-connecting-spin"></span>
         Connecting to Sendsar…
       </div>
+    }
+
+    @if (showCallUi()) {
+      <sc-call-overlay
+        [title]="callOverlayTitle()"
+        [avatarUrl]="callOverlayAvatarUrl()"
+        [peerInitials]="callOverlayInitials()"
+        [isGroup]="callIsGroup()"
+        [labelForIdentity]="callIdentityLabel"
+        [avatarForIdentity]="callIdentityAvatar"
+      />
     }
 
     <sc-conversation-list
@@ -21,30 +36,107 @@
       [selfUserId]="session.session?.chatUserId ?? ''"
       [typingByRoom]="typingByRoom()"
       [onlineUserIds]="onlineUserIds()"
+      [liveCallRoomIds]="calls.liveCallRoomIds()"
       (roomSelect)="onRoomSelect($event)"
+      (newChat)="onSidebarNewChat()"
+      (roomDeleted)="onRoomDeleted($event)"
+      (historyCleared)="onHistoryCleared($event)"
     />
+
     <section class="sc-thread">
       @if (selectedRoom(); as room) {
         <header class="sc-thread-header">
           <button type="button" class="sc-back" (click)="backToList()" aria-label="Back to conversations">←</button>
-          <span class="sc-header-avatar">{{ headerAvatarInitials() }}</span>
-          <div class="sc-header-text">
-            <h1>{{ roomTitle() }}</h1>
-            @if (typingLabel(); as typing) {
-              <span class="sc-typing">{{ typing }}</span>
-            } @else {
-              <span class="sc-header-sub">{{ roomIsGroup() ? 'Group' : 'Direct message' }}</span>
-            }
+          <button
+            type="button"
+            class="sc-header-identity"
+            [class.sc-header-identity--clickable]="roomIsGroup()"
+            [disabled]="!roomIsGroup()"
+            (click)="onHeaderIdentityClick()"
+            [attr.aria-label]="roomIsGroup() ? 'Open group details' : null"
+          >
+            <span class="sc-header-avatar">{{ headerAvatarInitials() }}</span>
+            <div class="sc-header-text">
+              <h1>{{ roomTitle() }}</h1>
+              <span
+                class="sc-header-sub"
+                [class.sc-header-sub--typing]="!!typingLabel()"
+              >
+                {{ headerSubtitle() }}
+              </span>
+            </div>
+          </button>
+          <div class="sc-header-actions">
+            <!-- <button type="button" class="sc-header-action" title="Search in conversation" aria-label="Search">
+              <span class="material-icons" aria-hidden="true">search</span>
+            </button> -->
+            <button
+              type="button"
+              class="sc-header-action"
+              title="Voice call"
+              aria-label="Start voice call"
+              [class.sc-header-action--active]="calling()"
+              [disabled]="calling() || showCallUi()"
+              (click)="voiceCallMessage()"
+            >
+              <span class="material-icons" aria-hidden="true">call</span>
+            </button>
+            <button
+              type="button"
+              class="sc-header-action"
+              title="Video call"
+              aria-label="Start video call"
+              [class.sc-header-action--active]="calling()"
+              [disabled]="calling() || showCallUi()"
+              (click)="videoCallMessage()"
+            >
+              <span class="material-icons" aria-hidden="true">videocam</span>
+            </button>
+            <!-- <div class="sc-header-menu-wrap">
+              <button
+                type="button"
+                class="sc-header-action"
+                title="More options"
+                aria-label="More options"
+                [attr.aria-expanded]="showHeaderMenu()"
+                (click)="toggleHeaderMenu($event)"
+              >
+                <span class="material-icons" aria-hidden="true">more_vert</span>
+              </button>
+              @if (showHeaderMenu()) {
+                <div class="sc-header-menu" role="menu">
+                  <button type="button" class="sc-header-menu-item" (click)="onHeaderRoomDetails()">
+                    <span class="material-icons" aria-hidden="true">info</span> Room Details
+                  </button>
+                </div>
+              }
+            </div> -->
           </div>
         </header>
+        @if (calls.showJoinBanner()) {
+          <sc-join-call-bar />
+        }
         <sc-message-list
           [roomId]="room.id"
           [isGroup]="roomIsGroup()"
           [users]="users"
           [chatSettings]="chatSettings()"
           (activity)="onThreadActivity()"
+          (callRedial)="onCallRedial($event)"
+          (editRequested)="onEditRequested($event)"
+          (replyRequested)="onReplyRequested($event)"
         />
-        <sc-composer [roomId]="room.id" (sent)="onMessageSent()" />
+        <sc-composer
+          [roomId]="room.id"
+          [editing]="editingMessage()"
+          [replyingTo]="replyingToMessage()"
+          (sent)="onMessageSent()"
+          (editClosed)="editingMessage.set(null)"
+          (replyClosed)="replyingToMessage.set(null)"
+        />
+        @if (callError()) {
+          <div class="sc-call-toast" role="alert">{{ callError() }}</div>
+        }
       } @else {
         <div class="sc-thread-empty">
           <p class="sc-thread-empty-title">Welcome to Sendsar</p>
@@ -54,5 +146,43 @@
         </div>
       }
     </section>
+
+    @if (showInfoPanel()) {
+      <sc-room-info
+        class="sc-info-panel"
+        [room]="selectedRoom()"
+        [users]="users"
+        [selfUserId]="session.session?.chatUserId ?? ''"
+        [onlineUserIds]="onlineUserIds()"
+        [title]="roomTitle()"
+        (closed)="closeInfoPanel()"
+        (conversationDeleted)="onRoomDeleted($event)"
+        (historyCleared)="onHistoryCleared($event)"
+      />
+    }
+
+    <sc-new-chat-dialog
+      [open]="showNewChat()"
+      [selfId]="session.session?.chatUserId ?? ''"
+      [users]="users"
+      [onlineUserIds]="onlineUserIds()"
+      [busy]="creatingChat()"
+      [error]="newChatError()"
+      (closed)="closeNewChat()"
+      (create)="onNewChat($event)"
+    />
+
+    <sc-group-details-dialog
+      [open]="showGroupDetails()"
+      [roomId]="selectedRoom()?.id ?? null"
+      [title]="roomTitle()"
+      [users]="users"
+      [selfUserId]="session.session?.chatUserId ?? ''"
+      [onlineUserIds]="onlineUserIds()"
+      (closed)="closeGroupDetails()"
+      (membersChanged)="onGroupMembersChanged($event)"
+      (conversationDeleted)="onRoomDeleted($event)"
+      (historyCleared)="onHistoryCleared($event)"
+    />
   </div>
 }

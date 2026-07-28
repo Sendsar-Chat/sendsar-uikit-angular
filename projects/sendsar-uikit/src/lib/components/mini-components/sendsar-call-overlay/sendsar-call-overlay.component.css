@@ -1,0 +1,592 @@
+:host {
+  position: absolute;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.sc-call-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgb(15 23 42 / 28%);
+  pointer-events: none;
+}
+
+.sc-call-dialog {
+  position: relative;
+  z-index: 1;
+  pointer-events: auto;
+  display: flex;
+  flex-direction: column;
+  width: min(32rem, calc(100% - 2rem));
+  height: min(34rem, calc(100% - 2.5rem));
+  border-radius: 1rem;
+  overflow: hidden;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow:
+    0 24px 60px rgb(0 0 0 / 40%),
+    0 0 0 1px rgb(148 163 184 / 18%);
+  will-change: transform;
+  transition:
+    width 0.2s ease,
+    height 0.2s ease,
+    border-radius 0.2s ease;
+}
+
+.sc-call-dialog--dragging {
+  transition: none;
+  user-select: none;
+}
+
+.sc-call-dialog--expanded {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+  transform: none !important;
+}
+
+.sc-call-dialog:fullscreen {
+  width: 100%;
+  height: 100%;
+  border-radius: 0;
+  transform: none !important;
+}
+
+.sc-call-header {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.7rem 0.85rem;
+  background: rgb(2 6 23 / 88%);
+  border-bottom: 1px solid rgb(148 163 184 / 16%);
+  touch-action: none;
+}
+
+.sc-call-header--draggable {
+  cursor: grab;
+}
+
+.sc-call-header--dragging {
+  cursor: grabbing;
+}
+
+.sc-call-header-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.sc-call-header-title {
+  margin: 0;
+  font-size: 0.95rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-call-header-status {
+  font-size: 0.75rem;
+  color: #94a3b8;
+}
+
+.sc-call-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.sc-call-icon-btn {
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: #cbd5e1;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-call-icon-btn:hover {
+  background: rgb(148 163 184 / 18%);
+  color: #fff;
+}
+
+.sc-call-icon-btn .material-icons {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
+.sc-call-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  background: radial-gradient(circle at top, #1e293b, #020617 70%);
+}
+
+/* Voice: softer ambient stage — avatars float, tiles are not heavy cards */
+.sc-call-stage--voice {
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 35%, #1e3a5f 0%, transparent 55%),
+    radial-gradient(circle at 20% 80%, rgb(37 99 235 / 18%), transparent 40%),
+    radial-gradient(circle at 80% 75%, rgb(14 165 233 / 12%), transparent 38%),
+    linear-gradient(180deg, #0b1220 0%, #020617 100%);
+}
+
+.sc-call-remote {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.sc-call-local {
+  position: absolute;
+  right: 0.75rem;
+  bottom: 0.75rem;
+  width: min(30%, 8.5rem);
+  aspect-ratio: 3 / 4;
+  object-fit: cover;
+  border-radius: 0.75rem;
+  border: 2px solid rgb(255 255 255 / 25%);
+  background: #000;
+  box-shadow: 0 10px 30px rgb(0 0 0 / 35%);
+  transform: scaleX(-1);
+}
+
+.sc-call-stage--grid {
+  place-items: stretch;
+  padding: 0.5rem;
+}
+
+.sc-call-stage--voice.sc-call-stage--grid {
+  padding: 0.75rem 0.65rem 0.5rem;
+}
+
+.sc-call-grid {
+  --sc-call-gap: 0.45rem;
+  --sc-call-cols: 2;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sc-call-gap);
+  min-height: 0;
+}
+
+/* Video grid: center tiles and keep landscape boxes (not tall strips) */
+.sc-call-grid:not(.sc-call-grid--voice) {
+  justify-content: center;
+}
+
+.sc-call-grid--voice {
+  --sc-call-gap: 0.55rem;
+  justify-content: center;
+}
+
+.sc-call-grid-row {
+  flex: 1 1 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  gap: var(--sc-call-gap);
+  min-height: 0;
+  min-width: 0;
+}
+
+/* Video rows hug aspect-ratio tiles instead of stretching full stage height */
+.sc-call-grid:not(.sc-call-grid--voice) .sc-call-grid-row {
+  flex: 0 1 auto;
+  align-items: center;
+}
+
+/* Voice rows hug their tiles instead of stretching into full-height columns */
+.sc-call-grid--voice .sc-call-grid-row {
+  flex: 0 1 auto;
+  align-items: center;
+}
+
+.sc-call-tile {
+  position: relative;
+  flex: 0 0 calc(
+    (100% - (var(--sc-call-cols) - 1) * var(--sc-call-gap)) / var(--sc-call-cols)
+  );
+  width: calc(
+    (100% - (var(--sc-call-cols) - 1) * var(--sc-call-gap)) / var(--sc-call-cols)
+  );
+  max-width: calc(
+    (100% - (var(--sc-call-cols) - 1) * var(--sc-call-gap)) / var(--sc-call-cols)
+  );
+  min-width: 0;
+  min-height: 0;
+  border-radius: 0.75rem;
+  overflow: hidden;
+  background: #1e293b;
+  box-shadow: 0 0 0 1px rgb(148 163 184 / 12%);
+}
+
+/* Video tiles: Meet-style landscape boxes */
+.sc-call-grid:not(.sc-call-grid--voice) .sc-call-tile:not(.sc-call-tile--voice) {
+  aspect-ratio: 4 / 3;
+  max-height: min(100%, 13.5rem);
+}
+
+.sc-call-dialog--expanded .sc-call-grid:not(.sc-call-grid--voice) .sc-call-tile:not(.sc-call-tile--voice),
+.sc-call-dialog:fullscreen .sc-call-grid:not(.sc-call-grid--voice) .sc-call-tile:not(.sc-call-tile--voice) {
+  max-height: min(100%, 42vh);
+}
+
+/* Voice tiles: boxed cards — circle on top, name stacked right beneath it */
+.sc-call-grid--voice .sc-call-tile,
+.sc-call-tile--voice {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.75rem 0.5rem;
+  box-sizing: border-box;
+  aspect-ratio: 1;
+  max-height: 100%;
+  background: rgb(30 41 59 / 55%);
+  border: 1px solid rgb(148 163 184 / 18%);
+  border-radius: 0.85rem;
+  overflow: hidden;
+}
+
+.sc-call-tile-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #000;
+}
+
+.sc-call-tile-video--local {
+  transform: scaleX(-1);
+}
+
+.sc-call-tile-avatar {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  /* leave room for the name label under the circle */
+  padding-bottom: 1.35rem;
+  box-sizing: border-box;
+}
+
+/* Voice tiles lay out in normal flow so the name sits under the circle.
+   Full width keeps the disc's percentage sizing resolvable (else it collapses). */
+.sc-call-grid--voice .sc-call-tile-avatar,
+.sc-call-tile--voice .sc-call-tile-avatar {
+  position: static;
+  inset: auto;
+  padding-bottom: 0;
+  flex: 0 1 auto;
+  width: 100%;
+  min-height: 0;
+}
+
+.sc-call-tile-avatar-img,
+.sc-call-tile-avatar-disc {
+  width: min(42%, 5.5rem);
+  aspect-ratio: 1;
+  height: auto;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+/* Voice / no-camera tiles: Telegram-style large circular avatars */
+.sc-call-tile--voice .sc-call-tile-avatar-img,
+.sc-call-tile--voice .sc-call-tile-avatar-disc,
+.sc-call-grid--voice .sc-call-tile-avatar-img,
+.sc-call-grid--voice .sc-call-tile-avatar-disc {
+  width: min(58%, 7rem);
+  max-height: 100%;
+  flex: none;
+  box-shadow:
+    0 12px 28px rgb(0 0 0 / 35%),
+    0 0 0 3px rgb(148 163 184 / 22%);
+}
+
+.sc-call-grid--voice .sc-call-tile-avatar-disc {
+  font-size: clamp(0.9rem, 2.6vw, 1.6rem);
+  background: linear-gradient(145deg, #60a5fa, #2563eb 55%, #1d4ed8);
+}
+
+.sc-call-tile-avatar-disc {
+  display: grid;
+  place-items: center;
+  background: #334155;
+  color: #e2e8f0;
+  font-weight: 600;
+  font-size: clamp(0.85rem, 3.5vw, 1.35rem);
+  letter-spacing: 0.02em;
+  line-height: 1;
+  overflow: hidden;
+}
+
+.sc-call-tile-label {
+  position: absolute;
+  left: 0.45rem;
+  bottom: 0.4rem;
+  right: auto;
+  max-width: calc(100% - 0.9rem);
+  padding: 0.18rem 0.45rem;
+  border-radius: 0.35rem;
+  background: rgb(2 6 23 / 55%);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-shadow: 0 1px 3px rgb(0 0 0 / 55%);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sc-call-grid--voice .sc-call-tile-label,
+.sc-call-tile--voice .sc-call-tile-label {
+  position: static;
+  left: auto;
+  right: auto;
+  bottom: auto;
+  max-width: 100%;
+  text-align: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #e2e8f0;
+  text-shadow: 0 1px 8px rgb(0 0 0 / 55%);
+}
+
+.sc-call-dialog--expanded .sc-call-local {
+  width: min(22%, 11rem);
+  right: 1rem;
+  bottom: 1rem;
+}
+
+.sc-call-audio {
+  display: none;
+}
+
+.sc-call-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+  text-align: center;
+}
+
+.sc-call-avatar {
+  width: 5rem;
+  height: 5rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 1.6rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  color: #fff;
+  overflow: hidden;
+}
+
+.sc-call-avatar--voice {
+  width: min(42vw, 10rem);
+  height: min(42vw, 10rem);
+  font-size: clamp(1.8rem, 6vw, 2.75rem);
+}
+
+.sc-call-placeholder--voice {
+  gap: 1rem;
+  padding: 2.5rem 1.5rem;
+}
+
+.sc-call-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sc-call-chip {
+  position: absolute;
+  right: 1rem;
+  bottom: 1rem;
+  z-index: 2;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  min-width: 12rem;
+  max-width: min(18rem, calc(100% - 2rem));
+  padding: 0.55rem 0.55rem 0.55rem 0.65rem;
+  border: none;
+  border-radius: 999px;
+  background: #0f172a;
+  color: #f8fafc;
+  box-shadow:
+    0 14px 40px rgb(0 0 0 / 40%),
+    0 0 0 1px rgb(148 163 184 / 20%);
+  cursor: pointer;
+  text-align: left;
+}
+
+.sc-call-chip:hover {
+  background: #1e293b;
+}
+
+.sc-call-chip-avatar {
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  background: linear-gradient(135deg, #3b82f6, #2563eb);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.sc-call-chip-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.sc-call-chip-text {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+  flex: 1;
+}
+
+.sc-call-chip-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sc-call-chip-status {
+  font-size: 0.7rem;
+  color: #94a3b8;
+}
+
+.sc-call-chip-hangup {
+  width: 2rem;
+  height: 2rem;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: #dc2626;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sc-call-chip-hangup .material-icons {
+  font-size: 1.05rem;
+}
+
+.sc-call-title {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.sc-call-status {
+  margin: 0;
+  color: #94a3b8;
+  font-size: 0.9rem;
+}
+
+.sc-call-footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem 1rem;
+  background: rgb(2 6 23 / 88%);
+  border-top: 1px solid rgb(148 163 184 / 16%);
+}
+
+.sc-call-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.sc-call-btn {
+  width: 3rem;
+  height: 3rem;
+  border: none;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  background: #334155;
+  color: #fff;
+  padding: 0;
+}
+
+.sc-call-btn:hover {
+  background: #475569;
+}
+
+.sc-call-btn--off {
+  background: #e2e8f0;
+  color: #0f172a;
+}
+
+.sc-call-btn--hangup,
+.sc-call-btn--decline {
+  background: #dc2626;
+}
+
+.sc-call-btn--hangup:hover,
+.sc-call-btn--decline:hover {
+  background: #b91c1c;
+}
+
+.sc-call-btn--accept {
+  background: #16a34a;
+}
+
+.sc-call-btn--accept:hover {
+  background: #15803d;
+}
+
+.sc-call-btn .material-icons {
+  font-size: 1.35rem;
+  line-height: 1;
+}
+
+.sc-call-error {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #fca5a5;
+  text-align: center;
+}
+
+@media (max-width: 640px) {
+  .sc-call-dialog:not(.sc-call-dialog--expanded) {
+    width: calc(100% - 1rem);
+    height: min(70vh, 32rem);
+  }
+}

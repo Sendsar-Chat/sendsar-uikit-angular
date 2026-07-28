@@ -1,15 +1,49 @@
 <header class="sc-panel-header">
-  <h2>Conversations</h2>
-  <button
-    type="button"
-    class="sc-icon-btn"
-    [class.sc-icon-btn--spin]="refreshing()"
-    [disabled]="refreshing() || initialLoad()"
-    (click)="reload()"
-    title="Refresh"
-  >
-    ↻
-  </button>
+  <label class="sc-search">
+    <svg class="sc-search-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Zm0-2a5.5 5.5 0 1 0 0-11 5.5 5.5 0 0 0 0 11Zm8.1 2.4-3.9-3.9 1.4-1.4 3.9 3.9-1.4 1.4Z"/>
+    </svg>
+    <input
+      type="search"
+      placeholder="Search"
+      [value]="searchQuery()"
+      (input)="onSearchInput($event)"
+      autocomplete="off"
+    />
+  </label>
+  <div class="sc-menu-wrap">
+    <button
+      type="button"
+      class="sc-icon-btn sc-icon-btn--menu"
+      title="More options"
+      aria-label="More options"
+      [attr.aria-expanded]="showMenu()"
+      (click)="toggleMenu($event)"
+    >
+      <span class="material-icons" aria-hidden="true">settings</span>
+    </button>
+    @if (showMenu()) {
+      <div class="sc-menu" role="menu">
+        <button type="button" class="sc-menu-item" (click)="onNewChat()">
+          <span class="material-icons" aria-hidden="true">chat</span>
+          New Chat
+        </button>
+        <button
+          type="button"
+          class="sc-menu-item"
+          [disabled]="refreshing() || initialLoad()"
+          (click)="onRefresh()"
+        >
+          <span
+            class="material-icons"
+            [class.sc-menu-item-icon--spin]="refreshing()"
+            aria-hidden="true"
+          >refresh</span>
+          {{ refreshing() ? 'Refreshing…' : 'Refresh' }}
+        </button>
+      </div>
+    }
+  </div>
 </header>
 
 @if (error() && rooms().length > 0) {
@@ -38,10 +72,15 @@
     <p class="sc-state-title">No conversations yet</p>
     <p class="sc-state-hint">Start a new chat to begin messaging.</p>
   </div>
+} @else if (filteredRooms().length === 0) {
+  <div class="sc-state">
+    <p class="sc-state-title">No matches</p>
+    <p class="sc-state-hint">Try a different search term.</p>
+  </div>
 } @else {
   <ul class="sc-room-list" [class.sc-room-list--dim]="refreshing()">
-    @for (room of rooms(); track room.id) {
-      <li>
+    @for (room of filteredRooms(); track room.id) {
+      <li class="sc-room-li" [class.sc-room-li--menu-open]="roomMenuId() === room.id">
         <button
           type="button"
           class="sc-room-item"
@@ -55,6 +94,11 @@
             <span class="sc-room-row">
               <span class="sc-room-title">{{ roomLabel(room) }}</span>
               <span class="sc-room-meta">
+                @if (hasLiveCall(room)) {
+                  <span class="sc-live-call" title="Ongoing call" aria-label="Ongoing call">
+                    <span class="material-icons" aria-hidden="true">call</span>
+                  </span>
+                }
                 @if (unreadCount(room) > 0) {
                   <span class="sc-unread">{{ unreadCount(room) }}</span>
                 }
@@ -66,11 +110,49 @@
                 class="sc-room-preview"
                 [class.sc-room-preview--typing]="subtitle.includes('typing')"
               >
-                {{ subtitle }}
+                @for (segment of subtitleSegments(subtitle); track $index) {
+                  @if (segment.type === 'emoji') {
+                    <sc-animated-emoji class="sc-room-preview-emoji" [emoji]="segment.value" />
+                  } @else {
+                    {{ segment.value }}
+                  }
+                }
               </span>
             }
           </span>
         </button>
+        <div class="sc-room-actions" (click)="$event.stopPropagation()">
+          <button
+            type="button"
+            class="sc-room-more"
+            title="Conversation options"
+            aria-label="Conversation options"
+            [attr.aria-expanded]="roomMenuId() === room.id"
+            (click)="toggleRoomMenu($event, room.id)"
+          >
+            <span class="material-icons" aria-hidden="true">more_vert</span>
+          </button>
+          @if (roomMenuId() === room.id) {
+            <div class="sc-room-menu" role="menu" (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="sc-menu-item"
+                [disabled]="actionBusy()"
+                (click)="clearHistory($event, room)"
+              >
+                Clear history
+              </button>
+              <button
+                type="button"
+                class="sc-menu-item sc-menu-item--danger"
+                [disabled]="actionBusy()"
+                (click)="deleteConversation($event, room)"
+              >
+                {{ isGroup(room) ? 'Leave & delete' : 'Delete chat' }}
+              </button>
+            </div>
+          }
+        </div>
       </li>
     }
   </ul>

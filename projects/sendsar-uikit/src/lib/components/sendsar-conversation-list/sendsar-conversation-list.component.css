@@ -3,23 +3,55 @@
   flex-direction: column;
   min-height: 0;
   height: 100%;
-  background: #f8fafc;
-  border-right: 1px solid #e2e8f0;
+  background: var(--sc-sidebar-bg);
+  border-right: 1px solid var(--sc-border);
 }
 
 .sc-panel-header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1rem 0.75rem;
-  border-bottom: 1px solid #e2e8f0;
-  background: #fff;
+  gap: 0.5rem;
+  padding: 0.85rem 0.75rem;
+  border-bottom: 1px solid var(--sc-border);
+  background: var(--sc-header-bg);
 }
 
-.sc-panel-header h2 {
-  margin: 0;
-  font-size: 1rem;
-  font-weight: 600;
+.sc-search {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.45rem;
+  min-width: 0;
+  padding: 0.45rem 0.65rem;
+  border-radius: 0.65rem;
+  background: var(--sc-hover);
+  border: 1px solid transparent;
+}
+
+.sc-search:focus-within {
+  border-color: var(--sc-border-strong);
+  background: var(--sc-surface);
+}
+
+.sc-search-icon {
+  width: 1rem;
+  height: 1rem;
+  fill: var(--sc-text-faint);
+  flex-shrink: 0;
+}
+
+.sc-search input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  font-size: 0.9rem;
+  color: var(--sc-text);
+  outline: none;
+}
+
+.sc-search input::placeholder {
+  color: var(--sc-text-faint);
 }
 
 .sc-icon-btn {
@@ -27,16 +59,93 @@
   background: transparent;
   cursor: pointer;
   font-size: 1.1rem;
-  color: #475569;
+  color: var(--sc-text-muted);
   padding: 0.25rem;
   border-radius: 0.35rem;
 }
 
 .sc-icon-btn:hover {
-  background: #f1f5f9;
+  background: var(--sc-hover);
 }
 
 .sc-icon-btn--spin {
+  animation: sc-spin 0.8s linear infinite;
+}
+
+.sc-icon-btn--menu {
+  display: grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  padding: 0;
+}
+
+.sc-icon-btn--menu .material-icons {
+  font-size: 1.25rem;
+  line-height: 1;
+}
+
+.sc-menu-wrap {
+  position: relative;
+}
+
+.sc-menu {
+  position: absolute;
+  top: calc(100% + 0.35rem);
+  right: 0;
+  z-index: 30;
+  min-width: 10.5rem;
+  display: flex;
+  flex-direction: column;
+  padding: 0.3rem;
+  background: var(--sc-menu-bg);
+  border: 1px solid var(--sc-border);
+  border-radius: 0.75rem;
+  box-shadow: var(--sc-shadow-lg);
+  animation: sc-menu-in 0.12s ease-out;
+}
+
+@keyframes sc-menu-in {
+  from {
+    opacity: 0;
+    transform: translateY(-0.25rem);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.sc-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  border: none;
+  background: transparent;
+  padding: 0.5rem 0.65rem;
+  border-radius: 0.55rem;
+  font-size: 0.85rem;
+  color: var(--sc-text-secondary);
+  text-align: left;
+  cursor: pointer;
+}
+
+.sc-menu-item:hover {
+  background: var(--sc-menu-hover);
+}
+
+.sc-menu-item .material-icons {
+  font-size: 1.1rem;
+  color: var(--sc-text-muted);
+}
+
+.sc-menu-item:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.sc-menu-item-icon--spin {
   animation: sc-spin 0.8s linear infinite;
 }
 
@@ -50,9 +159,9 @@
   margin: 0;
   padding: 0.4rem 0.75rem;
   font-size: 0.8rem;
-  color: #b91c1c;
-  background: #fef2f2;
-  border-bottom: 1px solid #fecaca;
+  color: var(--sc-danger-text);
+  background: var(--sc-danger-soft);
+  border-bottom: 1px solid var(--sc-danger-border);
 }
 
 .sc-skeleton-list {
@@ -79,7 +188,7 @@
 .sc-skeleton {
   display: block;
   border-radius: 0.35rem;
-  background: linear-gradient(90deg, #e2e8f0 25%, #f1f5f9 50%, #e2e8f0 75%);
+  background: linear-gradient(90deg, var(--sc-skeleton-from) 25%, var(--sc-skeleton-to) 50%, var(--sc-skeleton-from) 75%);
   background-size: 200% 100%;
   animation: sc-shimmer 1.2s ease-in-out infinite;
 }
@@ -113,28 +222,28 @@
 .sc-state {
   padding: 2rem 1rem;
   text-align: center;
-  color: #64748b;
+  color: var(--sc-text-muted);
 }
 
 .sc-state--error p {
-  color: #b91c1c;
+  color: var(--sc-danger-text);
   margin: 0 0 0.75rem;
 }
 
 .sc-state button {
-  border: 1px solid #cbd5e1;
-  background: #fff;
+  border: 1px solid var(--sc-border-strong);
+  background: var(--sc-surface);
   border-radius: 0.5rem;
   padding: 0.45rem 0.85rem;
   cursor: pointer;
   font-weight: 600;
-  color: #334155;
+  color: var(--sc-text-secondary);
 }
 
 .sc-state-title {
   margin: 0 0 0.35rem;
   font-weight: 600;
-  color: #334155;
+  color: var(--sc-text-secondary);
 }
 
 .sc-state-hint {
@@ -145,10 +254,86 @@
 .sc-room-list {
   list-style: none;
   margin: 0;
-  padding: 0.5rem;
+  padding: 0;
   overflow: auto;
   flex: 1;
   transition: opacity 0.15s ease;
+}
+
+.sc-room-li {
+  position: relative;
+  display: block;
+}
+
+.sc-room-li--menu-open {
+  z-index: 40;
+}
+
+.sc-room-li .sc-room-item {
+  width: 100%;
+  /* Leave space so title/time aren't covered by the overlay more button. */
+  padding-right: 2.35rem;
+}
+
+.sc-room-actions {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  padding-right: 0.35rem;
+  pointer-events: none;
+}
+
+.sc-room-more,
+.sc-room-menu {
+  pointer-events: auto;
+}
+
+.sc-room-more {
+  border: none;
+  background: transparent;
+  color: var(--sc-text-faint);
+  width: 1.45rem;
+  height: 1.50rem;
+  border-radius: 0.4rem;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sc-room-more:hover {
+  background: var(--sc-border);
+  color: var(--sc-text-muted);
+}
+
+.sc-room-more .material-icons {
+  font-size: 1.1rem;
+}
+
+.sc-room-menu {
+  position: absolute;
+  top: calc(50% + 0.85rem);
+  right: 0.35rem;
+  z-index: 50;
+  min-width: 10rem;
+  background: var(--sc-menu-bg);
+  border: 1px solid var(--sc-border);
+  border-radius: 0.5rem;
+  box-shadow: var(--sc-shadow-lg);
+  padding: 0.25rem;
+}
+
+.sc-room-menu .sc-menu-item {
+  width: 100%;
+  justify-content: flex-start;
+}
+
+.sc-menu-item--danger {
+  color: var(--sc-danger) !important;
 }
 
 .sc-room-list--dim {
@@ -161,7 +346,7 @@
   text-align: left;
   border: none;
   background: transparent;
-  border-radius: 0.65rem;
+  /* border-radius: 0.65rem; */
   padding: 0.65rem 0.75rem;
   cursor: pointer;
   display: flex;
@@ -171,7 +356,7 @@
 
 .sc-room-item:hover,
 .sc-room-item--active {
-  background: #e2e8f0;
+  background: var(--sc-hover-row);
 }
 
 .sc-avatar {
@@ -179,8 +364,8 @@
   width: 2.5rem;
   height: 2.5rem;
   border-radius: 999px;
-  background: linear-gradient(135deg, #6366f1, #8b5cf6);
-  color: #fff;
+  background: linear-gradient(135deg, var(--sc-accent-hover), var(--sc-accent));
+  color: var(--sc-on-accent);
   display: grid;
   place-items: center;
   font-size: 0.8rem;
@@ -196,8 +381,8 @@
   width: 0.55rem;
   height: 0.55rem;
   border-radius: 999px;
-  background: #22c55e;
-  border: 2px solid #f8fafc;
+  background: var(--sc-online);
+  border: 2px solid var(--sc-sidebar-bg);
 }
 
 .sc-room-body {
@@ -217,7 +402,7 @@
 
 .sc-room-title {
   font-weight: 600;
-  color: #0f172a;
+  color: var(--sc-text);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -232,7 +417,7 @@
 
 .sc-room-time {
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--sc-text-faint);
 }
 
 .sc-unread {
@@ -240,34 +425,55 @@
   height: 1.25rem;
   padding: 0 0.35rem;
   border-radius: 999px;
-  background: #2563eb;
-  color: #fff;
+  background: var(--sc-accent);
+  color: var(--sc-on-accent);
   font-size: 0.7rem;
   font-weight: 700;
   display: grid;
   place-items: center;
 }
 
+.sc-live-call {
+  display: inline-flex;
+  align-items: center;
+  color: var(--sc-success);
+}
+
+.sc-live-call .material-icons {
+  font-size: 1rem;
+}
+
 .sc-room-preview {
   font-size: 0.85rem;
-  color: #64748b;
+  color: var(--sc-text-muted);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.35;
 }
 
 .sc-room-preview--typing {
-  color: #2563eb;
+  color: var(--sc-accent);
   font-style: italic;
+}
+
+:host ::ng-deep .sc-room-preview-emoji .sc-animated-emoji__lottie {
+  width: 1.05rem;
+  height: 1.05rem;
+  vertical-align: -0.15em;
+}
+
+:host ::ng-deep .sc-room-preview-emoji .sc-animated-emoji__static {
+  font-size: 0.95em;
 }
 
 .sc-muted {
   padding: 1rem;
-  color: #64748b;
+  color: var(--sc-text-muted);
   line-height: 1.5;
 }
 
 .sc-error {
   padding: 1rem;
-  color: #b91c1c;
+  color: var(--sc-danger-text);
 }

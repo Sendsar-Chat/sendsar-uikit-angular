@@ -1,0 +1,165 @@
+@if (room; as activeRoom) {
+  <div class="sc-info">
+    <button type="button" class="sc-info-close" (click)="onClose()" aria-label="Close panel">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M6.4 6.4 12 12m5.6-5.6L12 12m0 0-5.6 5.6M12 12l5.6 5.6"/>
+      </svg>
+    </button>
+
+    <section class="sc-info-profile">
+      <span class="sc-info-avatar">{{ avatarInitials() }}</span>
+      <h2 class="sc-info-title">{{ title }}</h2>
+      @if (isGroup()) {
+        <p class="sc-info-subtitle">{{ membersSubtitle() }}</p>
+        <p class="sc-info-desc">Group conversation</p>
+      } @else if (isDm()) {
+        @if (membersSubtitle(); as status) {
+          <p class="sc-info-subtitle">{{ status }}</p>
+        }
+        <p class="sc-info-desc">Direct message</p>
+      }
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Members</h3>
+        @if (isGroup() && selfIsOperator()) {
+          <button
+            type="button"
+            class="sc-info-link"
+            [disabled]="mutating()"
+            (click)="toggleAddPicker()"
+          >
+            {{ showAddPicker() ? 'Cancel' : 'Add' }}
+          </button>
+        }
+      </header>
+
+      @if (membersError(); as err) {
+        <p class="sc-info-error">{{ err }}</p>
+      }
+
+      @if (isGroup() && showAddPicker()) {
+        <div class="sc-add-picker">
+          @if (addableUsers().length === 0) {
+            <p class="sc-info-empty">No directory users left to add</p>
+          } @else {
+            @for (user of addableUsers(); track user.id) {
+              <button
+                type="button"
+                class="sc-add-option"
+                [disabled]="mutating()"
+                (click)="addMember(user)"
+              >
+                <span class="sc-member-avatar sc-member-avatar--sm">{{ memberInitials(user.displayName) }}</span>
+                <span class="sc-add-option-name">{{ user.displayName }}</span>
+              </button>
+            }
+          }
+        </div>
+      }
+
+      @if (loadingMembers() && isGroup()) {
+        <p class="sc-info-empty">Loading members…</p>
+      } @else if (memberRows().length > 0) {
+        <ul class="sc-member-list">
+          @for (member of memberRows(); track member.userId) {
+            <li class="sc-member-item">
+              <span
+                class="sc-member-avatar"
+                [class.sc-member-avatar--online]="isOnline(member.userId)"
+                [title]="member.displayName"
+              >
+                {{ memberInitials(member.displayName) }}
+              </span>
+              <div class="sc-member-meta">
+                <span class="sc-member-name">
+                  {{ member.displayName }}
+                  @if (member.isSelf) {
+                    <span class="sc-member-you">(you)</span>
+                  }
+                </span>
+                @if (member.isOperator) {
+                  <span class="sc-member-badge">Owner</span>
+                }
+              </div>
+              @if (isGroup() && selfIsOperator() && !member.isSelf) {
+                <button
+                  type="button"
+                  class="sc-member-remove"
+                  title="Remove member"
+                  [attr.aria-label]="'Remove ' + member.displayName"
+                  [disabled]="mutating()"
+                  (click)="removeMember(member.userId)"
+                >
+                  Remove
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="sc-info-empty">No members to show</p>
+      }
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Chat actions</h3>
+      </header>
+      <div class="sc-info-actions">
+        <button
+          type="button"
+          class="sc-info-action"
+          [disabled]="mutating()"
+          (click)="clearHistory()"
+        >
+          Clear history
+        </button>
+        @if (isGroup() || isDm()) {
+          <button
+            type="button"
+            class="sc-info-action sc-info-action--danger"
+            [disabled]="mutating()"
+            (click)="deleteConversation()"
+          >
+            {{ isGroup() ? 'Leave group' : 'Delete chat' }}
+          </button>
+        }
+      </div>
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Photos and videos</h3>
+        <button type="button" class="sc-info-link">See all</button>
+      </header>
+      <div class="sc-media-grid">
+        @for (slot of [0, 1, 2, 3]; track slot) {
+          <div class="sc-media-slot" aria-hidden="true"></div>
+        }
+      </div>
+      <p class="sc-info-empty">Shared media will appear here</p>
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Shared files</h3>
+        <button type="button" class="sc-info-link">See all</button>
+      </header>
+      <p class="sc-info-empty">No shared files yet</p>
+    </section>
+
+    <section class="sc-info-section">
+      <header class="sc-info-section-header">
+        <h3>Shared links</h3>
+        <button type="button" class="sc-info-link">See all</button>
+      </header>
+      <p class="sc-info-empty">No shared links yet</p>
+    </section>
+  </div>
+} @else {
+  <div class="sc-info sc-info--empty">
+    <p>Select a conversation to view details</p>
+  </div>
+}

@@ -1,4 +1,50 @@
-<div class="sc-messages-wrap" #scrollContainer>
+@if (roomId && activePinnedMessage(); as pinned) {
+  <div
+    class="sc-pinned-bar"
+    role="button"
+    tabindex="0"
+    (click)="onPinnedBarClick()"
+    (keydown.enter)="onPinnedBarClick()"
+    (keydown.space)="$event.preventDefault(); onPinnedBarClick()"
+  >
+    <span
+      class="sc-pinned-bar-accent"
+      [class.sc-pinned-bar-accent--multi]="pinnedCount() > 1"
+      aria-hidden="true"
+    >
+      @if (pinnedCount() > 1) {
+        @for (i of pinnedSegmentIndexes(); track i) {
+          <span
+            class="sc-pinned-bar-segment"
+            [class.sc-pinned-bar-segment--active]="i === activePinnedIndex()"
+          ></span>
+        }
+      }
+    </span>
+    @if (pinnedImageUrl(pinned); as thumb) {
+      <img class="sc-pinned-bar-thumb" [src]="thumb" alt="" loading="lazy" />
+    } @else {
+      <span class="sc-pinned-bar-thumb sc-pinned-bar-thumb--icon" aria-hidden="true">
+        <span class="material-icons">{{ pinnedFileIcon(pinned) }}</span>
+      </span>
+    }
+    <div class="sc-pinned-bar-text">
+      <span class="sc-pinned-bar-label">Pinned message</span>
+      <span class="sc-pinned-bar-preview">{{ pinnedPreview(pinned) }}</span>
+    </div>
+    <button
+      type="button"
+      class="sc-pinned-bar-action"
+      (click)="unpinFromBar($event, pinned)"
+      title="Unpin message"
+      aria-label="Unpin message"
+    >
+      <span class="material-icons" aria-hidden="true">push_pin</span>
+    </button>
+  </div>
+}
+
+<div class="sc-messages-wrap" #scrollContainer (scroll)="onThreadScroll()">
   @if (!roomId) {
     <div class="sc-empty sc-empty--hero">
       <p class="sc-empty-title">Select a conversation</p>
@@ -35,86 +81,189 @@
       </div>
     } @else {
       <div class="sc-messages">
-        @for (message of messages(); track message.id) {
+        @for (message of messages(); track message.id; let i = $index) {
           @if (!message.deletedHidden) {
-            <article
-              class="sc-message"
-              [class.sc-message--self]="isSelf(message)"
-              [class.sc-message--deleted]="message.deletedAt"
-            >
-              @if (isGroup && !isSelf(message)) {
-                <span class="sc-sender">{{ senderName(message) }}</span>
-              }
-
-              @if (editingId() === message.id) {
-                <form class="sc-edit-form" (ngSubmit)="saveEdit(message)">
-                  <input type="text" [(ngModel)]="editDraft" name="editDraft" />
-                  <div class="sc-edit-actions">
-                    <button type="submit">Save</button>
-                    <button type="button" (click)="cancelEdit()">Cancel</button>
-                  </div>
-                </form>
-              } @else {
-                <div class="sc-bubble">
-                  @if (message.deletedAt) {
-                    <span class="sc-deleted">{{ preview(message) }}</span>
+            @if (showDateSeparator(i)) {
+              <div class="sc-date-separator">
+                <span>{{ dateLabel(message.createdAt) }}</span>
+              </div>
+            }
+            @if (callLog(message); as log) {
+              <div class="sc-call-log-row" role="listitem">
+                <sc-call-log-bubble
+                  [data]="log"
+                  [selfUserId]="selfUserId()"
+                  (redial)="onCallRedial($event)"
+                />
+                <time class="sc-call-log-time">{{ message.createdAt | date: 'HH:mm' }}</time>
+              </div>
+            } @else if (membership(message)) {
+              <div class="sc-membership-row" role="listitem">
+                <span class="sc-membership-label">{{ membershipLabel(message) }}</span>
+                <time class="sc-call-log-time">{{ message.createdAt | date: 'HH:mm' }}</time>
+              </div>
+            } @else {
+              <article
+                class="sc-message"
+                [attr.data-message-id]="message.id"
+                [class.sc-message--self]="isSelf(message)"
+                [class.sc-message--deleted]="message.deletedAt"
+                [class.sc-message--pinned]="isPinned(message)"
+                (mouseenter)="onMessageHover(message.id)"
+                (mouseleave)="onMessageLeave(message.id)"
+                (contextmenu)="onMessageContextMenu($event, message)"
+              >
+                <header class="sc-message-header">
+                  @if (isSelf(message)) {
+                    <span class="sc-sender">{{ senderName(message) }} (Me)</span>
+                    <time class="sc-header-time">{{ message.createdAt | date: 'h:mm a' }}</time>
+                    <span class="sc-avatar sc-avatar--self">{{ selfInitials() }}</span>
                   } @else {
-                    @for (part of textParts(message.parts); track $index) {
-                      <p class="sc-text">{{ part.text }}</p>
+                    <span class="sc-avatar sc-avatar--self">{{ avatarInitials(message) }}</span>
+                    <span class="sc-sender">{{ senderName(message) }}</span>
+                    <time class="sc-header-time">{{ message.createdAt | date: 'h:mm a' }}</time>
+                  }
+                </header>
+
+                <div class="sc-message-content">
+                  <div class="sc-bubble-wrap">
+                    @if (!message.deletedAt && hoveredMessageId() === message.id) {
+                      <div class="sc-hover-reactions-panel">
+                        <div class="sc-hover-reactions" role="group" aria-label="Quick reactions">
+                          @for (emoji of quickReactions; track emoji) {
+                            <button
+                              type="button"
+                              (click)="reactFromHover(message, emoji)"
+                              [title]="'React with ' + emoji"
+                            >
+                              <sc-animated-emoji [emoji]="emoji" />
+                            </button>
+                          }
+                          <button
+                            type="button"
+                            class="sc-hover-reactions-more"
+                            [class.sc-hover-reactions-more--open]="hoverEmojiExpanded()"
+                            (click)="toggleHoverEmojiList($event)"
+                            title="More reactions"
+                            aria-label="More reactions"
+                          >
+                            <span class="material-icons" aria-hidden="true">expand_more</span>
+                          </button>
+                        </div>
+                        @if (hoverEmojiExpanded()) {
+                          <div class="sc-hover-emoji-list">
+                            <sc-emoji-picker (emojiSelected)="reactFromHover(message, $event)" />
+                          </div>
+                        }
+                      </div>
                     }
-                    @for (part of attachmentParts(message.parts); track $index) {
-                      @if (isImagePart(part)) {
-                        <a [href]="part.url" target="_blank" rel="noopener noreferrer">
-                          <img class="sc-image" [src]="part.url" [alt]="part.filename ?? 'Image'" loading="lazy" />
-                        </a>
-                      } @else {
-                        <a class="sc-file" [href]="part.url" target="_blank" rel="noopener noreferrer">
-                          📎 {{ part.filename ?? 'Download file' }}
-                        </a>
+
+                    <div class="sc-bubble">
+                      <div class="sc-bubble-content">
+                        @if (message.deletedAt) {
+                          <span class="sc-deleted">{{ preview(message) }}</span>
+                        } @else {
+                          @if (isForwarded(message)) {
+                            <div
+                              class="sc-forwarded-label"
+                              [class.sc-forwarded-label--self]="isSelf(message)"
+                            >
+                              <span class="material-icons" aria-hidden="true">shortcut</span>
+                              @if (forwardedFromSenderName(message); as fromName) {
+                                <span>Forwarded from {{ fromName }}</span>
+                              } @else {
+                                <span>Forwarded message</span>
+                              }
+                            </div>
+                          }
+                          @if (parentReply(message); as parent) {
+                            <button
+                              type="button"
+                              class="sc-reply-quote"
+                              [class.sc-reply-quote--self]="isSelf(message)"
+                              (click)="scrollToParentMessage(parent.id, $event)"
+                              [attr.aria-label]="'Jump to message from ' + parentReplySenderName(parent)"
+                            >
+                              <span class="sc-reply-quote-accent" aria-hidden="true"></span>
+                              <span class="sc-reply-quote-body">
+                                <span class="sc-reply-quote-sender">{{ parentReplySenderName(parent) }}</span>
+                                <span class="sc-reply-quote-text">{{ parentReplyPreview(parent) }}</span>
+                              </span>
+                              @if (parentReplyImageUrl(parent); as thumb) {
+                                <img class="sc-reply-quote-thumb" [src]="thumb" alt="" loading="lazy" />
+                              }
+                            </button>
+                          }
+                          @for (part of attachmentParts(message.parts); track $index) {
+                            @if (isImagePart(part) && filePartUrl(part)) {
+                              <a [href]="filePartUrl(part)" target="_blank" rel="noopener noreferrer">
+                                <img
+                                  class="sc-image"
+                                  [src]="filePartUrl(part)"
+                                  [alt]="part.filename ?? 'Image'"
+                                  loading="lazy"
+                                />
+                              </a>
+                            } @else if (isAudioPart(part) && filePartUrl(part)) {
+                              <sc-voice-message
+                                [url]="filePartUrl(part)!"
+                                [recordedAt]="message.createdAt"
+                              />
+                            } @else {
+                              <sc-file-preview
+                                class="sc-file-preview--in-message"
+                                [attachment]="filePreviewFromPart(part)"
+                                [href]="filePartUrl(part) ?? null"
+                                [removable]="false"
+                                [tone]="isSelf(message) ? 'inverted' : 'default'"
+                              />
+                            }
+                          }
+                          @for (part of textParts(message.parts); track $index) {
+                            <p class="sc-text">
+                              @for (segment of textSegments(part.text!); track $index) {
+                                @if (segment.type === 'emoji') {
+                                  <sc-animated-emoji [emoji]="segment.value" />
+                                } @else {
+                                  {{ segment.value }}
+                                }
+                              }
+                            </p>
+                          }
+                        }
+                      </div>
+
+                      @if (message.editedAt || (isSelf(message) && !message.deletedAt)) {
+                        <div class="sc-bubble-footer">
+                          @if (message.editedAt) {
+                            <span class="sc-edited">edited</span>
+                          }
+                          @if (isSelf(message) && !message.deletedAt) {
+                            <span
+                              class="sc-read"
+                              [class.sc-read--seen]="isRead(message)"
+                              [title]="isRead(message) ? 'Seen' : 'Sent'"
+                            >
+                              <span class="material-icons" aria-hidden="true">{{ isRead(message) ? 'done_all' : 'done' }}</span>
+                            </span>
+                          }
+                        </div>
                       }
-                    }
+                    </div>
+                  </div>
+
+                  @if (reactionSummary(message).length > 0) {
+                    <div class="sc-reactions">
+                      @for (r of reactionSummary(message); track r.emoji) {
+                        <button type="button" class="sc-reaction-pill" (click)="react(message, r.emoji)">
+                          <sc-animated-emoji [emoji]="r.emoji" /> {{ r.count }}
+                        </button>
+                      }
+                    </div>
                   }
                 </div>
-
-                @if (!message.deletedAt) {
-                  <div class="sc-actions">
-                    @for (emoji of quickReactions; track emoji) {
-                      <button type="button" class="sc-react-btn" (click)="react(message, emoji)" [title]="'React with ' + emoji">
-                        {{ emoji }}
-                      </button>
-                    }
-                    @if (isSelf(message)) {
-                      <button type="button" class="sc-action-btn" (click)="startEdit(message)">Edit</button>
-                      <button type="button" class="sc-action-btn sc-action-btn--danger" (click)="deleteMessage(message)">
-                        Delete
-                      </button>
-                    }
-                  </div>
-                }
-
-                @if (reactionSummary(message).length > 0) {
-                  <div class="sc-reactions">
-                    @for (r of reactionSummary(message); track r.emoji) {
-                      <button type="button" class="sc-reaction-pill" (click)="react(message, r.emoji)">
-                        {{ r.emoji }} {{ r.count }}
-                      </button>
-                    }
-                  </div>
-                }
-              }
-
-              <div class="sc-meta">
-                <time class="sc-time">{{ message.createdAt | date: 'shortTime' }}</time>
-                @if (message.editedAt) {
-                  <span class="sc-edited">edited</span>
-                }
-                @if (isSelf(message) && !message.deletedAt) {
-                  <span class="sc-read" [class.sc-read--seen]="isRead(message)" [title]="isRead(message) ? 'Seen' : 'Sent'">
-                    {{ isRead(message) ? '✓✓' : '✓' }}
-                  </span>
-                }
-              </div>
-            </article>
+              </article>
+            }
           }
         }
       </div>
@@ -124,4 +273,103 @@
       <p class="sc-error">{{ error() }}</p>
     }
   }
+
+  @if (contextMenu(); as menu) {
+    <div
+      class="sc-context-backdrop"
+      (click)="closeContextMenu()"
+      (contextmenu)="$event.preventDefault(); closeContextMenu()"
+    ></div>
+    <div class="sc-context-menu" [style.left.px]="menu.x" [style.top.px]="menu.y" role="menu">
+      <div class="sc-context-reactions">
+        @for (emoji of quickReactions; track emoji) {
+          <button
+            type="button"
+            (click)="reactFromMenu(menu.message, emoji)"
+            [title]="'React with ' + emoji"
+          >
+            <sc-animated-emoji [emoji]="emoji" />
+          </button>
+        }
+        <button
+          type="button"
+          class="sc-context-reactions-more"
+          [class.sc-context-reactions-more--open]="contextEmojiExpanded()"
+          (click)="toggleContextEmojiList()"
+          title="More reactions"
+          aria-label="More reactions"
+        >
+          <span class="material-icons" aria-hidden="true">expand_more</span>
+        </button>
+      </div>
+      @if (contextEmojiExpanded()) {
+        <div class="sc-context-emoji-list">
+          <sc-emoji-picker (emojiSelected)="reactFromMenu(menu.message, $event)" />
+        </div>
+      } @else {
+        <div class="sc-context-list">
+          <button type="button" class="sc-context-item" (click)="replyFromMenu(menu.message)">
+            <span class="material-icons" aria-hidden="true">reply</span>
+            <span class="sc-context-item-label">Reply</span>
+          </button>
+          <button type="button" class="sc-context-item" (click)="pinFromMenu(menu.message)">
+            <span
+              class="material-icons"
+              [class.sc-context-item-icon--unpin]="isPinned(menu.message)"
+              aria-hidden="true"
+            >push_pin</span>
+            <span class="sc-context-item-label">{{ isPinned(menu.message) ? 'Unpin' : 'Pin' }}</span>
+          </button>
+          <button type="button" class="sc-context-item" (click)="copyMessageText(menu.message)">
+            <span class="material-icons" aria-hidden="true">content_copy</span> Copy Text
+          </button>
+          <button type="button" class="sc-context-item" (click)="forwardFromMenu(menu.message)">
+            <span class="material-icons" aria-hidden="true">shortcut</span>
+            <span class="sc-context-item-label">Forward</span>
+          </button>
+          @if (isSelf(menu.message)) {
+            <button type="button" class="sc-context-item" (click)="editFromMenu(menu.message)">
+              <span class="material-icons" aria-hidden="true">edit</span> Edit
+            </button>
+            <button
+              type="button"
+              class="sc-context-item sc-context-item--danger"
+              (click)="deleteFromMenu(menu.message)"
+            >
+              <span class="material-icons" aria-hidden="true">delete</span> Delete
+            </button>
+          }
+          <!-- <button type="button" class="sc-context-item" (click)="closeContextMenu()">
+            <span class="material-icons" aria-hidden="true">check_circle</span> Select
+          </button> -->
+        </div>
+      }
+    </div>
+  }
 </div>
+
+@if (showScrollDown()) {
+  <button
+    type="button"
+    class="sc-scroll-down"
+    (click)="scrollToLatest()"
+    title="Scroll to latest"
+    aria-label="Scroll to latest messages"
+  >
+    <span class="material-icons" aria-hidden="true">keyboard_arrow_down</span>
+  </button>
+}
+
+<sc-forward-message-dialog
+  [open]="showForwardDialog()"
+  [message]="forwardMessage()"
+  [previewText]="forwardMessage() ? preview(forwardMessage()!) : ''"
+  [previewSenderName]="forwardMessage() ? senderName(forwardMessage()!) : ''"
+  [excludeRoomId]="roomId"
+  [users]="users"
+  [selfUserId]="selfUserId() ?? ''"
+  [busy]="forwardBusy()"
+  [error]="forwardError()"
+  (closed)="closeForwardDialog()"
+  (forward)="onForwardTo($event)"
+/>

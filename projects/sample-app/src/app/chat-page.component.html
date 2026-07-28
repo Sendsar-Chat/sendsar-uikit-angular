@@ -2,22 +2,7 @@
   <header class="topbar">
     <a routerLink="/">← Users</a>
     <span>Logged in as <strong>{{ user.displayName }}</strong></span>
-    <button type="button" class="new-chat-btn" (click)="openNewChat()">+ New chat</button>
   </header>
 
-  @if (error()) {
-    <p class="error">{{ error() }}</p>
-  }
-
   <sc-chat-shell class="shell" [users]="userDirectory()" />
-
-  <app-new-chat-dialog
-    [open]="showNewChat()"
-    [selfId]="user.chatUserId"
-    [users]="peers"
-    [onlineUserIds]="chatShell?.onlineUserIds() ?? emptyOnline"
-    [busy]="creatingChat()"
-    (closed)="closeNewChat()"
-    (create)="onNewChat($event)"
-  />
 }

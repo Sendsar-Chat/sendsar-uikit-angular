@@ -1,36 +1,57 @@
-import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import {
+  Component,
+  EventEmitter,
+  Input,
+  OnChanges,
+  Output,
+  SimpleChanges,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-import type { DemoUser } from '../environments/environment';
+import { initialsFor, type UserDirectoryEntry } from '../../utils/user-directory';
 
-export type NewChatDirect = { kind: 'direct'; peerId: string };
-export type NewChatGroup = { kind: 'group'; name: string; memberIds: string[] };
-export type NewChatRequest = NewChatDirect | NewChatGroup;
+export type SendsarNewChatDirect = { kind: 'direct'; peerId: string };
+export type SendsarNewChatGroup = { kind: 'group'; name: string; memberIds: string[] };
+export type SendsarNewChatRequest = SendsarNewChatDirect | SendsarNewChatGroup;
 
 @Component({
-  selector: 'app-new-chat-dialog',
+  selector: 'sc-new-chat-dialog',
   standalone: true,
-  imports: [CommonModule, FormsModule],
-  templateUrl: './new-chat-dialog.component.html',
-  styleUrl: './new-chat-dialog.component.css',
+  imports: [CommonModule],
+  templateUrl: './sendsar-new-chat-dialog.component.html',
+  styleUrl: './sendsar-new-chat-dialog.component.css',
 })
-export class NewChatDialogComponent {
+export class SendsarNewChatDialogComponent implements OnChanges {
   @Input({ required: true }) selfId!: string;
-  @Input({ required: true }) users: DemoUser[] = [];
+  @Input({ required: true }) users: UserDirectoryEntry[] = [];
   @Input() onlineUserIds: ReadonlySet<string> = new Set();
   @Input() open = false;
   @Input() busy = false;
+  @Input() error: string | null = null;
 
   @Output() readonly closed = new EventEmitter<void>();
-  @Output() readonly create = new EventEmitter<NewChatRequest>();
+  @Output() readonly create = new EventEmitter<SendsarNewChatRequest>();
 
   readonly tab = signal<'direct' | 'group'>('direct');
   readonly selectedPeerId = signal('');
-  readonly groupName = signal('');
   readonly selectedMembers = signal<Set<string>>(new Set());
+  readonly searchQuery = signal('');
 
-  peers(): DemoUser[] {
-    return this.users.filter((u) => u.chatUserId !== this.selfId);
+  ngOnChanges(changes: SimpleChanges): void {
+    if (changes['open']?.currentValue === true) {
+      this.reset();
+    }
+  }
+
+  filteredPeers(): UserDirectoryEntry[] {
+    const query = this.searchQuery().trim().toLowerCase();
+    const peers = this.users.filter((u) => u.id !== this.selfId);
+    if (!query) return peers;
+    return peers.filter((user) => user.displayName.toLowerCase().includes(query));
+  }
+
+  initials(name: string): string {
+    return initialsFor(name);
   }
 
   isOnline(userId: string): boolean {
@@ -39,6 +60,7 @@ export class NewChatDialogComponent {
 
   setTab(tab: 'direct' | 'group'): void {
     this.tab.set(tab);
+    this.searchQuery.set('');
   }
 
   toggleMember(userId: string): void {
@@ -75,5 +97,6 @@ export class NewChatDialogComponent {
     this.tab.set('direct');
     this.selectedPeerId.set('');
     this.selectedMembers.set(new Set());
+    this.searchQuery.set('');
   }
 }

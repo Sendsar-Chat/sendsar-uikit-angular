@@ -124,7 +124,7 @@ app.post("/api/chat/session", async (req, res) => {
 });
 
 app.post("/api/chat/demo/ensure-dm", async (req, res) => {
-  const { selfId, peerId, peerName } = req.body ?? {};
+  const { selfId, peerId, members } = req.body ?? {};
   if (!selfId || !peerId) {
     res.status(400).json({ error: "selfId and peerId are required" });
     return;
@@ -146,15 +146,21 @@ app.post("/api/chat/demo/ensure-dm", async (req, res) => {
       return;
     }
 
-    const displayName = peerName?.trim() || peerId;
+    const nameMap = new Map(
+      Array.isArray(members)
+        ? members.map((m) => [m.chatUserId ?? m.id, m.displayName ?? m.username])
+        : [],
+    );
+
+    // DMs intentionally omit room.name so each side resolves the peer label
+    // from the user directory / externalId.
     const createRes = await gatewayJson("/chat/rooms", {
       method: "POST",
       body: JSON.stringify({
-        name: displayName,
         externalId,
         customType: "demo_dm",
         participants: [selfId, peerId].map((id) =>
-          participantDto(id, id === peerId ? displayName : id),
+          participantDto(id, nameMap.get(id) ?? id),
         ),
       }),
     });

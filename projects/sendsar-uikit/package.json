@@ -1,17 +1,23 @@
 {
   "name": "@sendsar/chat-uikit-angular",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Ready-to-use chat UI components for Angular — built on @sendsar/chat-sdk-javascript",
   "peerDependencies": {
     "@angular/common": "^19.2.0",
     "@angular/core": "^19.2.0",
     "@angular/forms": "^19.2.0",
-    "@sendsar/chat-sdk-javascript": ">=0.1.0"
+    "@sendsar/call-sdk-javascript": "^0.2.1",
+    "@sendsar/chat-sdk-javascript": "^0.6.2",
+    "@sendsar/protocol": "^0.3.0"
   },
   "dependencies": {
+    "lottie-web": "^5.13.0",
+    "ngx-lottie": "^13.0.0",
     "tslib": "^2.3.0"
   },
-  "sideEffects": false,
+  "sideEffects": [
+    "**/*.css"
+  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/Sendsar-Chat/sendsar-uikit-angular.git"

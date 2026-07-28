@@ -1,0 +1,132 @@
+@if (open) {
+  <div class="sc-dialog-backdrop" (click)="close()">
+    <div
+      class="sc-group-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-label="Group details"
+      (click)="onGroupDialogClick($event); $event.stopPropagation()"
+    >
+      <button type="button" class="sc-group-dialog-close" (click)="close()" aria-label="Close">
+        <span class="material-icons" aria-hidden="true">close</span>
+      </button>
+
+      <section class="sc-group-dialog-profile">
+        <span class="sc-group-dialog-avatar">{{ avatarInitials() }}</span>
+        <h2 class="sc-group-dialog-title">{{ title }}</h2>
+        <p class="sc-group-dialog-subtitle">{{ membersSubtitle() }}</p>
+        <p class="sc-group-dialog-desc">Group conversation</p>
+      </section>
+
+      <section class="sc-group-dialog-members">
+        <header class="sc-group-dialog-members-header">
+          <h3>Members</h3>
+          @if (selfIsOperator()) {
+            <div class="sc-group-dialog-menu-wrap" #membersMenuWrap (click)="$event.stopPropagation()">
+              <button
+                type="button"
+                class="sc-group-dialog-menu-btn"
+                title="Member options"
+                aria-label="Member options"
+                [attr.aria-expanded]="showMembersMenu()"
+                [disabled]="mutating()"
+                (click)="toggleMembersMenu($event)"
+              >
+                <span class="material-icons" aria-hidden="true">more_vert</span>
+              </button>
+              @if (showMembersMenu()) {
+                <div class="sc-group-dialog-menu" role="menu">
+                  <button
+                    type="button"
+                    class="sc-group-dialog-menu-item"
+                    role="menuitem"
+                    [disabled]="mutating()"
+                    (click)="openAddMembersDialog()"
+                  >
+                    <span class="material-icons" aria-hidden="true">person_add</span>
+                    Add member
+                  </button>
+                  <button
+                    type="button"
+                    class="sc-group-dialog-menu-item sc-group-dialog-menu-item--danger"
+                    role="menuitem"
+                    [disabled]="mutating() || removableUsers().length === 0"
+                    (click)="openRemoveMembersDialog()"
+                  >
+                    <span class="material-icons" aria-hidden="true">person_remove</span>
+                    Remove member
+                  </button>
+                </div>
+              }
+            </div>
+          }
+        </header>
+
+        @if (loadingMembers()) {
+          <p class="sc-group-dialog-empty">Loading members…</p>
+        } @else if (membersError()) {
+          <p class="sc-group-dialog-empty sc-group-dialog-empty--error">{{ membersError() }}</p>
+        } @else if (members().length > 0) {
+          <div class="sc-group-dialog-member-row">
+            @for (member of members(); track member.userId) {
+              <span
+                class="sc-group-dialog-member-avatar"
+                [class.sc-group-dialog-member-avatar--online]="isOnline(member.userId)"
+                [title]="member.displayName"
+              >
+                {{ memberInitials(member.displayName) }}
+              </span>
+            }
+          </div>
+        } @else {
+          <p class="sc-group-dialog-empty">No members to show</p>
+        }
+      </section>
+
+      <section class="sc-group-dialog-actions">
+        <button
+          type="button"
+          class="sc-group-dialog-action"
+          [disabled]="mutating() || leaving()"
+          (click)="clearHistory()"
+        >
+          Clear history
+        </button>
+        <button
+          type="button"
+          class="sc-group-dialog-action sc-group-dialog-action--danger"
+          [disabled]="mutating() || leaving()"
+          (click)="leaveGroup()"
+        >
+          {{ leaving() ? 'Leaving…' : 'Leave group' }}
+        </button>
+      </section>
+    </div>
+  </div>
+}
+
+<sc-add-members-dialog
+  [open]="showAddMembersDialog()"
+  [users]="users"
+  [excludeUserIds]="excludeUserIds()"
+  [onlineUserIds]="onlineUserIds"
+  [busy]="mutating()"
+  [error]="membersActionError()"
+  (closed)="closeAddMembersDialog()"
+  (confirm)="onAddMembersConfirm($event)"
+/>
+
+<sc-add-members-dialog
+  [open]="showRemoveMembersDialog()"
+  title="Remove members"
+  hint="Select people to remove from this group."
+  emptyHint="No members available to remove."
+  confirmLabel="Remove"
+  busyLabel="Removing…"
+  [users]="removableUsers()"
+  [onlineUserIds]="onlineUserIds"
+  [busy]="mutating()"
+  [error]="membersActionError()"
+  (closed)="closeRemoveMembersDialog()"
+  (confirm)="onRemoveMembersConfirm($event)"
+/>
